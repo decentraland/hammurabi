@@ -15,7 +15,14 @@ test-watch:
 	@echo "~ Running tests in watchmode..."
 	node_modules/.bin/jest --detectOpenHandles --colors --runInBand --watch $(TESTARGS)
 
-build: node_modules
+test-scene/node_modules: test-scene/yarn.lock test-scene/package.json
+	cd test-scene; yarn install
+
+scene-built: test-scene/node_modules
+	cd test-scene; yarn run build
+	cd test-scene; node_modules/.bin/sdk-commands export-static --destination ../static/ipfs --json > ../src/scene-info.json
+
+build: node_modules scene-built
 	@echo "~ Running build..."
 	@node ./build.js --production
 	@echo "~ Running typechecker..."
