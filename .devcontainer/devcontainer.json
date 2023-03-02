@@ -1,0 +1,5 @@
+{
+	"name": "docker",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+	"postCreateCommand": "make install"
+}
