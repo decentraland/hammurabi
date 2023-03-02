@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 
+
 # testing
 /coverage
 
@@ -25,3 +26,6 @@ yarn-error.log*
 .env
 
 static/js
+src/scene-info.json
+
+static/ipfs
