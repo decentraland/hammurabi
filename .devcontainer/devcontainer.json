@@ -1,5 +1,13 @@
 {
-	"name": "docker",
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
-	"postCreateCommand": "make install"
+  "name": "docker",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+  "postCreateCommand": "make install",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib"
+      },
+      "extensions": []
+    }
+  }
 }
