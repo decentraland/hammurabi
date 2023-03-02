@@ -1,4 +1,4 @@
-# hammurabi-
+# hammurabi
 
 The reference/educational implementation of the Decentraland protocol.
 
