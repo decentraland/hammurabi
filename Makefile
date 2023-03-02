@@ -2,8 +2,10 @@ ifneq ($(CI), true)
 LOCAL_ARG = --local --verbose --diagnostics
 endif
 
-node_modules: yarn.lock package.json
-	yarn install
+install: node_modules
+
+node_modules: package-lock.json package.json
+	npm ci
 
 test:
 	@echo "~ Running tests..."
