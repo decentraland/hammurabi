@@ -26,6 +26,6 @@ yarn-error.log*
 .env
 
 static/js
-src/scene-info.json
+static/scene-info.json
 
 static/ipfs
