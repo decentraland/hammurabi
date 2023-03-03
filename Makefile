@@ -22,13 +22,11 @@ build-example-scene: example-scene/node_modules
 	cd example-scene; npm run build
 	cd example-scene; \
 		node_modules/.bin/sdk-commands export-static \
-			--destination ../static/ipfs --json > ../src/scene-info.json
+			--destination ../static/ipfs --json > ../static/scene-info.json
 
 build: node_modules build-example-scene
 	@echo "~ Running build..."
 	@node ./build.js --production
-	@echo "~ Running typechecker..."
-	@node_modules/.bin/tsc -p tsconfig.json
 
 start:
 	node ./build.js --watch

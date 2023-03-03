@@ -19,7 +19,7 @@ describe("Run example scene in vm", () => {
         },
         require(moduleName) {
           console.log('  REQUIRE: ' + moduleName)
-  
+
           if (moduleName === '~system/EngineApi') {
             return {
               async subscribe(data: { eventId: string }) {
@@ -40,7 +40,7 @@ describe("Run example scene in vm", () => {
               }
             }
           }
-  
+
           throw new Error('Unknown module ' + moduleName)
         }
       })
