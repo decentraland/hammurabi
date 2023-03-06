@@ -1,4 +1,7 @@
 import { readFileSync } from "fs"
+import { ReadWriteByteBuffer } from "../../src/lib/decentraland/ByteBuffer"
+import { readAllMessages } from "../../src/lib/decentraland/crdt-wire-protocol"
+import { prettyPrintCrdtMessage } from "../../src/lib/decentraland/crdt-wire-protocol/prettyPrint"
 import { withQuickJsVm } from "../../src/lib/quick-js"
 
 const sceneFile = 'example-scene/bin/index.js'
@@ -31,7 +34,10 @@ describe("Run example scene in vm", () => {
               async crdtSendToRenderer(payload: { data: Uint8Array }): Promise<{ data: Uint8Array[] }> {
                 // TODO: find a better way to convert Uint8Array at VM level
                 const data = new Uint8Array(Object.values(payload.data))
-                console.log('[SCENE] crdtSendToRenderer', data)
+
+                // pretty print all the messages
+                console.log('[SCENE] crdtSendToRenderer\n' + Array.from(readAllMessages(new ReadWriteByteBuffer(data))).map(prettyPrintCrdtMessage).join('\n'))
+
                 return { data: [] }
               },
               async crdtGetState(): Promise<{ data: Uint8Array[] }> {
