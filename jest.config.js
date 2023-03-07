@@ -1,12 +1,13 @@
 module.exports = {
   moduleFileExtensions: ["ts", "js"],
   transform: {
-    "^.+\\.(ts|tsx)$": ['ts-jest', {
-      tsconfig: "test/tsconfig.json",
-    }],
+    "^.+\\.[tj]sx?$": require.resolve('./test/jest-transformer')
   },
   coverageDirectory: "coverage",
+  coverageProvider: 'v8',
+  collectCoverageFrom: ["./src/**/*.ts"],
   verbose: true,
   testMatch: ["**/*.spec.(ts)"],
   testEnvironment: "node",
+  transformIgnorePatterns: [`/node_modules/(?!@babylonjs|@dcl)`],
 }
