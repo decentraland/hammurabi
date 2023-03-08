@@ -36,3 +36,7 @@ export type RunWithVmOptions = {
    */
   provide(opts: ProvideOptions): void
 }
+
+// TODO: This type exists because there is a missing reliable and recursive way to
+// pass Uint8Array as object values from the VM context to the HOST context
+export type MaybeUint8Array = Uint8Array | Record<string, number>

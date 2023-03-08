@@ -1,4 +1,5 @@
 import { QuickJSContext, QuickJSHandle } from "@dcl/quickjs-emscripten"
+import { MaybeUint8Array } from "./types"
 
 
 /**
@@ -68,4 +69,9 @@ export function nativeToVmType(vm: QuickJSContext, value: any): QuickJSHandle {
   }
   /* istanbul ignore next */
   return vm.undefined
+}
+
+export function coerceMaybeU8Array(data: MaybeUint8Array): Uint8Array {
+  if (data instanceof Uint8Array) return data
+  return new Uint8Array(Object.values(data))
 }

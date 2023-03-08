@@ -125,15 +125,14 @@ export function setupSetImmediate(vm: QuickJSContext) {
     fn.dispose()
   }).consume((fn) => vm.setProp(vm.global, 'setImmediate', fn))
 
-  // the setImmediate will dissapear from the pro
   const int = setInterval(() => {
     while (immediates.length) {
       const elem = immediates.shift()!
 
       try {
         vm.unwrapResult(vm.callFunction(elem, vm.undefined)).dispose()
-      } catch (e) {
-        console.error(e)
+      } catch (e: any) {
+        console.error(e.message)
       }
 
       elem.dispose()

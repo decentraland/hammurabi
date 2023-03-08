@@ -7,6 +7,27 @@ const { future } = require('fp-future')
 const WATCH_MODE = process.argv.includes('--watch')
 const PRODUCTION = process.argv.includes('--production')
 
+const builtIns = {
+  fs: require.resolve('./src/throw'),
+  path: require.resolve('./src/throw'),
+}
+
+const nodeBuiltIns = () => {
+  const include = Object.keys(builtIns)
+  if (!include.length) {
+    throw new Error('Must specify at least one built-in module')
+  }
+  const filter = RegExp(`^(${include.join('|')})$`)
+  return {
+    name: 'node-builtins',
+    setup(build) {
+      build.onResolve({ filter }, (arg) => ({
+        path: builtIns[arg.path],
+      }))
+    },
+  }
+}
+
 async function main() {
   const context = await esbuild.context({
     entryPoints: ['src/index.ts'],
@@ -14,7 +35,10 @@ async function main() {
     platform: 'browser',
     outfile: 'static/js/bundle.js',
     sourcemap: process.env.NO_SOURCEMAP ? undefined : 'linked',
-    minify: PRODUCTION
+    minify: PRODUCTION,
+    plugins: [
+      nodeBuiltIns()
+    ]
   })
 
   if (WATCH_MODE) {
