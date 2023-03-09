@@ -52,7 +52,7 @@ describe('Component operation tests', () => {
 
   it('putComponent identity test', () => {
     const buf = new ReadWriteByteBuffer()
-    PutComponentOperation.write(1 as Entity, 3, 1, Uint8Array.of(1, 2, 3), buf)
+    PutComponentOperation.write(1 as Entity, 1, 3, Uint8Array.of(1, 2, 3), buf)
     const msg = readMessage(buf)
 
     expect(msg).toEqual({

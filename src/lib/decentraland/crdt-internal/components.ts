@@ -41,18 +41,17 @@ export interface BaseComponent<T> {
   readonly serde: SerDe<T>
 
   /**
-   * This function receives a CRDT update and returns a touple with a "conflict
-   * resoluton" message, in case of the sender being updated or null in case of noop/accepted
-   * change. The second element of the touple is the modified/changed/deleted value.
+   * This function receives a CRDT update and returns true if the change is accepted.
+   * On the contrary, if the change needs to be corrected to resolve a conflict, the
+   * corrective message will be written to the conflictResolutionByteBuffer
    */
-  updateFromCrdt(body: CrdtMessageBody): [null | ConflictResolutionMessage, T | undefined]
+  updateFromCrdt(body: CrdtMessageBody, conflictResolutionByteBuffer: ByteBuffer): boolean
 
   /**
-   * This function returns an iterable with all the CRDT updates that need to be
-   * broadcasted to other actors in the system. After returning, this function
+   * This function writes all CRDT updates into a outBuffer. After returning, this function
    * clears the internal dirty state. Updates are produced only once.
    */
-  getCrdtUpdates(): Iterable<CrdtMessageBody>
+  getCrdtUpdates(outBuffer: ByteBuffer): void
 
   /**
    * This function writes the whole state of the component into a ByteBuffer

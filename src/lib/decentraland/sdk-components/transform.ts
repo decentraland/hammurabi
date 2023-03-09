@@ -37,7 +37,6 @@ export const transformSerde: SerDe<Transform> = {
   },
 }
 
-
 export const putTransformComponent: ComponentOperation = (entity, component) => {
   if (component.componentType !== ComponentType.LastWriteWinElementSet) return
 
@@ -47,32 +46,34 @@ export const putTransformComponent: ComponentOperation = (entity, component) => 
 
   let needsReparenting = false
 
-  if (!currentValue && newValue) {
-    needsReparenting = true
-  } else if (currentValue && !newValue) {
+  const isAddingNewValue = Boolean(!currentValue && newValue)
+  const isReplacingValue = Boolean(currentValue && newValue)
+  const isRemovingValue = Boolean(currentValue && !newValue)
+
+  if (isAddingNewValue || isReplacingValue) {
+    needsReparenting ||= currentValue?.parent !== newValue!.parent
+
+    entity.position.copyFrom(newValue!.position)
+    entity.scaling.copyFrom(newValue!.scale)
+
+    if (!entity.rotationQuaternion) {
+      entity.rotationQuaternion = newValue!.rotation
+    } else {
+      entity.rotationQuaternion.copyFrom(newValue!.rotation)
+    }
+  } else if (isRemovingValue) {
     // remove current value
     needsReparenting = true
+
+    // set default values for position, scale and rotation
     entity.position.setAll(0)
-    if (!entity.rotationQuaternion) entity.rotationQuaternion = Quaternion.Identity()
-    else entity.rotationQuaternion.set(0, 0, 0, 1)
+    if (!entity.rotationQuaternion) {
+      entity.rotationQuaternion = Quaternion.Identity()
+    } else {
+      entity.rotationQuaternion.set(0, 0, 0, 1)
+    }
     entity.scaling.setAll(1)
     reparentChildrenToRoot(entity)
-  }
-
-  // set the new value
-  if (newValue) {
-    needsReparenting ||= currentValue?.parent !== newValue.parent
-    entity.position.set(newValue.position.x, newValue.position.y, newValue.position.z)
-    if (!entity.rotationQuaternion)
-      entity.rotationQuaternion = new Quaternion(
-        newValue.rotation.x,
-        newValue.rotation.y,
-        newValue.rotation.z,
-        newValue.rotation.w
-      )
-    else
-      entity.rotationQuaternion.set(newValue.rotation.x, newValue.rotation.y, newValue.rotation.z, newValue.rotation.w)
-    entity.scaling.set(newValue.scale.x, newValue.scale.y, newValue.scale.z)
   }
 
   if (needsReparenting) reparentEntity(entity)
@@ -105,21 +106,22 @@ export function createDefaultTransform(entity: BabylonEntity) {
  */
 function reparentEntity(entity: BabylonEntity) {
   const context = entity.context.deref()
-  const parentEntityId: Entity | undefined = entity.ecsComponentValues.transform?.parent
+  const targetParentId: Entity | undefined = entity.ecsComponentValues.transform?.parent
 
   if (context) {
-    if (entity.parent && (entity.parent as any)['entityId'] == parentEntityId) return
-    if (!parentEntityId) {
+    if (entity.parent && (entity.parent as BabylonEntity).entityId === targetParentId) return
+    if (!targetParentId) {
       // parent with the scene root
       entity.parent = context.rootNode
     } else {
       // parent with other entity
-      const parentEntity = context.getEntityOrNull(parentEntityId)
+      const parentEntity = context.getEntityOrNull(targetParentId)
       if (parentEntity) {
         // happy path, the parent entity already exists
         entity.parent = parentEntity
       } else {
-        scheduleFutureReparenting(entity, parentEntityId)
+        entity.parent = context.rootNode
+        scheduleFutureReparenting(entity, targetParentId)
       }
     }
   }

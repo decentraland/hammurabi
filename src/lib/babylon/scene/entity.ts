@@ -26,7 +26,6 @@ export class BabylonEntity extends BABYLON.TransformNode {
 
   constructor(public entityId: Entity, public context: WeakRef<SceneContext>) {
     super(`ecs-${entityId.toString(16)}`)
-    createDefaultTransform(this)
 
     if (entityId) {
       // create a box and attach it to an entity

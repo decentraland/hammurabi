@@ -6,12 +6,11 @@ import { Entity } from '../../decentraland/types'
 import { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
-import { prettyPrintCrdtMessage } from '../../decentraland/crdt-wire-protocol/prettyPrint'
 import { MaybeUint8Array } from '../../quick-js'
 import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
-import { transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
+import { createDefaultTransform, transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
 import { createLwwStoreFromSerde } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 
@@ -57,6 +56,8 @@ export class SceneContext implements EngineApiInterface {
     if (!entity) {
       entity = new BabylonEntity(entityId, this.#ref)
       this.entities.set(entityId, entity)
+      // creating the default transform also flushes the pending reparenting logic
+      createDefaultTransform(entity)
     }
     return entity
   }
@@ -78,26 +79,22 @@ export class SceneContext implements EngineApiInterface {
       const message = this.incomingMessages[0]
 
       for (const crdtMessage of readAllMessages(message)) {
-        // STUB, in this part of the code, we are supposed to update all the components
-        console.log('CRDT message', prettyPrintCrdtMessage(crdtMessage))
-
         // STUB create or delete entities based on putComponent and deleteEntity
         switch (crdtMessage.type) {
           case CrdtMessageType.DELETE_COMPONENT:
           case CrdtMessageType.PUT_COMPONENT: {
-            const _entity = this.getOrCreateEntity(crdtMessage.entityId)
+            const entity = this.getOrCreateEntity(crdtMessage.entityId)
             const component = this.components[crdtMessage.componentId]
-            if (component) {
-              const [conflict, value] = component.updateFromCrdt(crdtMessage)
-              if (conflict) {
-                // TODO: write conflict into this.outgoingMessagesBuffer
-              } else {
-                if (crdtMessage.type === CrdtMessageType.PUT_COMPONENT)
-                  _entity.putComponent(component)
-                else
-                  _entity.deleteComponent(component)
-              }
+
+            // if the change is accepted, then we instruct the entity to update its internal state
+            // via putComponent or deleteComponent calls
+            if (component && component.updateFromCrdt(crdtMessage, this.outgoingMessagesBuffer)) {
+              if (crdtMessage.type === CrdtMessageType.PUT_COMPONENT)
+                entity.putComponent(component)
+              else
+                entity.deleteComponent(component)
             }
+
             break
           }
           case CrdtMessageType.DELETE_ENTITY: {
@@ -136,6 +133,12 @@ export class SceneContext implements EngineApiInterface {
     if (this.outgoingMessagesBuffer.currentWriteOffset()) {
       outMessages.push(this.outgoingMessagesBuffer.toBinary())
       this.outgoingMessagesBuffer.incrementWriteOffset(-this.outgoingMessagesBuffer.currentWriteOffset())
+      this.outgoingMessagesBuffer.incrementReadOffset(-this.outgoingMessagesBuffer.currentReadOffset())
+    }
+
+    // write all the CRDT updates in the outgoingMessagesBuffer
+    for (const i in this.components) {
+      this.components[i].getCrdtUpdates(this.outgoingMessagesBuffer)
     }
 
     // finally resolve the future so the function "receiveBatch" is unblocked
