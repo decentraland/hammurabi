@@ -1,6 +1,10 @@
 import * as BABYLON from '@babylonjs/core'
 import { SceneContext } from '../../../src/lib/babylon/scene/context'
+import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
+import { SerDe } from '../../../src/lib/decentraland/crdt-internal/components'
+import { DeleteComponent, PutComponentOperation } from '../../../src/lib/decentraland/crdt-wire-protocol'
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
+import { Entity } from '../../../src/lib/decentraland/types'
 
 export function initTestEngine(loadableScene: Readonly<LoadableScene>) {
   let engine: BABYLON.NullEngine
@@ -44,5 +48,27 @@ export function initTestEngine(loadableScene: Readonly<LoadableScene>) {
       return ctx
     },
     loadableScene,
+  }
+}
+
+export class CrdtBuilder {
+  #buffer = new ReadWriteByteBuffer()
+
+  put<T>(componentId: number, entityId: Entity, timestamp: number, serde: SerDe<T>, value: T) {
+    const componentBuffer = new ReadWriteByteBuffer()
+    serde.serialize(value, componentBuffer)
+    PutComponentOperation.write(entityId, componentId, timestamp,  componentBuffer.toBinary(), this.#buffer)
+    return this
+  }
+
+  delete(componentId: number, entityId: Entity, timestamp: number) {
+    DeleteComponent.write(entityId, componentId, timestamp, this.#buffer)
+    return this
+  }
+
+  toBinary() {
+    const ret = this.#buffer.toBinary()
+    this.#buffer = new ReadWriteByteBuffer()
+    return ret
   }
 }

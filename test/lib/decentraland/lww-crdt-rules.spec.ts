@@ -1,6 +1,6 @@
-import { ByteBuffer } from "../../../src/lib/decentraland/ByteBuffer"
-import { CrdtMessageType } from "../../../src/lib/decentraland/crdt-wire-protocol"
-import { createComponentDefinitionFromSchema, createUpdateLwwFromCrdt } from "../../../src/lib/decentraland/crdt-internal/last-write-win-element-set"
+import { ByteBuffer, ReadWriteByteBuffer } from "../../../src/lib/decentraland/ByteBuffer"
+import { CrdtMessageType, readAllMessages, readMessage } from "../../../src/lib/decentraland/crdt-wire-protocol"
+import { createLwwStoreFromSerde, createUpdateLwwFromCrdt } from "../../../src/lib/decentraland/crdt-internal/last-write-win-element-set"
 import { Entity } from "../../../src/lib/decentraland/types"
 import { SerDe } from "../../../src/lib/decentraland/crdt-internal/components"
 import { prettyPrintCrdtMessage } from "../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint"
@@ -22,18 +22,18 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT an unexistent value should succeed', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       data: Uint8Array.of(1),
       entityId,
       timestamp: 0,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(1)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(1)
@@ -42,18 +42,18 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT the same value and timestamp should be idempotent', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       data: Uint8Array.of(1),
       entityId,
       timestamp: 0,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(1)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(1)
@@ -62,18 +62,18 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT a newer (timestamp) value should accept it', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       data: Uint8Array.of(1),
       entityId,
       timestamp: 1,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(1)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(1)
@@ -82,24 +82,24 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT an older (timestamp) value should reject the change and return a "correction" message', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       data: Uint8Array.of(1),
       entityId,
       timestamp: 0,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toMatchObject({
+    expect(readMessage(conflictBuffer)).toMatchObject({
       componentId,
       entityId,
       data: Uint8Array.of(1),
       timestamp: 1,
       type: CrdtMessageType.PUT_COMPONENT
     })
-    expect(currentValue).toEqual(1)
 
     // state assertions
     expect(data.get(entityId)).toEqual(1)
@@ -108,18 +108,18 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT a conflicting timestamp with higher value should accept the higher value', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       data: Uint8Array.of(2),
       entityId,
       timestamp: 1,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(2)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(2)
@@ -128,23 +128,24 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('DELETE a conflicting timestamp should keep the value and return a correction message', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       timestamp: 1,
       type: CrdtMessageType.DELETE_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual({
+    expect(readMessage(conflictBuffer)).toEqual({
       componentId,
       data: Uint8Array.of(2),
       entityId,
+      length: 25,
       timestamp: 1,
       type: CrdtMessageType.PUT_COMPONENT
     })
-    expect(currentValue).toEqual(2)
 
     // state assertions
     expect(data.get(entityId)).toEqual(2)
@@ -153,17 +154,17 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('DELETE with a new timestamp should succeed', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       timestamp: 3,
       type: CrdtMessageType.DELETE_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(undefined)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(undefined)
@@ -172,17 +173,17 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('DELETE is idempotent', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       timestamp: 3,
       type: CrdtMessageType.DELETE_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(undefined)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(undefined)
@@ -191,23 +192,24 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT an old timestamp should return a DELETE correction message', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       data: Uint8Array.of(2),
       entityId,
       timestamp: 0,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual({
+    expect(readMessage(conflictBuffer)).toEqual({
       componentId,
       entityId,
+      length: 20,
       timestamp: 3,
       type: CrdtMessageType.DELETE_COMPONENT
     })
-    expect(currentValue).toEqual(undefined)
 
     // state assertions
     expect(data.get(entityId)).toEqual(undefined)
@@ -216,18 +218,18 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT using the same timestamp as the delete should be accepted', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       data: Uint8Array.of(10),
       timestamp: 3,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(10)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(10)
@@ -236,18 +238,18 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT is idempotent', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       data: Uint8Array.of(10),
       timestamp: 3,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual(null)
-    expect(currentValue).toEqual(10)
+    expect(updateAccepted).toEqual(true)
 
     // state assertions
     expect(data.get(entityId)).toEqual(10)
@@ -256,24 +258,26 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT in case of null data it keeps the current state and returns correction message', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       data: null as any,
       timestamp: 3,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual({
+    expect(updateAccepted).toEqual(false)
+    expect(readMessage(conflictBuffer)).toEqual({
       componentId,
       entityId,
+      length: 25,
       data: Uint8Array.of(10),
       timestamp: 3,
       type: CrdtMessageType.PUT_COMPONENT
     })
-    expect(currentValue).toEqual(10)
 
     // state assertions
     expect(data.get(entityId)).toEqual(10)
@@ -282,24 +286,25 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 
   it('PUT in case of empty data returns a correction message', () => {
     const entityId = 0 as Entity
+    const conflictBuffer = new ReadWriteByteBuffer()
 
-    const [conflict, currentValue] = updateFn({
+    const updateAccepted = updateFn({
       componentId,
       entityId,
       data: new Uint8Array(),
       timestamp: 3,
       type: CrdtMessageType.PUT_COMPONENT
-    })
+    }, conflictBuffer)
 
     // result assertions
-    expect(conflict).toEqual({
+    expect(readMessage(conflictBuffer)).toEqual({
       componentId,
       entityId,
+      length: 25,
       data: Uint8Array.of(10),
       timestamp: 3,
       type: CrdtMessageType.PUT_COMPONENT
     })
-    expect(currentValue).toEqual(10)
 
     // state assertions
     expect(data.get(entityId)).toEqual(10)
@@ -318,14 +323,18 @@ describe('integration lww', () => {
   }
   const componentId = 1
 
-  const component = createComponentDefinitionFromSchema(componentId, schema)
+  const component = createLwwStoreFromSerde(componentId, schema)
 
   function assertCrdtUpdates(...expected: string[]) {
-    expect(Array.from(component.getCrdtUpdates()).map(prettyPrintCrdtMessage)).toEqual(expected)
+    const buf = new ReadWriteByteBuffer()
+    component.getCrdtUpdates(buf)
+    expect(Array.from(readAllMessages(buf)).map(prettyPrintCrdtMessage)).toEqual(expected)
   }
 
   afterEach(() => {
-    const updates = Array.from(component.getCrdtUpdates()).map(prettyPrintCrdtMessage)
+    const buf = new ReadWriteByteBuffer()
+    component.getCrdtUpdates(buf)
+    const updates = Array.from(readAllMessages(buf)).map(prettyPrintCrdtMessage)
     if (updates.length) throw new Error('Some CRDT updates were not asserted:\n' + updates.join('\n'))
   })
 

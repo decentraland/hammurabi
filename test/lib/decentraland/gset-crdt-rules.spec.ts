@@ -88,6 +88,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
     const entityId = 0 as Entity
 
     const buf = new ReadWriteByteBuffer()
+    const conflictBuffer = new ReadWriteByteBuffer()
     component.serde.serialize(
       {
         text: 'asd',
@@ -96,13 +97,13 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
       buf
     )
 
-    component.updateFromCrdt({
+    expect(component.updateFromCrdt({
       componentId: 1,
       data: buf.toBinary(),
       entityId,
       timestamp: 0,
       type: CrdtMessageType.APPEND_VALUE
-    })
+    }, conflictBuffer)).toBe(true)
 
     // append operations do not generate a dirty state
     expect(Array.from(component.dirtyIterator())).toEqual([])
@@ -133,6 +134,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 
     for (const timestamp of timestamps) {
       const buf = new ReadWriteByteBuffer()
+      const conflictBuffer = new ReadWriteByteBuffer()
       component.serde.serialize(
         {
           text: timestamps.toString(),
@@ -147,7 +149,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
         entityId,
         timestamp: 0,
         type: CrdtMessageType.APPEND_VALUE
-      })
+      }, conflictBuffer)
     }
 
     // assert that the result is ordered
@@ -194,6 +196,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 
     for (const timestamp of timestamps) {
       const buf = new ReadWriteByteBuffer()
+      const conflictBuffer = new ReadWriteByteBuffer()
       component.serde.serialize(
         {
           text: timestamps.toString(),
@@ -208,7 +211,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
         entityId,
         timestamp: 0,
         type: CrdtMessageType.APPEND_VALUE
-      })
+      }, conflictBuffer)
     }
 
     // assert that the result is ordered
