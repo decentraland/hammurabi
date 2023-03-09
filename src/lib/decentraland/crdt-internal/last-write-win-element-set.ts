@@ -185,7 +185,7 @@ export function createGetCrdtMessagesForLww<T>(
   }
 }
 
-export function createComponentDefinitionFromSchema<T>(
+export function createLwwStoreFromSerde<T>(
   componentId: number,
   serde: SerDe<T>
 ): LastWriteWinElementSetComponentDefinition<T> {

@@ -1,6 +1,6 @@
 import { ByteBuffer } from "../../../src/lib/decentraland/ByteBuffer"
 import { CrdtMessageType } from "../../../src/lib/decentraland/crdt-wire-protocol"
-import { createComponentDefinitionFromSchema, createUpdateLwwFromCrdt } from "../../../src/lib/decentraland/crdt-internal/last-write-win-element-set"
+import { createLwwStoreFromSerde, createUpdateLwwFromCrdt } from "../../../src/lib/decentraland/crdt-internal/last-write-win-element-set"
 import { Entity } from "../../../src/lib/decentraland/types"
 import { SerDe } from "../../../src/lib/decentraland/crdt-internal/components"
 import { prettyPrintCrdtMessage } from "../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint"
@@ -318,7 +318,7 @@ describe('integration lww', () => {
   }
   const componentId = 1
 
-  const component = createComponentDefinitionFromSchema(componentId, schema)
+  const component = createLwwStoreFromSerde(componentId, schema)
 
   function assertCrdtUpdates(...expected: string[]) {
     expect(Array.from(component.getCrdtUpdates()).map(prettyPrintCrdtMessage)).toEqual(expected)

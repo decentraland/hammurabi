@@ -3,7 +3,6 @@ import future, { IFuture } from 'fp-future'
 import { Entity } from '../../decentraland/types'
 
 // temporarily, we will use a TransformNode as a placeholder for our BabylonEntity class
-import { TransformNode as BabylonEntity } from '@babylonjs/core'
 import { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
@@ -11,9 +10,14 @@ import { prettyPrintCrdtMessage } from '../../decentraland/crdt-wire-protocol/pr
 import { MaybeUint8Array } from '../../quick-js'
 import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
+import { BabylonEntity } from './entity'
+import { transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
+import { createLwwStoreFromSerde } from '../../decentraland/crdt-internal/last-write-win-element-set'
+import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 
 export class SceneContext implements EngineApiInterface {
-  entities = new Map<Entity, BABYLON.TransformNode>()
+  entities = new Map<Entity, BabylonEntity>()
+  #ref = new WeakRef(this)
   rootNode: BabylonEntity
 
   // this future is resolved when the scene is disposed
@@ -28,8 +32,12 @@ export class SceneContext implements EngineApiInterface {
   // stash of outgoing messages ready to be sent to back to the scripting scene
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
 
+  components: Record<number, ComponentDefinition<any>> = {
+    [TRANSFORM_COMPONENT_ID]: createLwwStoreFromSerde(TRANSFORM_COMPONENT_ID, transformSerde)
+  }
+
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
-    this.rootNode = new BabylonEntity('root entity', babylonScene)
+    this.rootNode = this.getOrCreateEntity(0)
 
     // add this scene to the update loop of the rendering engine
     babylonScene.getEngine().onBeginFrameObservable.add(this.update)
@@ -47,7 +55,7 @@ export class SceneContext implements EngineApiInterface {
   getOrCreateEntity(entityId: Entity): BabylonEntity {
     let entity = this.entities.get(entityId)
     if (!entity) {
-      entity = new BabylonEntity(entityId.toString(), this.babylonScene)
+      entity = new BabylonEntity(entityId, this.#ref)
       this.entities.set(entityId, entity)
     }
     return entity
@@ -75,8 +83,21 @@ export class SceneContext implements EngineApiInterface {
 
         // STUB create or delete entities based on putComponent and deleteEntity
         switch (crdtMessage.type) {
+          case CrdtMessageType.DELETE_COMPONENT:
           case CrdtMessageType.PUT_COMPONENT: {
             const _entity = this.getOrCreateEntity(crdtMessage.entityId)
+            const component = this.components[crdtMessage.componentId]
+            if (component) {
+              const [conflict, value] = component.updateFromCrdt(crdtMessage)
+              if (conflict) {
+                // TODO: write conflict into this.outgoingMessagesBuffer
+              } else {
+                if (crdtMessage.type === CrdtMessageType.PUT_COMPONENT)
+                  _entity.putComponent(component)
+                else
+                  _entity.deleteComponent(component)
+              }
+            }
             break
           }
           case CrdtMessageType.DELETE_ENTITY: {
@@ -158,5 +179,4 @@ export class SceneContext implements EngineApiInterface {
     return fut
   }
   // }
-
 }
