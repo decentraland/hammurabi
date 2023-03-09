@@ -136,12 +136,12 @@ export function createValueSetComponentDefinitionFromSchema<T>(
       dirtyIterator.clear()
       return queuedCommands.splice(0, queuedCommands.length)
     },
-    updateFromCrdt(_body) {
-      if (_body.type === CrdtMessageType.APPEND_VALUE) {
-        const buf = new ReadWriteByteBuffer(_body.data)
-        append(_body.entityId, serde.deserialize(buf) as Readonly<T>)
+    updateFromCrdt(body, _conflictResolutionByteBuffer: ByteBuffer) {
+      if (body.type === CrdtMessageType.APPEND_VALUE) {
+        const buf = new ReadWriteByteBuffer(body.data)
+        append(body.entityId, serde.deserialize(buf) as Readonly<T>)
       }
-      return [null, undefined]
+      return true
     },
     dumpCrdtState: function (buffer: ByteBuffer): void {
       for (const [entity, { raw }] of data) {

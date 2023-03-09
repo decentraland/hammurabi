@@ -1,5 +1,7 @@
+import { Quaternion, Vector3 } from '@babylonjs/core'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { DeleteEntity, PutComponentOperation } from '../../../src/lib/decentraland/crdt-wire-protocol'
+import { transformSerde } from '../../../src/lib/decentraland/sdk-components/transform'
 import { Entity } from '../../../src/lib/decentraland/types'
 import { initTestEngine } from './babylon-test-helper'
 
@@ -18,8 +20,16 @@ describe("entities are removed on scene disposal", () => {
 
     // then we create a component for the entityId=1
     {
+      const componentBuffer = new ReadWriteByteBuffer()
+      transformSerde.serialize({
+        parent: 0,
+        position: Vector3.Zero(),
+        scale: Vector3.One(),
+        rotation: Quaternion.Identity()
+      }, componentBuffer)
+
       const buf = new ReadWriteByteBuffer()
-      PutComponentOperation.write(entityId, 1 /* timestamp */, 1 /* componentId */, Uint8Array.of(1, 2, 3), buf)
+      PutComponentOperation.write(entityId, 1 /* componentId */, 1 /* timestamp */, componentBuffer.toBinary(), buf)
       const result = await $.ctx.crdtSendToRenderer({ data: buf.toBinary() })
       expect(result).toEqual({ data: [] })
     }
@@ -45,7 +55,7 @@ describe("scene context implents ADR-148", () => {
   })
 
   it('tests one empty update', async () => {
-    const result = await $.ctx.crdtSendToRenderer({ data: Uint8Array.of() })
+    const result = await $.ctx.crdtSendToRenderer({ data: new Uint8Array([]) })
     expect(result).toEqual({ data: [] })
   })
 
@@ -57,8 +67,16 @@ describe("scene context implents ADR-148", () => {
 
     // then we create a component for the entityId=1
     {
+      const componentBuffer = new ReadWriteByteBuffer()
+      transformSerde.serialize({
+        parent: 0,
+        position: Vector3.Zero(),
+        scale: Vector3.One(),
+        rotation: Quaternion.Identity()
+      }, componentBuffer)
+
       const buf = new ReadWriteByteBuffer()
-      PutComponentOperation.write(entityId, 1 /* timestamp */, 1 /* componentId */, Uint8Array.of(1, 2, 3), buf)
+      PutComponentOperation.write(entityId, 1 /* componentId */, 1 /* timestamp */, componentBuffer.toBinary(), buf)
       const result = await $.ctx.crdtSendToRenderer({ data: buf.toBinary() })
       expect(result).toEqual({ data: [] })
     }
@@ -91,7 +109,7 @@ describe("outgoingMessages are delivered on crdtSendToRenderer result", () => {
     const entityId = 2 as Entity
 
     // write an outgoing message to the scene's buffer
-    PutComponentOperation.write(entityId, 1 /* timestamp */, 1 /* componentId */, Uint8Array.of(1, 2, 3), $.ctx.outgoingMessagesBuffer)
+    PutComponentOperation.write(entityId, 1 /* componentId */, 1 /* timestamp */, Uint8Array.of(1, 2, 3), $.ctx.outgoingMessagesBuffer)
 
     // then call crdtSendToRenderer
     const expectedResult = $.ctx.outgoingMessagesBuffer.toBinary()

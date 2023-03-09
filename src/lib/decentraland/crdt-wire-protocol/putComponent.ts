@@ -13,7 +13,7 @@ export namespace PutComponentOperation {
    * Call this function for an optimal writing data passing the ByteBuffer
    *  already allocated
    */
-  export function write(entity: Entity, timestamp: number, componentId: number, data: Uint8Array, buf: ByteBuffer) {
+  export function write(entity: Entity, componentId: number, timestamp: number, data: Uint8Array, buf: ByteBuffer) {
     const messageLength = CRDT_MESSAGE_HEADER_LENGTH + MESSAGE_HEADER_LENGTH + data.byteLength
 
     // Write CrdtMessage header

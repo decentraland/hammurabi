@@ -3,17 +3,20 @@ import future, { IFuture } from 'fp-future'
 import { Entity } from '../../decentraland/types'
 
 // temporarily, we will use a TransformNode as a placeholder for our BabylonEntity class
-import { TransformNode as BabylonEntity } from '@babylonjs/core'
 import { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
-import { prettyPrintCrdtMessage } from '../../decentraland/crdt-wire-protocol/prettyPrint'
 import { MaybeUint8Array } from '../../quick-js'
 import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
+import { BabylonEntity } from './entity'
+import { createDefaultTransform, transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
+import { createLwwStoreFromSerde } from '../../decentraland/crdt-internal/last-write-win-element-set'
+import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 
 export class SceneContext implements EngineApiInterface {
-  entities = new Map<Entity, BABYLON.TransformNode>()
+  entities = new Map<Entity, BabylonEntity>()
+  #ref = new WeakRef(this)
   rootNode: BabylonEntity
 
   // this future is resolved when the scene is disposed
@@ -28,8 +31,12 @@ export class SceneContext implements EngineApiInterface {
   // stash of outgoing messages ready to be sent to back to the scripting scene
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
 
+  components: Record<number, ComponentDefinition<any>> = {
+    [TRANSFORM_COMPONENT_ID]: createLwwStoreFromSerde(TRANSFORM_COMPONENT_ID, transformSerde)
+  }
+
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
-    this.rootNode = new BabylonEntity('root entity', babylonScene)
+    this.rootNode = this.getOrCreateEntity(0)
 
     // add this scene to the update loop of the rendering engine
     babylonScene.getEngine().onBeginFrameObservable.add(this.update)
@@ -47,8 +54,10 @@ export class SceneContext implements EngineApiInterface {
   getOrCreateEntity(entityId: Entity): BabylonEntity {
     let entity = this.entities.get(entityId)
     if (!entity) {
-      entity = new BabylonEntity(entityId.toString(), this.babylonScene)
+      entity = new BabylonEntity(entityId, this.#ref)
       this.entities.set(entityId, entity)
+      // creating the default transform also flushes the pending reparenting logic
+      createDefaultTransform(entity)
     }
     return entity
   }
@@ -70,13 +79,22 @@ export class SceneContext implements EngineApiInterface {
       const message = this.incomingMessages[0]
 
       for (const crdtMessage of readAllMessages(message)) {
-        // STUB, in this part of the code, we are supposed to update all the components
-        console.log('CRDT message', prettyPrintCrdtMessage(crdtMessage))
-
         // STUB create or delete entities based on putComponent and deleteEntity
         switch (crdtMessage.type) {
+          case CrdtMessageType.DELETE_COMPONENT:
           case CrdtMessageType.PUT_COMPONENT: {
-            const _entity = this.getOrCreateEntity(crdtMessage.entityId)
+            const entity = this.getOrCreateEntity(crdtMessage.entityId)
+            const component = this.components[crdtMessage.componentId]
+
+            // if the change is accepted, then we instruct the entity to update its internal state
+            // via putComponent or deleteComponent calls
+            if (component && component.updateFromCrdt(crdtMessage, this.outgoingMessagesBuffer)) {
+              if (crdtMessage.type === CrdtMessageType.PUT_COMPONENT)
+                entity.putComponent(component)
+              else
+                entity.deleteComponent(component)
+            }
+
             break
           }
           case CrdtMessageType.DELETE_ENTITY: {
@@ -115,6 +133,12 @@ export class SceneContext implements EngineApiInterface {
     if (this.outgoingMessagesBuffer.currentWriteOffset()) {
       outMessages.push(this.outgoingMessagesBuffer.toBinary())
       this.outgoingMessagesBuffer.incrementWriteOffset(-this.outgoingMessagesBuffer.currentWriteOffset())
+      this.outgoingMessagesBuffer.incrementReadOffset(-this.outgoingMessagesBuffer.currentReadOffset())
+    }
+
+    // write all the CRDT updates in the outgoingMessagesBuffer
+    for (const i in this.components) {
+      this.components[i].getCrdtUpdates(this.outgoingMessagesBuffer)
     }
 
     // finally resolve the future so the function "receiveBatch" is unblocked
@@ -158,5 +182,4 @@ export class SceneContext implements EngineApiInterface {
     return fut
   }
   // }
-
 }

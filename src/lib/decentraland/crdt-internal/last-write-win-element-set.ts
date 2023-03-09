@@ -26,7 +26,7 @@ export function createLwwDumpFunctionFromCrdt<T>(
         const it = data.get(entity)!
         const buf = new ReadWriteByteBuffer() // TODO: performance-wise, this buffer could be wiped and reused to reduce allocations
         schema.serialize(it, buf)
-        PutComponentOperation.write(entity, timestamp, componentId, buf.toBinary(), buffer)
+        PutComponentOperation.write(entity, componentId, timestamp, buf.toBinary(), buffer)
       } else {
         DeleteComponent.write(entity, componentId, timestamp, buffer)
       }
@@ -93,9 +93,9 @@ export function createUpdateLwwFromCrdt<T>(
     }
   }
 
-  return (msg: CrdtMessageBody): [null | PutComponentMessageBody | DeleteComponentMessageBody, any] => {
+  return (msg: CrdtMessageBody, conflictResolutionByteBuffer: ByteBuffer): boolean => {
     if (msg.type !== CrdtMessageType.PUT_COMPONENT && msg.type !== CrdtMessageType.DELETE_COMPONENT)
-      return [null, data.get(msg.entityId)]
+      return true
 
     const action = crdtRuleForCurrentState(msg)
     const entity = msg.entityId as Entity
@@ -111,7 +111,7 @@ export function createUpdateLwwFromCrdt<T>(
           data.delete(entity)
         }
 
-        return [null, data.get(entity)]
+        return true // change accepted
       }
       case ProcessMessageResultType.StateOutdatedTimestamp:
       case ProcessMessageResultType.StateOutdatedData: {
@@ -119,31 +119,20 @@ export function createUpdateLwwFromCrdt<T>(
           const writeBuffer = new ReadWriteByteBuffer()
           schema.serialize(data.get(entity)!, writeBuffer)
 
-          return [
-            {
-              type: CrdtMessageType.PUT_COMPONENT,
-              componentId,
-              data: writeBuffer.toBinary(),
-              entityId: entity,
-              timestamp: timestamps.get(entity)!
-            } as PutComponentMessageBody,
-            data.get(entity)
-          ]
+          // post conflict resolution update
+          PutComponentOperation.write(entity, componentId, timestamps.get(entity)!, writeBuffer.toBinary(), conflictResolutionByteBuffer)
+
+          return false // change not accepted
         } else {
-          return [
-            {
-              type: CrdtMessageType.DELETE_COMPONENT,
-              componentId,
-              entityId: entity,
-              timestamp: timestamps.get(entity)!
-            } as DeleteComponentMessageBody,
-            undefined
-          ]
+          // post conflict resolution update
+          DeleteComponent.write(entity, componentId, timestamps.get(entity)!, conflictResolutionByteBuffer)
+
+          return false // change not accepted
         }
       }
     }
 
-    return [null, data.get(entity)]
+    return true // change accepted
   }
 }
 
@@ -154,38 +143,34 @@ export function createGetCrdtMessagesForLww<T>(
   serde: SerDe<T>,
   data: Map<Entity, T>
 ) {
-  return function* () {
+  return function (outBuffer: ByteBuffer) {
     for (const entity of dirtyIterator) {
       const newTimestamp = incrementTimestamp(entity, timestamps)
       if (data.has(entity)) {
         const writeBuffer = new ReadWriteByteBuffer()
         serde.serialize(data.get(entity)!, writeBuffer)
 
-        const msg: PutComponentMessageBody = {
-          type: CrdtMessageType.PUT_COMPONENT,
+        PutComponentOperation.write(
+          entity,
           componentId,
-          entityId: entity,
-          data: writeBuffer.toBinary(),
-          timestamp: newTimestamp
-        }
-
-        yield msg
+          newTimestamp,
+          writeBuffer.toBinary(),
+          outBuffer
+        )
       } else {
-        const msg: DeleteComponentMessageBody = {
-          type: CrdtMessageType.DELETE_COMPONENT,
+        DeleteComponent.write(
+          entity,
           componentId,
-          entityId: entity,
-          timestamp: newTimestamp
-        }
-
-        yield msg
+          newTimestamp,
+          outBuffer
+        )
       }
     }
     dirtyIterator.clear()
   }
 }
 
-export function createComponentDefinitionFromSchema<T>(
+export function createLwwStoreFromSerde<T>(
   componentId: number,
   serde: SerDe<T>
 ): LastWriteWinElementSetComponentDefinition<T> {

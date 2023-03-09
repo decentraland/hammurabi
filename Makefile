@@ -28,7 +28,7 @@ build: node_modules build-example-scene
 	@echo "~ Running build..."
 	@node ./build.js --production
 
-start:
+start: build-example-scene
 	node ./build.js --watch
 
 .PHONY: build test
