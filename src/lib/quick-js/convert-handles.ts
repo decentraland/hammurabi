@@ -1,71 +1,124 @@
 import { QuickJSContext, QuickJSHandle } from "@dcl/quickjs-emscripten"
 
-
 /**
- * dumpAndDispose converts a QuickJSHandle into a native JS type outside the sandbox.
- *
- * Then it disposes the QuickJSHandle
+ * retrieveValue converts a value stored in the sandbox into a native JS value.
  */
-export function dumpAndDispose(vm: QuickJSContext, val: QuickJSHandle) {
-  const ret = vm.getProp(vm.global, 'isUint8Array').consume((fn) => vm.callFunction(fn, vm.global, val))
+export function retrieveValue(vm: QuickJSContext, val: QuickJSHandle) {
+  const ret = vm.getProp(vm.global, 'isUint8Array').consume(
+    (fn: Function) => vm.callFunction(fn, vm.global, val)
+  )
   const isUint8Array = vm.unwrapResult(ret).consume(vm.dump)
   if (isUint8Array) {
-    val.dispose()
     return new Uint8Array(isUint8Array)
   } else {
     const ret = vm.dump(val)
-    val.dispose()
     return ret
   }
 }
 
+/**
+ * retrieveValueAndDispose is an utility function to retrieve a value from the VM and then destroy it.
+ */
+export function retrieveValueAndDisposeIt(vm: QuickJSContext, val: QuickJSHandle) {
+  const result = retrieveValue(vm, val)
+  val.dispose()
+  return result
+}
 
 /**
- * This function converts a native JS type into a QuickJSHandle to be passed onto the VM
+ * This function inserts a JS value into the VM
  */
-export function nativeToVmType(vm: QuickJSContext, value: any): QuickJSHandle {
-  if (typeof value === 'number') return vm.newNumber(value)
-  if (typeof value === 'string') return vm.newString(value)
-  if (typeof value === 'boolean') return value ? vm.true : vm.false
-  if (value === undefined) return vm.undefined
-  if (value === null) return vm.null
+export function createValue(vm: QuickJSContext, value: any): QuickJSHandle {
+  switch (typeof value) {
+    case 'number':
+      return vm.newNumber(value)
+    case 'string':
+      return vm.newString(value)
+    case 'boolean':
+      if (value) {
+        return true
+      } else {
+        return false
+      }
+    case 'undefined':
+      return vm.undefined
+  }
+  if (value === null) {
+    return vm.null
+  }
   if (value instanceof Uint8Array) {
-    const code = `new Uint8Array(${JSON.stringify(Array.from(value))})`
-    return vm.unwrapResult(vm.evalCode(code))
+    return createUint8Array(vm, value)
   }
-  if (value && typeof value === 'object' && typeof value.then === 'function' && typeof value.catch === 'function') {
-    const promise = vm.newPromise()
-    value
-      .then((result: any) => nativeToVmType(vm, result).consume(($) => promise.resolve($)))
-      .catch((error: any) => nativeToVmType(vm, error).consume(($) => promise.reject($)))
-    // IMPORTANT: Once you resolve an async action inside QuickJS,
-    // call runtime.executePendingJobs() to run any code that was
-    // waiting on the promise or callback.
-    void promise.settled.then(vm.runtime.executePendingJobs)
-    return promise.handle
+  if (looksLikeAPromise(value)) {
+    return createPromise(vm, value)
   }
-  if (typeof value === 'function') {
-    return vm.newFunction('a', (...args) => {
-      const localArgs = args.map(($) => $.consume(($) => dumpAndDispose(vm, $)))
-      const val = value(...localArgs)
-
-      return nativeToVmType(vm, val)
-    })
+  if (looksLikeAFunction(value)) {
+    return createFunction(vm, value)
   }
   if (Array.isArray(value)) {
-    const array = vm.newArray()
-    for (let i = 0; i < value.length; i++) {
-      nativeToVmType(vm, value[i]).consume(($) => vm.setProp(array, i, $))
-    }
-    return array
+    return createArray(vm, value)
   }
   if (typeof value === 'object') {
-    const obj = vm.newObject()
-    for (const key of Object.getOwnPropertyNames(value)) {
-      nativeToVmType(vm, value[key]).consume(($) => vm.setProp(obj, key, $))
-    }
-    return obj
+    return createObject(vm, value)
   }
   /* istanbul ignore next */
   return vm.undefined
+}
+
+function createObject(vm: QuickJSContext, value: any) {
+  const obj = vm.newObject()
+  for (const key of Object.getOwnPropertyNames(value)) {
+    createValue(vm, value[key]).consume(($: any) => vm.setProp(obj, key, $))
+  }
+  return obj
+}
+
+function createArray(vm: QuickJSContext, value: any[]) {
+  const array = vm.newArray()
+  for (let i = 0; i < value.length; i++) {
+    createValue(vm, value[i]).consume(($: any) => vm.setProp(array, i, $))
+  }
+  return array
+}
+
+function createFunction(vm: QuickJSContext, value: Function): QuickJSHandle {
+  const name = value.name || 'unnamedFunction'
+  return vm.newFunction(name, (...args: any[]) => {
+    const localArgs = args.map(($) => $.consume(($: QuickJSHandle) => {
+      const result = retrieveValue(vm, $)
+      $.dispose()
+      return result
+    }))
+    const val = value(...localArgs)
+    return createValue(vm, val)
+  })
+}
+
+/**
+ * Expect the promise to be resolved in the native JS environment, and then push the result into the sandbox
+ * environment. Once the action is resolved inside the QuickJS sandbox environment, `runtime.executePendingJobs() calls
+ * any code inside the sandbox that might have been waiting for the promise's result.
+ */
+function createPromise(vm: QuickJSContext, value: any) {
+  const promise = vm.newPromise()
+  value
+    .then((result: any) => createValue(vm, result).consume(($: any) => promise.resolve($)))
+    .catch((error: any) => createValue(vm, error).consume(($: any) => promise.reject($)))
+  void promise.settled.then(vm.runtime.executePendingJobs)
+  return promise.handle
+}
+
+function looksLikeAFunction(value: any) {
+  return typeof value === 'function'
+}
+
+function looksLikeAPromise(value: any) {
+  return value && typeof value === 'object'
+    && typeof value.then === 'function'
+    && typeof value.catch === 'function'
+}
+
+function createUint8Array(value: any, vm: QuickJSContext) {
+  const code = `new Uint8Array(${JSON.stringify(Array.from(value))})`
+  return vm.unwrapResult(vm.evalCode(code))
 }
