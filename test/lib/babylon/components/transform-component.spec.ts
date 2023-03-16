@@ -1,5 +1,5 @@
 import { Quaternion, Vector3 } from "@babylonjs/core"
-import { Transform, transformSerde, TRANSFORM_COMPONENT_ID } from "../../../../src/lib/decentraland/sdk-components/transform"
+import { Transform, transformSerde, TRANSFORM_COMPONENT_ID } from "../../../../src/lib/decentraland/sdk-components/transform-component"
 import { BabylonEntity } from "../../../../src/lib/babylon/scene/entity"
 import { ReadWriteByteBuffer } from "../../../../src/lib/decentraland/ByteBuffer"
 import { CrdtMessageType, readMessage } from "../../../../src/lib/decentraland/crdt-wire-protocol"

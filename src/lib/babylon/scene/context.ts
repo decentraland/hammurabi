@@ -9,11 +9,12 @@ import { MaybeUint8Array } from '../../quick-js'
 import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
-import { Transform, transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
+import { Transform, transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStoreFromSerde } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from '../../decentraland/sdk-components/cyclic-transform'
 import { Quaternion, Vector3 } from '@babylonjs/core'
+import { billboardSerDe, BILLBOARD_COMPONENT_ID } from '../../decentraland/sdk-components/billboard-component'
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -39,7 +40,8 @@ export class SceneContext implements EngineApiInterface {
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
 
   components: Record<number, ComponentDefinition<any>> = {
-    [TRANSFORM_COMPONENT_ID]: createLwwStoreFromSerde(TRANSFORM_COMPONENT_ID, transformSerde)
+    [TRANSFORM_COMPONENT_ID]: createLwwStoreFromSerde(TRANSFORM_COMPONENT_ID, transformSerde),
+    [BILLBOARD_COMPONENT_ID]: createLwwStoreFromSerde(BILLBOARD_COMPONENT_ID, billboardSerDe)
   }
 
   // this flag is changed every time an entity changed its parent. the change
@@ -52,7 +54,7 @@ export class SceneContext implements EngineApiInterface {
   unparentedEntities = new Set<Entity>
 
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
-    this.rootNode = this.getOrCreateEntity(0)
+    this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
 
     // add this scene to the update loop of the rendering engine
     babylonScene.getEngine().onBeginFrameObservable.add(this.update)
@@ -146,11 +148,13 @@ export class SceneContext implements EngineApiInterface {
     if (!Transform.has(StaticEntities.CameraEntity)) Transform.create(StaticEntities.CameraEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
     const cameraTransform = Transform.getMutable(StaticEntities.CameraEntity)
     const engineCamera = this.babylonScene.activeCamera
-    engineCamera?.getViewMatrix().decompose(
-      cameraTransform.scale,
+
+    engineCamera?.getWorldMatrix().decompose(
+      undefined,
       cameraTransform.rotation,
       cameraTransform.position
     )
+    cameraTransform.scale.setAll(1)
   }
 
   /**

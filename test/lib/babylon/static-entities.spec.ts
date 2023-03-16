@@ -1,7 +1,7 @@
 import { StaticEntities } from '../../../src/lib/babylon/scene/context'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { CrdtMessageType, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
-import { TRANSFORM_COMPONENT_ID } from '../../../src/lib/decentraland/sdk-components/transform'
+import { TRANSFORM_COMPONENT_ID } from '../../../src/lib/decentraland/sdk-components/transform-component'
 import { initTestEngine } from './babylon-test-helper'
 
 describe("static entities", () => {
