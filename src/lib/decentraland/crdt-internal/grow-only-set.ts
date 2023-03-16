@@ -142,15 +142,6 @@ export function createValueSetComponentDefinitionFromSchema<T>(
         append(body.entityId, serde.deserialize(buf) as Readonly<T>)
       }
       return true
-    },
-    dumpCrdtState: function (buffer: ByteBuffer): void {
-      for (const [entity, { raw }] of data) {
-        for (const it of raw) {
-          const buf = new ReadWriteByteBuffer()
-          serde.serialize(it.value, buf)
-          AppendValueOperation.write(entity, 0, componentId, buf.toBinary(), buffer)
-        }
-      }
     }
   }
 

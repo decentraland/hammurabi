@@ -6,27 +6,33 @@ import { DeleteComponent, PutComponentOperation } from '../../../src/lib/decentr
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
 import { Entity } from '../../../src/lib/decentraland/types'
 
-export function initTestEngine(loadableScene: Readonly<LoadableScene>) {
+export function initTestEngine(params: Readonly<LoadableScene> & {
+  enableStaticEntities?: boolean
+}) {
   let engine: BABYLON.NullEngine
   let scene: BABYLON.Scene
   let ctx: SceneContext
 
   beforeAll(() => {
+    BABYLON.Logger.LogLevels = BABYLON.Logger.WarningLogLevel | BABYLON.Logger.ErrorLogLevel
+
     engine = new BABYLON.NullEngine({
       renderWidth: 512,
       renderHeight: 256,
       textureSize: 512,
       deterministicLockstep: true,
-      lockstepMaxSteps: 4
+      lockstepMaxSteps: 4,
     });
 
     scene = new BABYLON.Scene(engine)
 
-    ctx = new SceneContext(scene, loadableScene)
+    ctx = new SceneContext(scene, params)
 
-    engine.runRenderLoop(() => {
-      process.stderr.write('RENDER FRAME\n')
-    })
+    if (!params.enableStaticEntities) {
+      jest.spyOn(ctx, 'updateStaticEntities').mockImplementation(() => void 0)
+    }
+
+    engine.runRenderLoop(() => void 0)
   })
 
   afterAll(() => {
@@ -47,7 +53,7 @@ export function initTestEngine(loadableScene: Readonly<LoadableScene>) {
       if (!ctx) throw new Error('You can only access the ctx inside a test')
       return ctx
     },
-    loadableScene,
+    loadableScene: params,
   }
 }
 

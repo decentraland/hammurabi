@@ -44,6 +44,7 @@ async function main() {
   if (WATCH_MODE) {
     let { host, port } = await context.serve({
       servedir: 'static',
+      port: 8099
     })
     console.log(`> Serving on http://${host}:${port}`)
   } else {

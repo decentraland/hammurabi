@@ -9,10 +9,17 @@ import { MaybeUint8Array } from '../../quick-js'
 import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
-import { transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
+import { Transform, transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform'
 import { createLwwStoreFromSerde } from '../../decentraland/crdt-internal/last-write-win-element-set'
-import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
+import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from '../../decentraland/sdk-components/cyclic-transform'
+import { Quaternion, Vector3 } from '@babylonjs/core'
+
+export const StaticEntities = {
+  RootEntity: 0 as Entity,
+  PlayerEntity: 1 as Entity,
+  CameraEntity: 2 as Entity,
+} as const
 
 export class SceneContext implements EngineApiInterface {
   entities = new Map<Entity, BabylonEntity>()
@@ -130,6 +137,23 @@ export class SceneContext implements EngineApiInterface {
   }
 
   /**
+   * This method updates the static entities to be reported back to the scene once
+   * per frame and when the scene asks for the initial state.
+   */
+  updateStaticEntities() {
+    // StaticEntities.CameraEntity
+    const Transform = this.components[TRANSFORM_COMPONENT_ID] as LastWriteWinElementSetComponentDefinition<Transform>
+    if (!Transform.has(StaticEntities.CameraEntity)) Transform.create(StaticEntities.CameraEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
+    const cameraTransform = Transform.getMutable(StaticEntities.CameraEntity)
+    const engineCamera = this.babylonScene.activeCamera
+    engineCamera?.getViewMatrix().decompose(
+      cameraTransform.scale,
+      cameraTransform.rotation,
+      cameraTransform.position
+    )
+  }
+
+  /**
    * lateUpdate should run in each frame AFTER the physics are processed. This is described
    * in ADR-148.
    * 
@@ -142,6 +166,9 @@ export class SceneContext implements EngineApiInterface {
     // TODO: Execute raycasts into this.outgoingMessages
     // TODO: Execute queries into this.outgoingMessages
     // TODO: Collect events into this.outgoingMessages
+
+    // update the components of the static entities to be sent to the scene
+    this.updateStaticEntities()
 
     if (this.outgoingMessagesBuffer.currentWriteOffset()) {
       outMessages.push(this.outgoingMessagesBuffer.toBinary())
@@ -178,7 +205,16 @@ export class SceneContext implements EngineApiInterface {
 
   // impl EngineApiInterface {
   async crdtGetState(): Promise<{ data: Uint8Array[] }> {
-    return { data: [] }
+    // update the components of the static entities to be sent to the scene
+    this.updateStaticEntities()
+
+    // dump all the content of the components into a single outgoing buffer
+    const outgoingMessages = new ReadWriteByteBuffer()
+    for (const component of Object.values(this.components)) {
+      component.getCrdtUpdates(outgoingMessages)
+    }
+
+    return { data: [outgoingMessages.toBinary()] }
   }
   async crdtSendToRenderer(payload: { data: MaybeUint8Array }): Promise<{ data: Uint8Array[] }> {
     const incoming = coerceMaybeU8Array(payload.data)

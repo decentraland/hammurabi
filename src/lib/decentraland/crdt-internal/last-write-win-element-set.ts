@@ -11,29 +11,6 @@ export function incrementTimestamp(entity: Entity, timestamps: Map<Entity, numbe
   return newTimestamp
 }
 
-/**
- * This function dumps the whole state of the component into a write buffer.
- */
-export function createLwwDumpFunctionFromCrdt<T>(
-  componentId: number,
-  timestamps: Map<Entity, number>,
-  schema: SerDe<T>,
-  data: Map<Entity, T>
-) {
-  return function dumpCrdtState(buffer: ByteBuffer) {
-    for (const [entity, timestamp] of timestamps) {
-      if (data.has(entity)) {
-        const it = data.get(entity)!
-        const buf = new ReadWriteByteBuffer() // TODO: performance-wise, this buffer could be wiped and reused to reduce allocations
-        schema.serialize(it, buf)
-        PutComponentOperation.write(entity, componentId, timestamp, buf.toBinary(), buffer)
-      } else {
-        DeleteComponent.write(entity, componentId, timestamp, buffer)
-      }
-    }
-  }
-}
-
 export function createUpdateLwwFromCrdt<T>(
   componentId: number,
   timestamps: Map<Entity, number>,
@@ -253,6 +230,5 @@ export function createLwwStoreFromSerde<T>(
     },
     getCrdtUpdates: createGetCrdtMessagesForLww(componentId, timestamps, dirtyIterator, serde, data),
     updateFromCrdt: createUpdateLwwFromCrdt(componentId, timestamps, serde, data),
-    dumpCrdtState: createLwwDumpFunctionFromCrdt(componentId, timestamps, serde, data)
   }
 }

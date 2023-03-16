@@ -54,11 +54,6 @@ export interface BaseComponent<T> {
   getCrdtUpdates(outBuffer: ByteBuffer): void
 
   /**
-   * This function writes the whole state of the component into a ByteBuffer
-   */
-  dumpCrdtState(buffer: ByteBuffer): void
-
-  /**
    * Marks the entity as deleted and signals it cannot be used ever again. It must
    * clear the component internal state, produces a synchronization message to remove
    * the component from the entity.

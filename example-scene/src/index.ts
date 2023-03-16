@@ -43,9 +43,20 @@ engine.addSystem(function CircleHoverSystem(dt: number) {
       Math.cos(
         hoverState + Math.sqrt(Math.pow(transform.position.x - 8, 2) + Math.pow(transform.position.z - 8, 2)) / Math.PI
       ) *
-        2 +
+      2 +
       2
   }
 })
 
+let renderNumber = 0
+engine.addSystem(function () {
+  if (renderNumber % 10 == 0) {
+    // this line is purposefully a .get instead of a .getOrNull because it
+    // should FAIL ig the Transform of the CameraEntity is not avaliable at this
+    // moment
+    const transform = Transform.get(engine.CameraEntity)
+    console.log(`CameraTransform: ${JSON.stringify(transform)}`)
+    renderNumber
+  }
+})
 // setupUi()
