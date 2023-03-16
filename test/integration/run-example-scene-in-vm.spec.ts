@@ -1,13 +1,18 @@
 import { readFileSync } from "fs"
-import { ReadWriteByteBuffer } from "../../src/lib/decentraland/ByteBuffer"
-import { readAllMessages } from "../../src/lib/decentraland/crdt-wire-protocol"
-import { prettyPrintCrdtMessage } from "../../src/lib/decentraland/crdt-wire-protocol/prettyPrint"
 import { withQuickJsVm } from "../../src/lib/quick-js"
+import { initTestEngine } from "../lib/babylon/babylon-test-helper"
 
 const sceneFile = 'example-scene/bin/index.js'
 
 describe("Run example scene in vm", () => {
   const sceneCode = readFileSync(sceneFile, 'utf8')
+
+  const $ = initTestEngine({
+    baseUrl: '/',
+    entity: { content: [], metadata: {} },
+    id: '123',
+    enableStaticEntities: true
+  })
 
   it('onStart and onUpdate fail', async () =>
     withQuickJsVm(async (opts) => {
@@ -32,17 +37,12 @@ describe("Run example scene in vm", () => {
                 return { events: [] }
               },
               async crdtSendToRenderer(payload: { data: Uint8Array }): Promise<{ data: Uint8Array[] }> {
-                // TODO: find a better way to convert Uint8Array at VM level
-                const data = new Uint8Array(Object.values(payload.data))
-
-                // pretty print all the messages
-                console.log('[SCENE] crdtSendToRenderer\n' + Array.from(readAllMessages(new ReadWriteByteBuffer(data))).map(prettyPrintCrdtMessage).join('\n'))
-
-                return { data: [] }
+                console.log('[SCENE] crdtSendToRenderer')
+                return $.ctx.crdtSendToRenderer(payload)
               },
               async crdtGetState(): Promise<{ data: Uint8Array[] }> {
                 console.log('[SCENE] crdtGetState')
-                return { data: [] }
+                return $.ctx.crdtGetState()
               }
             }
           }
