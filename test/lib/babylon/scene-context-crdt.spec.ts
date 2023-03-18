@@ -1,17 +1,15 @@
 import { Quaternion, Vector3 } from '@babylonjs/core'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { DeleteEntity, PutComponentOperation } from '../../../src/lib/decentraland/crdt-wire-protocol'
-import { transformSerde } from '../../../src/lib/decentraland/sdk-components/transform-component'
+import { transformComponent } from '../../../src/lib/decentraland/sdk-components/transform-component'
 import { Entity } from '../../../src/lib/decentraland/types'
-import { initTestEngine } from './babylon-test-helper'
+import { testWithEngine } from './babylon-test-helper'
 
-describe("entities are removed on scene disposal", () => {
-  const $ = initTestEngine({
-    baseUrl: '/',
-    entity: { content: [], metadata: {} },
-    id: '123'
-  })
-
+testWithEngine("entities are removed on scene disposal", {
+  baseUrl: '/',
+  entity: { content: [], metadata: {} },
+  id: '123'
+}, ($) => {
   test('create an extra entity that will be deleted upon context disposal', async () => {
     const entityId = 2 as Entity
 
@@ -21,7 +19,7 @@ describe("entities are removed on scene disposal", () => {
     // then we create a component for the entityId=1
     {
       const componentBuffer = new ReadWriteByteBuffer()
-      transformSerde.serialize({
+      transformComponent.serialize({
         parent: 0,
         position: Vector3.Zero(),
         scale: Vector3.One(),
@@ -29,7 +27,12 @@ describe("entities are removed on scene disposal", () => {
       }, componentBuffer)
 
       const buf = new ReadWriteByteBuffer()
-      PutComponentOperation.write(entityId, 1 /* componentId */, 1 /* timestamp */, componentBuffer.toBinary(), buf)
+      PutComponentOperation.write({
+        entityId,
+        componentId: 1,
+        timestamp: 1,
+        data: componentBuffer.toBinary()
+      }, buf)
       const result = await $.ctx.crdtSendToRenderer({ data: buf.toBinary() })
       expect(result).toEqual({ data: [] })
     }
@@ -47,12 +50,11 @@ describe("entities are removed on scene disposal", () => {
   })
 })
 
-describe("scene context implents ADR-148", () => {
-  const $ = initTestEngine({
-    baseUrl: '/',
-    entity: { content: [], metadata: {} },
-    id: '123'
-  })
+testWithEngine("scene context implents ADR-148", {
+  baseUrl: '/',
+  entity: { content: [], metadata: {} },
+  id: '123'
+}, ($) => {
 
   it('tests one empty update', async () => {
     const result = await $.ctx.crdtSendToRenderer({ data: new Uint8Array([]) })
@@ -68,7 +70,7 @@ describe("scene context implents ADR-148", () => {
     // then we create a component for the entityId=1
     {
       const componentBuffer = new ReadWriteByteBuffer()
-      transformSerde.serialize({
+      transformComponent.serialize({
         parent: 0,
         position: Vector3.Zero(),
         scale: Vector3.One(),
@@ -76,7 +78,12 @@ describe("scene context implents ADR-148", () => {
       }, componentBuffer)
 
       const buf = new ReadWriteByteBuffer()
-      PutComponentOperation.write(entityId, 1 /* componentId */, 1 /* timestamp */, componentBuffer.toBinary(), buf)
+      PutComponentOperation.write({
+        entityId,
+        componentId: 1,
+        timestamp: 1,
+        data: componentBuffer.toBinary()
+      }, buf)
       const result = await $.ctx.crdtSendToRenderer({ data: buf.toBinary() })
       expect(result).toEqual({ data: [] })
     }
@@ -87,7 +94,7 @@ describe("scene context implents ADR-148", () => {
     // then we delete the entity
     {
       const buf = new ReadWriteByteBuffer()
-      DeleteEntity.write(entityId, buf)
+      DeleteEntity.write({ entityId }, buf)
       const result = await $.ctx.crdtSendToRenderer({ data: buf.toBinary() })
       expect(result).toEqual({ data: [] })
     }
@@ -98,18 +105,24 @@ describe("scene context implents ADR-148", () => {
 })
 
 
-describe("outgoingMessages are delivered on crdtSendToRenderer result", () => {
-  const $ = initTestEngine({
-    baseUrl: '/',
-    entity: { content: [], metadata: {} },
-    id: '123'
-  })
-
+testWithEngine("outgoingMessages are delivered on crdtSendToRenderer result", {
+  baseUrl: '/',
+  entity: { content: [], metadata: {} },
+  id: '123'
+}, ($) => {
   test('writing to outgoingMessagesBuffer redirects reaches crdtSendToRenderer', async () => {
     const entityId = 2 as Entity
 
+    const out = new ReadWriteByteBuffer()
+    transformComponent.serialize({ parent: 0, position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity() }, out)
+
     // write an outgoing message to the scene's buffer
-    PutComponentOperation.write(entityId, 1 /* componentId */, 1 /* timestamp */, Uint8Array.of(1, 2, 3), $.ctx.outgoingMessagesBuffer)
+    PutComponentOperation.write({
+      entityId,
+      componentId: 1,
+      timestamp: 1,
+      data: out.toBinary()
+    }, $.ctx.outgoingMessagesBuffer)
 
     // then call crdtSendToRenderer
     const expectedResult = $.ctx.outgoingMessagesBuffer.toBinary()

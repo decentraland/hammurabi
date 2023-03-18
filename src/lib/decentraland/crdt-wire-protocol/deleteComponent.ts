@@ -1,6 +1,6 @@
 import { CrdtMessageProtocol } from './crdtMessageProtocol'
 import { ByteBuffer } from '../ByteBuffer'
-import { CrdtMessageType, CRDT_MESSAGE_HEADER_LENGTH, DeleteComponentMessage } from './types'
+import { CrdtMessageType, CRDT_MESSAGE_HEADER_LENGTH, DeleteComponentMessage, DeleteComponentMessageBody } from './types'
 import { Entity } from '../types'
 
 /**
@@ -12,7 +12,7 @@ export namespace DeleteComponent {
   /**
    * Write DeleteComponent message
    */
-  export function write(entity: Entity, componentId: number, timestamp: number, buf: ByteBuffer) {
+  export function write(message: Omit<DeleteComponentMessageBody, 'type'>, buf: ByteBuffer) {
     const messageLength = CRDT_MESSAGE_HEADER_LENGTH + MESSAGE_HEADER_LENGTH
 
     // Write CrdtMessage header
@@ -20,9 +20,9 @@ export namespace DeleteComponent {
     buf.writeUint32(CrdtMessageType.DELETE_COMPONENT)
 
     // Write ComponentOperation header
-    buf.writeUint32(entity)
-    buf.writeUint32(componentId)
-    buf.writeUint32(timestamp)
+    buf.writeUint32(message.entityId)
+    buf.writeUint32(message.componentId)
+    buf.writeUint32(message.timestamp)
   }
 
   export function read(buf: ByteBuffer): DeleteComponentMessage | null {

@@ -1,0 +1,275 @@
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+[REQUIRE] ~system/EngineApi
+[REQUIRE] buffer
+[REQUIRE] long
+onStart()
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  crdtGetState()
+  renderer->scene: PUT c=1 e=0x2 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+onUpdate(0)
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  [SCENE LOG]["CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"]
+  crdtSendToRenderer()
+  scene->renderer: PUT c=1 e=0x200 t=1 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x201 t=1 v={"position":{"_isDirty":true,"_x":16.5,"_y":0.4508477449417114,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x202 t=1 v={"position":{"_isDirty":true,"_x":16.5,"_y":0.7821285724639893,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x203 t=1 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.1986393928527832,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x204 t=1 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.6804823875427246,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x205 t=1 v={"position":{"_isDirty":true,"_x":17.5,"_y":0.7821285724639893,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x206 t=1 v={"position":{"_isDirty":true,"_x":17.5,"_y":1.155571699142456,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x207 t=1 v={"position":{"_isDirty":true,"_x":17.5,"_y":1.5925055742263794,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x208 t=1 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.071303606033325,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x209 t=1 v={"position":{"_isDirty":true,"_x":18.5,"_y":1.1986393928527832,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20a t=1 v={"position":{"_isDirty":true,"_x":18.5,"_y":1.5925055742263794,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20b t=1 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.0285422801971436,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20c t=1 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.484071731567383,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20d t=1 v={"position":{"_isDirty":true,"_x":19.5,"_y":1.6804823875427246,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20e t=1 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.071303606033325,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20f t=1 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.484071731567383,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x210 t=1 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.8958261013031006,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x211 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":4,"_z":20},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x212 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":529}
+  scene->renderer: PUT c=1 e=0x213 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.5,"_y":0.5,"_z":1},"parent":530}
+  scene->renderer: PUT c=1 e=0x214 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":530}
+  scene->renderer: PUT c=1 e=0x215 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.25,"_y":0.25,"_z":1},"parent":532}
+  scene->renderer: PUT c=1 e=0x216 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":532}
+  scene->renderer: PUT c=1 e=0x217 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.1666666716337204,"_y":0.1666666716337204,"_z":1},"parent":534}
+  scene->renderer: PUT c=1 e=0x218 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":534}
+  scene->renderer: PUT c=1 e=0x219 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.125,"_y":0.125,"_z":1},"parent":536}
+  scene->renderer: PUT c=1 e=0x21a t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x21b t=1 v={"position":{"_isDirty":true,"_x":-4,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x21c t=1 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x21d t=1 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x21e t=1 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x21f t=1 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x220 t=1 v={"position":{"_isDirty":true,"_x":-4,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x221 t=1 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":-0.0021378404926508665,"_y":0,"_z":0,"_w":0.9999977350234985},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x222 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x223 t=1 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0.004046077840030193,"_w":0.9999918341636658},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x224 t=1 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x225 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":538}
+  scene->renderer: PUT c=1 e=0x226 t=1 v={"position":{"_isDirty":true,"_x":-4,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":549}
+  scene->renderer: PUT c=1 e=0x227 t=1 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":549}
+  scene->renderer: PUT c=1 e=0x228 t=1 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":549}
+  scene->renderer: PUT c=1 e=0x229 t=1 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":549}
+  scene->renderer: PUT c=1 e=0x22a t=1 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":549}
+  scene->renderer: PUT c=1062 e=0x200 t=1 v=byte[33]
+  scene->renderer: PUT c=1090 e=0x21b t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x21c t=1 v={"billboardMode":1}
+  scene->renderer: PUT c=1090 e=0x21d t=1 v={"billboardMode":2}
+  scene->renderer: PUT c=1090 e=0x21e t=1 v={"billboardMode":4}
+  scene->renderer: PUT c=1090 e=0x21f t=1 v={"billboardMode":7}
+  scene->renderer: PUT c=1090 e=0x220 t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x221 t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x222 t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x223 t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x224 t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x226 t=1 v={"billboardMode":0}
+  scene->renderer: PUT c=1090 e=0x227 t=1 v={"billboardMode":1}
+  scene->renderer: PUT c=1090 e=0x228 t=1 v={"billboardMode":2}
+  scene->renderer: PUT c=1090 e=0x229 t=1 v={"billboardMode":4}
+  scene->renderer: PUT c=1090 e=0x22a t=1 v={"billboardMode":7}
+  scene->renderer: PUT c=1067 e=0x218 t=1 v={"direction":{"$case":"localDirection","localDirection":{"x":0,"y":0,"z":1}},"maxDistance":999,"queryType":0,"continuous":true}
+  scene->renderer: PUT c=1017 e=0x200 t=1 v=byte[19]
+  scene->renderer: PUT c=1018 e=0x200 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x201 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x202 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x203 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x204 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x205 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x206 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x207 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x208 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x209 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x20a t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x20b t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x20c t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x20d t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x20e t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x20f t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x210 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x213 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x215 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x217 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x219 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x21b t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x21c t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x21d t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x21e t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x21f t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x220 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x221 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x222 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x223 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x224 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x226 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x227 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x228 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x229 t=1 v=byte[4]
+  scene->renderer: PUT c=1018 e=0x22a t=1 v=byte[4]
+  scene->renderer: PUT c=1019 e=0x200 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x201 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x202 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x203 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x204 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x205 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x206 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x207 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x208 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x209 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x20a t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x20b t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x20c t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x20d t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x20e t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x20f t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x210 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x21b t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x21c t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x21d t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x21e t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x21f t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x220 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x221 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x222 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x223 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x224 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x226 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x227 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x228 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x229 t=1 v=byte[2]
+  scene->renderer: PUT c=1019 e=0x22a t=1 v=byte[2]
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  renderer->scene: PUT c=1 e=0x2 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+onUpdate(0.1)
+  [SCENE LOG]["CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"]
+  crdtSendToRenderer()
+  scene->renderer: PUT c=1 e=0x200 t=2 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0.008726535364985466,"_z":0,"_w":0.9999619126319885},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x201 t=2 v={"position":{"_isDirty":true,"_x":16.5,"_y":0.667803943157196,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x202 t=2 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.045296311378479,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x203 t=2 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.4951616525650024,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x204 t=2 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.9932667016983032,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x205 t=2 v={"position":{"_isDirty":true,"_x":17.5,"_y":1.045296311378479,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x206 t=2 v={"position":{"_isDirty":true,"_x":17.5,"_y":1.4495824575424194,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x207 t=2 v={"position":{"_isDirty":true,"_x":17.5,"_y":1.903828501701355,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x208 t=2 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.3830957412719727,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x209 t=2 v={"position":{"_isDirty":true,"_x":18.5,"_y":1.4951616525650024,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20a t=2 v={"position":{"_isDirty":true,"_x":18.5,"_y":1.903828501701355,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20b t=2 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.3410279750823975,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20c t=2 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.7816784381866455,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20d t=2 v={"position":{"_isDirty":true,"_x":19.5,"_y":1.9932667016983032,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20e t=2 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.3830957412719727,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20f t=2 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.7816784381866455,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x210 t=2 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.1645259857177734,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x212 t=2 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.07063844799995422,"_y":0.03572150692343712,"_z":0.0025312623474746943,"_w":0.9968589544296265},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":529}
+  scene->renderer: PUT c=1 e=0x214 t=2 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.036401208490133286,"_y":0.018253687769174576,"_z":0.0006650080904364586,"_w":0.9991703033447266},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":530}
+  scene->renderer: PUT c=1 e=0x216 t=2 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.024478252977132797,"_y":0.012255118228495121,"_z":0.0003000963479280472,"_w":0.9996252059936523},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":532}
+  scene->renderer: PUT c=1 e=0x218 t=2 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.018433062359690666,"_y":0.00922333262860775,"_z":0.00017005039262585342,"_w":0.9997875094413757},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":534}
+  scene->renderer: PUT c=1 e=0x221 t=2 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":-0.0021378404926508665,"_y":0,"_z":0,"_w":0.9999977350234985},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x222 t=2 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x223 t=2 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0.004046077840030193,"_w":0.9999918341636658},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x224 t=2 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x225 t=2 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":538}
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  renderer->scene: PUT c=1 e=0x2 t=6 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+onUpdate(0.2)
+  [SCENE LOG]["CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"]
+  crdtSendToRenderer()
+  scene->renderer: PUT c=1 e=0x200 t=3 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0.026176948100328445,"_z":0,"_w":0.9996573328971863},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x201 t=3 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.1939756870269775,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x202 t=3 v={"position":{"_isDirty":true,"_x":16.5,"_y":1.6350969076156616,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x203 t=3 v={"position":{"_isDirty":true,"_x":16.5,"_y":2.1178910732269287,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x204 t=3 v={"position":{"_isDirty":true,"_x":16.5,"_y":2.611626625061035,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x205 t=3 v={"position":{"_isDirty":true,"_x":17.5,"_y":1.6350969076156616,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x206 t=3 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.070690155029297,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x207 t=3 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.5258545875549316,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x208 t=3 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.970935821533203,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x209 t=3 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.1178910732269287,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20a t=3 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.5258545875549316,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20b t=3 v={"position":{"_isDirty":true,"_x":18.5,"_y":2.9333200454711914,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20c t=3 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.312295436859131,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20d t=3 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.611626625061035,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20e t=3 v={"position":{"_isDirty":true,"_x":19.5,"_y":2.970935821533203,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20f t=3 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.312295436859131,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x210 t=3 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.609992027282715,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x212 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.1788986623287201,"_y":0.09783472120761871,"_z":0.017881082370877266,"_w":0.9788278341293335},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":529}
+  scene->renderer: PUT c=1 e=0x214 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.10222499072551727,"_y":0.052391570061445236,"_z":0.005391494370996952,"_w":0.9933660626411438},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":530}
+  scene->renderer: PUT c=1 e=0x216 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.07063844799995422,"_y":0.03572150692343712,"_z":0.0025312623474746943,"_w":0.9968589544296265},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":532}
+  scene->renderer: PUT c=1 e=0x218 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.05382533371448517,"_y":0.027087174355983734,"_z":0.0014606318436563015,"_w":0.9981818199157715},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":534}
+  scene->renderer: PUT c=1 e=0x221 t=3 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":-0.0021378404926508665,"_y":0,"_z":0,"_w":0.9999977350234985},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x222 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x223 t=3 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0.004046077840030193,"_w":0.9999918341636658},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x224 t=3 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x225 t=3 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":3.9800167083740234},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":538}
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  renderer->scene: PUT c=1 e=0x2 t=7 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+onUpdate(0.3)
+  [SCENE LOG]["CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"]
+  crdtSendToRenderer()
+  scene->renderer: PUT c=1 e=0x200 t=4 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0.0523359552025795,"_z":0,"_w":0.9986295104026794},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x201 t=4 v={"position":{"_isDirty":true,"_x":16.5,"_y":2.1128063201904297,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x202 t=4 v={"position":{"_isDirty":true,"_x":16.5,"_y":2.5676093101501465,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x203 t=4 v={"position":{"_isDirty":true,"_x":16.5,"_y":3.011443853378296,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x204 t=4 v={"position":{"_isDirty":true,"_x":16.5,"_y":3.4094443321228027,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x205 t=4 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.5676093101501465,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x206 t=4 v={"position":{"_isDirty":true,"_x":17.5,"_y":2.9703989028930664,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x207 t=4 v={"position":{"_isDirty":true,"_x":17.5,"_y":3.344573974609375,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x208 t=4 v={"position":{"_isDirty":true,"_x":17.5,"_y":3.658916711807251,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x209 t=4 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.011443853378296,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20a t=4 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.344573974609375,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20b t=4 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.634645938873291,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20c t=4 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.8544557094573975,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20d t=4 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.4094443321228027,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20e t=4 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.658916711807251,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20f t=4 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.8544557094573975,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x210 t=4 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.973200559616089,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x212 t=4 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.2561703622341156,"_y":0.17290928959846497,"_z":0.046630557626485825,"_w":0.9498972296714783},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":529}
+  scene->renderer: PUT c=1 e=0x214 t=4 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.1788986623287201,"_y":0.09783472120761871,"_z":0.017881082370877266,"_w":0.9788278341293335},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":530}
+  scene->renderer: PUT c=1 e=0x216 t=4 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.13086377084255219,"_y":0.06827627867460251,"_z":0.00903422012925148,"_w":0.9890052676200867},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":532}
+  scene->renderer: PUT c=1 e=0x218 t=4 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.10222499072551727,"_y":0.052391570061445236,"_z":0.005391494370996952,"_w":0.9933660626411438},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":534}
+  scene->renderer: PUT c=1 e=0x221 t=4 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":-0.0021378404926508665,"_y":0,"_z":0,"_w":0.9999977350234985},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x222 t=4 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x223 t=4 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0.004046077840030193,"_w":0.9999918341636658},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x224 t=4 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x225 t=4 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":3.8213460445404053},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":538}
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  renderer->scene: PUT c=1 e=0x2 t=8 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+onUpdate(0.4)
+  [SCENE LOG]["CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"]
+  crdtSendToRenderer()
+  scene->renderer: PUT c=1 e=0x200 t=5 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0.08715574443340302,"_z":0,"_w":0.9961947202682495},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x201 t=5 v={"position":{"_isDirty":true,"_x":16.5,"_y":3.2649614810943604,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x202 t=5 v={"position":{"_isDirty":true,"_x":16.5,"_y":3.5864391326904297,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x203 t=5 v={"position":{"_isDirty":true,"_x":16.5,"_y":3.8324358463287354,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x204 t=5 v={"position":{"_isDirty":true,"_x":16.5,"_y":3.9743120670318604,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x205 t=5 v={"position":{"_isDirty":true,"_x":17.5,"_y":3.5864391326904297,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x206 t=5 v={"position":{"_isDirty":true,"_x":17.5,"_y":3.8129923343658447,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x207 t=5 v={"position":{"_isDirty":true,"_x":17.5,"_y":3.9580471515655518,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x208 t=5 v={"position":{"_isDirty":true,"_x":17.5,"_y":3.9987285137176514,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x209 t=5 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.8324358463287354,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20a t=5 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.9580471515655518,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20b t=5 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.9997963905334473,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20c t=5 v={"position":{"_isDirty":true,"_x":18.5,"_y":3.9405345916748047,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20d t=5 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.9743120670318604,"_z":16.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20e t=5 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.9987285137176514,"_z":17.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x20f t=5 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.9405345916748047,"_z":18.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x210 t=5 v={"position":{"_isDirty":true,"_x":19.5,"_y":3.788154125213623,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+  scene->renderer: PUT c=1 e=0x212 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.24124792218208313,"_y":0.25743839144706726,"_z":0.06654319167137146,"_w":0.9333257079124451},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":529}
+  scene->renderer: PUT c=1 e=0x214 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.2403126209974289,"_y":0.1496676206588745,"_z":0.037530019879341125,"_w":0.9583532214164734},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":530}
+  scene->renderer: PUT c=1 e=0x216 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.19220882654190063,"_y":0.10708816349506378,"_z":0.02110532484948635,"_w":0.9752653241157532},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":532}
+  scene->renderer: PUT c=1 e=0x218 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":1},"rotation":{"_isDirty":true,"_x":-0.1564229428768158,"_y":0.08340822160243988,"_z":0.013258124701678753,"_w":0.984072744846344},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":534}
+  scene->renderer: PUT c=1 e=0x221 t=5 v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":-0.0021378404926508665,"_y":0,"_z":0,"_w":0.9999977350234985},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x222 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x223 t=5 v={"position":{"_isDirty":true,"_x":2,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0.004046077840030193,"_w":0.9999918341636658},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x224 t=5 v={"position":{"_isDirty":true,"_x":4,"_y":1,"_z":4},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":0.5},"parent":538}
+  scene->renderer: PUT c=1 e=0x225 t=5 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":3.301342487335205},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":538}
+BEGIN BABYLON_FRAME
+END BABYLON_FRAME
+  renderer->scene: PUT c=1 e=0x2 t=9 v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}

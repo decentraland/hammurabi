@@ -1,7 +1,7 @@
 import { ByteBuffer, ReadWriteByteBuffer } from "../ByteBuffer"
 import { PutComponentOperation, DeleteComponent, PutComponentMessageBody, DeleteComponentMessageBody, CrdtMessageType, CrdtMessageBody } from "../crdt-wire-protocol"
 import { Entity } from "../types"
-import { ComponentType, LastWriteWinElementSetComponentDefinition, SerDe } from "./components"
+import { ComponentDeclaration, ComponentType, LastWriteWinElementSetComponentDefinition, SerDe } from "./components"
 import { ProcessMessageResultType } from "./conflict-resolution"
 import { dataCompare } from "./dataCompare"
 
@@ -75,34 +75,36 @@ export function createUpdateLwwFromCrdt<T>(
       return true
 
     const action = crdtRuleForCurrentState(msg)
-    const entity = msg.entityId as Entity
+    const entityId = msg.entityId as Entity
     switch (action) {
       case ProcessMessageResultType.StateUpdatedData:
       case ProcessMessageResultType.StateUpdatedTimestamp: {
-        timestamps.set(entity, msg.timestamp)
+        timestamps.set(entityId, msg.timestamp)
 
         if (msg.type === CrdtMessageType.PUT_COMPONENT) {
           const buf = new ReadWriteByteBuffer(msg.data!)
-          data.set(entity, schema.deserialize(buf))
+          data.set(entityId, schema.deserialize(buf))
         } else {
-          data.delete(entity)
+          data.delete(entityId)
         }
 
         return true // change accepted
       }
       case ProcessMessageResultType.StateOutdatedTimestamp:
       case ProcessMessageResultType.StateOutdatedData: {
-        if (data.has(entity)) {
+        const timestamp = timestamps.get(entityId)!
+
+        if (data.has(entityId)) {
           const writeBuffer = new ReadWriteByteBuffer()
-          schema.serialize(data.get(entity)!, writeBuffer)
+          schema.serialize(data.get(entityId)!, writeBuffer)
 
           // post conflict resolution update
-          PutComponentOperation.write(entity, componentId, timestamps.get(entity)!, writeBuffer.toBinary(), conflictResolutionByteBuffer)
+          PutComponentOperation.write({ entityId, componentId, timestamp, data: writeBuffer.toBinary(), }, conflictResolutionByteBuffer)
 
           return false // change not accepted
         } else {
           // post conflict resolution update
-          DeleteComponent.write(entity, componentId, timestamps.get(entity)!, conflictResolutionByteBuffer)
+          DeleteComponent.write({ entityId, componentId, timestamp }, conflictResolutionByteBuffer)
 
           return false // change not accepted
         }
@@ -121,49 +123,34 @@ export function createGetCrdtMessagesForLww<T>(
   data: Map<Entity, T>
 ) {
   return function (outBuffer: ByteBuffer) {
-    for (const entity of dirtyIterator) {
-      const newTimestamp = incrementTimestamp(entity, timestamps)
-      if (data.has(entity)) {
+    for (const entityId of dirtyIterator) {
+      const timestamp = incrementTimestamp(entityId, timestamps)
+      if (data.has(entityId)) {
         const writeBuffer = new ReadWriteByteBuffer()
-        serde.serialize(data.get(entity)!, writeBuffer)
-
-        PutComponentOperation.write(
-          entity,
-          componentId,
-          newTimestamp,
-          writeBuffer.toBinary(),
-          outBuffer
-        )
+        serde.serialize(data.get(entityId)!, writeBuffer)
+        PutComponentOperation.write({ entityId, componentId, timestamp, data: writeBuffer.toBinary(), }, outBuffer)
       } else {
-        DeleteComponent.write(
-          entity,
-          componentId,
-          newTimestamp,
-          outBuffer
-        )
+        DeleteComponent.write({ entityId, componentId, timestamp }, outBuffer)
       }
     }
     dirtyIterator.clear()
   }
 }
 
-export function createLwwStoreFromSerde<T>(
-  componentId: number,
-  serde: SerDe<T>
-): LastWriteWinElementSetComponentDefinition<T> {
+export function createLwwStore<T>(componentDeclaration: ComponentDeclaration<T>): LastWriteWinElementSetComponentDefinition<T> {
   const data = new Map<Entity, T>()
   const dirtyIterator = new Set<Entity>()
   const timestamps = new Map<Entity, number>()
 
   return {
     get componentId() {
-      return componentId
+      return componentDeclaration.componentId
     },
     get componentType() {
       // a getter is used here to prevent accidental changes
       return ComponentType.LastWriteWinElementSet as const
     },
-    serde,
+    declaration: componentDeclaration,
     has(entity: Entity): boolean {
       return data.has(entity)
     },
@@ -182,17 +169,13 @@ export function createLwwStoreFromSerde<T>(
     getOrNull(entity: Entity): Readonly<T> | null {
       return data.get(entity) ?? null
     },
-    get(entity: Entity): Readonly<T> {
-      const component = data.get(entity)
-      if (!component) {
-        throw new Error(`[getFrom] Component ${componentId} for entity #${entity} not found`)
-      }
-      return component
+    get(entity: Entity): Readonly<T> | undefined {
+      return data.has(entity) ? data.get(entity) : undefined
     },
     create(entity: Entity, value: T): T {
       const component = data.get(entity)
       if (component) {
-        throw new Error(`[create] Component ${componentId} for ${entity} already exists`)
+        throw new Error(`[create] Component ${componentDeclaration.componentId} for ${entity} already exists`)
       }
       data.set(entity, value)
       dirtyIterator.add(entity)
@@ -214,7 +197,7 @@ export function createLwwStoreFromSerde<T>(
     getMutable(entity: Entity): T {
       const component = this.getMutableOrNull(entity)
       if (component === null) {
-        throw new Error(`[mutable] Component ${componentId} for ${entity} not found`)
+        throw new Error(`[mutable] Component ${componentDeclaration.componentId} for ${entity} not found`)
       }
       return component
     },
@@ -228,7 +211,7 @@ export function createLwwStoreFromSerde<T>(
         yield entity
       }
     },
-    getCrdtUpdates: createGetCrdtMessagesForLww(componentId, timestamps, dirtyIterator, serde, data),
-    updateFromCrdt: createUpdateLwwFromCrdt(componentId, timestamps, serde, data),
+    dumpCrdtUpdates: createGetCrdtMessagesForLww(componentDeclaration.componentId, timestamps, dirtyIterator, componentDeclaration, data),
+    updateFromCrdt: createUpdateLwwFromCrdt(componentDeclaration.componentId, timestamps, componentDeclaration, data),
   }
 }

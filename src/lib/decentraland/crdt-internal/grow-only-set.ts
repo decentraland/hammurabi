@@ -1,7 +1,7 @@
 import { ReadWriteByteBuffer, ByteBuffer } from "../ByteBuffer";
 import { AppendValueMessageBody, CrdtMessageType, AppendValueOperation } from "../crdt-wire-protocol";
 import { Entity } from "../types";
-import { ComponentType, GrowOnlyValueSetComponentDefinition, SerDe } from "./components";
+import { ComponentDeclaration, ComponentType, GrowOnlyValueSetComponentDefinition, SerDe } from "./components";
 
 const emptyReadonlySet = freezeSet(new Set())
 
@@ -30,10 +30,8 @@ export type ValueSetOptions<T> = {
   maxElements: number
 }
 
-export function createValueSetComponentDefinitionFromSchema<T>(
-  componentName: string,
-  componentId: number,
-  serde: SerDe<T>,
+export function createValueSetComponentStore<T>(
+  declaration: ComponentDeclaration<T>,
   options: ValueSetOptions<T>
 ): GrowOnlyValueSetComponentDefinition<T> {
   type InternalDatastructure = {
@@ -86,13 +84,13 @@ export function createValueSetComponentDefinitionFromSchema<T>(
 
   const ret: GrowOnlyValueSetComponentDefinition<T> = {
     get componentId() {
-      return componentId
+      return declaration.componentId
     },
     get componentType() {
       // a getter is used here to prevent accidental changes
       return ComponentType.GrowOnlyValueSet as const
     },
-    serde,
+    declaration,
     has(entity: Entity): boolean {
       return data.has(entity)
     },
@@ -111,9 +109,9 @@ export function createValueSetComponentDefinitionFromSchema<T>(
       const { set, value } = append(entity, rawValue)
       dirtyIterator.add(entity)
       const buf = new ReadWriteByteBuffer()
-      serde.serialize(value, buf)
+      declaration.serialize(value, buf)
       queuedCommands.push({
-        componentId,
+        componentId: declaration.componentId,
         data: buf.toBinary(),
         entityId: entity,
         timestamp: 0,
@@ -131,15 +129,17 @@ export function createValueSetComponentDefinitionFromSchema<T>(
         yield entity
       }
     },
-    getCrdtUpdates() {
-      // return a copy of the commands, and then clear the local copy
+    dumpCrdtUpdates(outBuffer: ByteBuffer) {
       dirtyIterator.clear()
-      return queuedCommands.splice(0, queuedCommands.length)
+      for (const command of queuedCommands) {
+        AppendValueOperation.write(command, outBuffer)
+      }
+      queuedCommands.length = 0
     },
     updateFromCrdt(body, _conflictResolutionByteBuffer: ByteBuffer) {
       if (body.type === CrdtMessageType.APPEND_VALUE) {
         const buf = new ReadWriteByteBuffer(body.data)
-        append(body.entityId, serde.deserialize(buf) as Readonly<T>)
+        append(body.entityId, declaration.deserialize(buf) as Readonly<T>)
       }
       return true
     }

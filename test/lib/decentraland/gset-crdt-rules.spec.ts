@@ -1,11 +1,13 @@
 import { ReadWriteByteBuffer } from "../../../src/lib/decentraland/ByteBuffer"
-import { SerDe } from "../../../src/lib/decentraland/crdt-internal/components"
-import { createValueSetComponentDefinitionFromSchema } from "../../../src/lib/decentraland/crdt-internal/grow-only-set"
-import { CrdtMessageType } from "../../../src/lib/decentraland/crdt-wire-protocol"
+import { ComponentDeclaration } from "../../../src/lib/decentraland/crdt-internal/components"
+import { createValueSetComponentStore } from "../../../src/lib/decentraland/crdt-internal/grow-only-set"
+import { CrdtMessageType, readAllMessages } from "../../../src/lib/decentraland/crdt-wire-protocol"
 import { Entity } from "../../../src/lib/decentraland/types"
 
 describe('Conflict resolution rules for GrowOnlyValueSet based components', () => {
-  const serde: SerDe<{ text: string, timestamp: number }> = {
+  const serde: ComponentDeclaration<{ text: string, timestamp: number }> = {
+    applyChanges() {},
+    componentId: 1,
     deserialize(buffer) {
       return {
         text: buffer.readUtf8String(),
@@ -18,7 +20,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
     },
   }
 
-  const component = createValueSetComponentDefinitionFromSchema('test', 1, serde, {
+  const component = createValueSetComponentStore(serde, {
     maxElements: 10,
     timestampFunction(value) {
       return value.timestamp
@@ -26,8 +28,9 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
   })
 
   afterEach(() => {
+    const buffer = new ReadWriteByteBuffer()
     // clear state
-    component.getCrdtUpdates()
+    component.dumpCrdtUpdates(buffer)
   })
 
   it('readonly values', () => {
@@ -52,7 +55,10 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
     expect(component.has(entityId)).toEqual(true)
 
     expect(Array.from(component.dirtyIterator())).toEqual([entityId])
-    expect(Array.from(component.getCrdtUpdates())).toMatchObject([
+
+    const outBuf = new ReadWriteByteBuffer()
+    component.dumpCrdtUpdates(outBuf)
+    expect(Array.from(readAllMessages(outBuf))).toMatchObject([
       {
         componentId: 1,
         type: CrdtMessageType.APPEND_VALUE,
@@ -89,7 +95,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 
     const buf = new ReadWriteByteBuffer()
     const conflictBuffer = new ReadWriteByteBuffer()
-    component.serde.serialize(
+    component.declaration.serialize(
       {
         text: 'asd',
         timestamp: 2
@@ -107,7 +113,10 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 
     // append operations do not generate a dirty state
     expect(Array.from(component.dirtyIterator())).toEqual([])
-    expect(Array.from(component.getCrdtUpdates())).toMatchObject([])
+    
+    const outBuf = new ReadWriteByteBuffer()
+    component.dumpCrdtUpdates(outBuf)
+    expect(Array.from(readAllMessages(outBuf))).toEqual([])
   })
 
   it('GET also includes APPEND(ed) message', () => {
@@ -135,7 +144,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
     for (const timestamp of timestamps) {
       const buf = new ReadWriteByteBuffer()
       const conflictBuffer = new ReadWriteByteBuffer()
-      component.serde.serialize(
+      component.declaration.serialize(
         {
           text: timestamps.toString(),
           timestamp
@@ -157,7 +166,10 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 
     // append operations do not generate a dirty state
     expect(Array.from(component.dirtyIterator())).toEqual([])
-    expect(Array.from(component.getCrdtUpdates())).toMatchObject([])
+    
+    const outBuf = new ReadWriteByteBuffer()
+    component.dumpCrdtUpdates(outBuf)
+    expect(Array.from(readAllMessages(outBuf))).toEqual([])
   })
 
   it('addValue many times should sort and trim to the max capacity', () => {
@@ -197,7 +209,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
     for (const timestamp of timestamps) {
       const buf = new ReadWriteByteBuffer()
       const conflictBuffer = new ReadWriteByteBuffer()
-      component.serde.serialize(
+      component.declaration.serialize(
         {
           text: timestamps.toString(),
           timestamp
@@ -236,7 +248,10 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
     }
 
     expect(Array.from(component.dirtyIterator())).toEqual([entityId])
-    expect(Array.from(component.getCrdtUpdates())).toMatchObject([
+
+    const outBuf = new ReadWriteByteBuffer()
+    component.dumpCrdtUpdates(outBuf)
+    expect(Array.from(readAllMessages(outBuf))).toMatchObject([
       {
         componentId: 1,
         type: CrdtMessageType.APPEND_VALUE,
@@ -262,7 +277,9 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 })
 
 describe('Conflict resolution rules for GrowOnlyValueSet based components with Extended Schema', () => {
-  const serde: SerDe<{ parent: number }> = {
+  const decl: ComponentDeclaration<{ parent: number }> = {
+    componentId: 1,
+    applyChanges() {},
     deserialize(buffer) {
       return {
         parent: buffer.readFloat64()
@@ -273,7 +290,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components with E
     },
   }
 
-  const component = createValueSetComponentDefinitionFromSchema('test', 1, serde, {
+  const component = createValueSetComponentStore(decl, {
     maxElements: 10,
     timestampFunction(value) {
       return value.parent || 0
@@ -290,7 +307,10 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components with E
     expect(component.has(entityId)).toEqual(true)
 
     expect(Array.from(component.dirtyIterator())).toEqual([entityId])
-    expect(Array.from(component.getCrdtUpdates())).toMatchObject([
+
+    const outBuf = new ReadWriteByteBuffer()
+    component.dumpCrdtUpdates(outBuf)
+    expect(Array.from(readAllMessages(outBuf))).toMatchObject([
       {
         componentId: 1,
         type: CrdtMessageType.APPEND_VALUE,
@@ -312,7 +332,9 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components with E
 })
 
 describe('Conflict resolution rules for GrowOnlyValueSet based components with Schema.Int', () => {
-  const serde: SerDe<number> = {
+  const decl: ComponentDeclaration<number> = {
+    componentId: 1,
+    applyChanges(){},
     deserialize(buffer) {
       return buffer.readFloat64()
     },
@@ -321,7 +343,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components with S
     },
   }
 
-  const component = createValueSetComponentDefinitionFromSchema('test', 1, serde, {
+  const component = createValueSetComponentStore(decl, {
     maxElements: 10,
     timestampFunction(value) {
       return value
@@ -338,7 +360,10 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components with S
     expect(component.has(entityId)).toEqual(true)
 
     expect(Array.from(component.dirtyIterator())).toEqual([entityId])
-    expect(Array.from(component.getCrdtUpdates())).toMatchObject([
+
+    const outBuf = new ReadWriteByteBuffer()
+    component.dumpCrdtUpdates(outBuf)
+    expect(Array.from(readAllMessages(outBuf))).toMatchObject([
       {
         componentId: 1,
         type: CrdtMessageType.APPEND_VALUE,

@@ -4,6 +4,7 @@
  *   GrowOnly-Set
  */
 
+import { BabylonEntity } from "../../babylon/scene/entity"
 import { ByteBuffer } from "../ByteBuffer"
 import { CrdtMessageBody, DeleteComponentMessageBody, PutComponentMessageBody } from "../crdt-wire-protocol"
 import { Entity } from "../types"
@@ -31,14 +32,25 @@ export type SerDe<T> = {
   deserialize(buffer: ByteBuffer): T
 }
 
+export type ComponentDeclaration<T> = SerDe<T> & {
+  // numeric ID of the component as defined in the protocol
+  componentId: number
+  // applyChanges is in charge of reflecting the changes of the component value
+  // into the BabylonEngine. It is called after a CRDT message is received and
+  // after it is reflected in the component definition (the storage)
+  applyChanges: ApplyComponentOperation<T>
+}
+
 export type ComponentDefinition<T> =
   | LastWriteWinElementSetComponentDefinition<T>
   | GrowOnlyValueSetComponentDefinition<T>
 
+export type ApplyComponentOperation<T> = (ecsEntity: BabylonEntity, componentDefinition: ComponentDefinition<T>) => void
+
 export interface BaseComponent<T> {
   readonly componentId: number
   readonly componentType: ComponentType
-  readonly serde: SerDe<T>
+  readonly declaration: ComponentDeclaration<T>
 
   /**
    * This function receives a CRDT update and returns true if the change is accepted.
@@ -51,7 +63,7 @@ export interface BaseComponent<T> {
    * This function writes all CRDT updates into a outBuffer. After returning, this function
    * clears the internal dirty state. Updates are produced only once.
    */
-  getCrdtUpdates(outBuffer: ByteBuffer): void
+  dumpCrdtUpdates(outBuffer: ByteBuffer): void
 
   /**
    * Marks the entity as deleted and signals it cannot be used ever again. It must
@@ -68,8 +80,7 @@ export interface BaseComponent<T> {
   has(entity: Entity): boolean
 
   /**
-   * Get the readonly component of the entity (to mutate it, use getMutable instead),
-   * throws an error if the entity doesn't have the component.
+   * Get the current component value | undefined
    * @param entity - Entity that will be used to get the component
    * @returns
    */
@@ -83,12 +94,11 @@ export interface LastWriteWinElementSetComponentDefinition<T> extends BaseCompon
   readonly componentType: ComponentType.LastWriteWinElementSet
 
   /**
-   * Get the readonly component of the entity (to mutate it, use getMutable instead),
-   * throws an error if the entity doesn't have the component.
+   * Get the value of the component for an entity
    * @param entity - Entity that will be used to get the component
    * @returns
    */
-  get(entity: Entity): Readonly<T>
+  get(entity: Entity): T | undefined
 
   /**
    * Get the readonly component of the entity (to mutate it, use getMutable instead), or null if the entity doesn't have the component.

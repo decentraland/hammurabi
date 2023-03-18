@@ -1,14 +1,16 @@
 import { Writer } from "protobufjs/minimal"
-import { SerDe } from "../crdt-internal/components"
+import { ApplyComponentOperation, ComponentDeclaration } from "../crdt-internal/components"
 
 /**
  * This function creates a serializer and deserializer based on a Protobufjs type
  */
-export function createSerDeFromProtobufJs<T>(protobufType: {
+export function declareComponentUsingProtobufJs<T>(protobufType: {
   decode(bytes: Uint8Array): T
   encode(value: T, writer: Writer): void
-}): SerDe<T> {
+}, componentId: number, applyChanges: ApplyComponentOperation<T>): ComponentDeclaration<T> {
   return {
+    componentId,
+    applyChanges,
     deserialize(buffer) {
       return protobufType.decode(buffer.toBinary())
     },

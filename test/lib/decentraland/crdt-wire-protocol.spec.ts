@@ -37,7 +37,12 @@ describe('Component operation tests', () => {
 
   it('appendValue identity test', () => {
     const buf = new ReadWriteByteBuffer()
-    AppendValueOperation.write(1 as Entity, 0, 1, Uint8Array.of(1, 2, 3), buf)
+    AppendValueOperation.write({
+      entityId: 1,
+      timestamp: 0,
+      componentId: 1,
+      data: Uint8Array.of(1, 2, 3)
+    }, buf)
     const msg = readMessage(buf)
 
     expect(msg).toEqual({
@@ -52,7 +57,12 @@ describe('Component operation tests', () => {
 
   it('putComponent identity test', () => {
     const buf = new ReadWriteByteBuffer()
-    PutComponentOperation.write(1 as Entity, 1, 3, Uint8Array.of(1, 2, 3), buf)
+    PutComponentOperation.write({
+      entityId: 1,
+      timestamp: 3,
+      componentId: 1,
+      data: Uint8Array.of(1, 2, 3)
+    }, buf)
     const msg = readMessage(buf)
 
     expect(msg).toEqual({
@@ -67,7 +77,11 @@ describe('Component operation tests', () => {
 
   it('deleteComponent identity test', () => {
     const buf = new ReadWriteByteBuffer()
-    DeleteComponent.write(1 as Entity, 2, 3, buf)
+    DeleteComponent.write({
+      entityId: 1,
+      timestamp: 3,
+      componentId: 2,
+    }, buf)
     const msg = readMessage(buf)
 
     expect(msg).toEqual({
@@ -81,7 +95,7 @@ describe('Component operation tests', () => {
 
   it('deleteEntity identity test', () => {
     const buf = new ReadWriteByteBuffer()
-    DeleteEntity.write(1 as Entity, buf)
+    DeleteEntity.write({ entityId: 1 }, buf)
     const msg = readMessage(buf)
 
     expect(msg).toEqual({
