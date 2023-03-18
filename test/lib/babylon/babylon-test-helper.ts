@@ -10,6 +10,15 @@ import { LoadableScene } from '../../../src/lib/decentraland/scene/content-serve
 import { Entity } from '../../../src/lib/decentraland/types'
 import { coerceMaybeU8Array } from '../../../src/lib/quick-js/convert-handles'
 
+export type SceneTestEnvironment = {
+  engine: BABYLON.NullEngine
+  scene: BABYLON.Scene
+  camera: BABYLON.FreeCamera
+  ctx: SceneContext
+  loadableScene: LoadableScene
+  logMessage: (message: string) => void
+}
+
 /**
  * This function creates a test suite with a babylon engine and a scene context.
  */
@@ -18,24 +27,30 @@ export function testWithEngine(
   params: Readonly<LoadableScene> & {
     enableStaticEntities?: boolean
     snapshotFile?: string
+    sourceFile?: string
   },
-  fn: (args: {
-    engine: BABYLON.NullEngine
-    scene: BABYLON.Scene
-    ctx: SceneContext
-    loadableScene: LoadableScene
-    logMessage: (message: string) => void
-  }) => void
+  fn: (args: SceneTestEnvironment) => void
 ) {
   describe(testName, () => {
     let engine: BABYLON.NullEngine
     let scene: BABYLON.Scene
     let ctx: SceneContext
-    let camera: BABYLON.Camera
+    let camera: BABYLON.FreeCamera
 
     let engineStarted = false
 
-    const messages: string[] = []
+    const messages: string[] = [
+      `# ${testName}`
+    ]
+
+    messages.push(
+      '```mermaid',
+      'sequenceDiagram',
+      '  participant runtime',
+      '  participant scene',
+      '  participant renderer',
+      '  participant babylon',
+    )
 
     beforeAll(() => {
       BABYLON.Logger.LogLevels = BABYLON.Logger.WarningLogLevel | BABYLON.Logger.ErrorLogLevel
@@ -53,6 +68,7 @@ export function testWithEngine(
       scene.activeCamera = camera
 
       ctx = new SceneContext(scene, params)
+      ctx.log = message => messages.push(`  # SceneContext.log(${message})`)
 
       if (!params.enableStaticEntities) {
         jest.spyOn(ctx, 'updateStaticEntities').mockImplementation(() => void 0)
@@ -67,23 +83,33 @@ export function testWithEngine(
 
       // the following functions "decorate" the function to instrument their inputs and outputs for snapshot generation
       jest.spyOn(ctx, 'crdtSendToRenderer').mockImplementation(async function (param) {
-        messages.push(`  crdtSendToRenderer()`)
-        addMessages(coerceMaybeU8Array(param.data), '  scene->renderer: ')
+        messages.push(`  scene->>renderer: crdtSendToRenderer()`)
+        messages.push(`  activate renderer`)
+        addMessages(coerceMaybeU8Array(param.data), '    scene-->>renderer: ')
+
         const { data } = await SceneContext.prototype.crdtSendToRenderer.call(this, param)
-        data.forEach(_ => addMessages(_, '  renderer->scene: '))
+        data.forEach((_: Uint8Array) => addMessages(_, '    renderer-->>scene: '))
+        messages.push(`  deactivate renderer`)
+
         return { data }
       })
 
 
       jest.spyOn(ctx, 'crdtGetState').mockImplementation(async function () {
-        messages.push(`  crdtGetState()`)
+        messages.push(`  activate renderer`)
+        messages.push(`  scene-->>renderer: crdtGetState()`)
         const { data } = await SceneContext.prototype.crdtGetState.call(this)
-        data.forEach(_ => addMessages(_, '  renderer->scene: '))
+        data.forEach(_ => addMessages(_, '    renderer-->>scene: '))
+        messages.push(`  deactivate renderer`)
         return { data }
       })
 
-      engine.onBeginFrameObservable.add(() => messages.push(`BEGIN BABYLON_FRAME`))
-      engine.onEndFrameObservable.add(() => messages.push(`END BABYLON_FRAME`))
+      engine.onBeginFrameObservable.add(() => {
+        messages.push(`    babylon-->>renderer: render()`)
+      })
+      engine.onEndFrameObservable.add(() => {
+        messages.push(`    babylon-->>renderer: lateRender()`)
+      })
     })
 
     afterAll(() => {
@@ -94,7 +120,9 @@ export function testWithEngine(
     function startEngine() {
       if (!engineStarted) {
         engineStarted = true
-        engine.runRenderLoop(() => { })
+        engine.runRenderLoop(() => {
+          scene.render(false)
+        })
       }
     }
 
@@ -114,6 +142,11 @@ export function testWithEngine(
         startEngine()
         return ctx
       },
+      get camera() {
+        if (!camera) throw new Error('You can only access the ctx inside a test')
+        startEngine()
+        return camera
+      },
       loadableScene: params,
       logMessage(message) {
         messages.push(message)
@@ -122,6 +155,17 @@ export function testWithEngine(
 
     if (params.snapshotFile) {
       it('checks the snapshot', () => {
+        messages.push('```')
+
+        if (params.sourceFile) {
+          messages.push('\nThe file that produced this snapshot was:')
+          messages.push('```typescript')
+          messages.push(readFileSync(params.sourceFile, 'utf-8'))
+          messages.push('```')
+        }
+
+
+
         const snapshotFileContents = existsSync(params.snapshotFile) ? readFileSync(params.snapshotFile, 'utf-8') : ''
         const currentContents = messages.join('\n')
 

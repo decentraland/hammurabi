@@ -36,6 +36,12 @@ export async function withQuickJsVm<T>(
     result = await cb({
       eval(code: string, filename?: string) {
         const result = vm.evalCode(code, filename)
+
+        if (result.error) {
+          const error = dumpAndDispose(vm, result.error)
+          throw Object.assign(new Error(error.message), error)
+        }
+
         const $ = vm.unwrapResult(result)
         const ret = dumpAndDispose(vm, $)
         return ret

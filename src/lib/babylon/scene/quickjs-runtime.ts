@@ -49,7 +49,7 @@ export async function connectSceneContextUsingQuickJs(engineApi: EngineApiInterf
       },
     })
 
-    opts.eval(code)
+    await opts.eval(code)
 
     await opts.onStart()
 

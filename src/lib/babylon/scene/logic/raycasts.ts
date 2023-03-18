@@ -25,8 +25,6 @@ export function processRaycasts(scene: SceneContext) {
   for (const entityId of iter) {
     const raycast = scene.components[raycastComponent.componentId].get(entityId) as PBRaycast | null
 
-
-
     if (raycast) {
       const entity = scene.getEntityOrNull(entityId)
       if (entity && entity.appliedComponents.raycast) {
@@ -40,7 +38,7 @@ export function processRaycasts(scene: SceneContext) {
 
         // and start preparing the result
         const raycastResult: PBRaycastResult = {
-          direction: ray.direction,
+          direction: Vector3.Normalize(ray.direction),
           globalOrigin: globalCoordinatesToSceneCoordinates(scene, ray.origin),
           timestamp: raycast.timestamp || 0,
           hits: []

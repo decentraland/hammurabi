@@ -39,7 +39,6 @@ export function createUpdateLwwFromCrdt<T>(
 
     // Outdated Message. Resend our state message through the wire.
     if (currentTimestamp > timestamp) {
-      // console.log('2', currentTimestamp, timestamp)
       return ProcessMessageResultType.StateOutdatedTimestamp
     }
 
