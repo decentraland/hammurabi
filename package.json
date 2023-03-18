@@ -11,7 +11,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@dcl/protocol": "https://sdk-team-cdn.decentraland.org/@dcl/protocol/branch//dcl-protocol-1.0.0-4449150501.commit-27c8499.tgz",
+    "@dcl/protocol": "^1.0.0-4493564897.commit-c858f8a",
     "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
     "@types/jest": "^29.4.0",
     "@types/node": "^18.14.4",

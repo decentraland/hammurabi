@@ -1,4 +1,4 @@
-import type * as BABYLON from '@babylonjs/core'
+import * as BABYLON from '@babylonjs/core'
 import future, { IFuture } from 'fp-future'
 import { Entity } from '../../decentraland/types'
 
@@ -12,10 +12,15 @@ import { BabylonEntity } from './entity'
 import { Transform, transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
-import { resolveCyclicParening } from '../../decentraland/sdk-components/cyclic-transform'
-import { Quaternion, Vector3 } from '@babylonjs/core'
+import { resolveCyclicParening } from './logic/cyclic-transform'
+import { Matrix, Quaternion, Ray, Vector3, Vector4 } from '@babylonjs/core'
 import { billboardComponent } from '../../decentraland/sdk-components/billboard-component'
 import { raycastComponent, raycastResultComponent } from '../../decentraland/sdk-components/raycast-component'
+import { PBRaycast } from '@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen'
+import { meshRendererComponent } from '../../decentraland/sdk-components/mesh-renderer-component'
+import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from './coordinates'
+import { processRaycasts } from './logic/raycasts'
+import { meshColliderComponent } from '../../decentraland/sdk-components/mesh-collider-component'
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -40,11 +45,17 @@ export class SceneContext implements EngineApiInterface {
   // stash of outgoing messages ready to be sent to back to the scripting scene
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
 
+  // the follwing set contains a list of pending raycast queries. if a query is continous,
+  // it won't be removed from the set
+  pendingRaycastOperations = new Set<Entity>()
+
   components: Record<number, ComponentDefinition<any>> = {
     [transformComponent.componentId]: createLwwStore(transformComponent),
     [billboardComponent.componentId]: createLwwStore(billboardComponent),
     [raycastComponent.componentId]: createLwwStore(raycastComponent),
     [raycastResultComponent.componentId]: createLwwStore(raycastResultComponent),
+    [meshRendererComponent.componentId]: createLwwStore(meshRendererComponent),
+    [meshColliderComponent.componentId]: createLwwStore(meshColliderComponent),
   }
 
   // this flag is changed every time an entity changed its parent. the change
@@ -172,7 +183,8 @@ export class SceneContext implements EngineApiInterface {
   readonly lateUpdate = async () => {
     const outMessages: Uint8Array[] = []
 
-    // TODO: Execute raycasts into this.outgoingMessages
+    processRaycasts(this)
+
     // TODO: Execute queries into this.outgoingMessages
     // TODO: Collect events into this.outgoingMessages
 

@@ -1,4 +1,6 @@
+import { FreeCamera } from "@babylonjs/core"
 import { readFileSync } from "fs"
+import { Transform } from "../../src/lib/decentraland/sdk-components/transform-component"
 import { withQuickJsVm } from "../../src/lib/quick-js"
 import { testWithEngine } from "../lib/babylon/babylon-test-helper"
 
@@ -13,16 +15,15 @@ testWithEngine("Run example scene in vm", {
   enableStaticEntities: true,
   snapshotFile: `test/integration/run-example-scene-in-vm.spec.ts.snapshot`
 }, ($) => {
-  test('onStart and onUpdate fail', async () =>
-    withQuickJsVm(async (opts) => {
-      const logs: any[] = []
+  test('onStart and onUpdate fail', async () => {
+    await withQuickJsVm(async (opts) => {
       opts.provide({
         log(...args) {
-          $.logMessage('  [SCENE LOG]' + JSON.stringify(args))
+          $.logMessage('  console.log ' + JSON.stringify(args))
         },
         error(...args) {
-          $.logMessage('  [ERROR]' + JSON.stringify(args))
-          console.error('[SCENE]' + JSON.stringify(args))
+          $.logMessage('  console.error ' + JSON.stringify(args))
+          console.error('[SCENE ERROR]' + JSON.stringify(args, null, 2))
           process.exitCode = 1
         },
         require(moduleName) {
@@ -65,5 +66,6 @@ testWithEngine("Run example scene in vm", {
       await opts.onUpdate(0.3)
       $.logMessage('onUpdate(0.4)')
       await opts.onUpdate(0.4)
-    }))
+    })
+  })
 })
