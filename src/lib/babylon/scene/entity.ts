@@ -1,13 +1,15 @@
 import * as BABYLON from '@babylonjs/core'
 import { SceneContext } from './context'
-import { Transform } from '../../decentraland/sdk-components/transform'
+import { Transform } from '../../decentraland/sdk-components/transform-component'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { Entity } from '../../decentraland/types'
 import { componentPutOperations } from '../../decentraland/sdk-components'
-import { MeshBuilder } from '@babylonjs/core'
+import { Matrix, MeshBuilder, Quaternion, Vector3 } from '@babylonjs/core'
+import { BillboardMode, PBBillboard } from '@dcl/protocol/out-ts/decentraland/sdk/components/billboard.gen'
 
 export type EcsComponents = Partial<{
   transform: Transform
+  billboard: PBBillboard
 }>
 
 /**
@@ -32,7 +34,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
       const baseBox = MeshBuilder.CreateBox('base-box', {
         updatable: false,
       })
-      baseBox.checkCollisions = true
+      baseBox.checkCollisions = false
       baseBox.parent = this
     }
   }
@@ -45,6 +47,63 @@ export class BabylonEntity extends BABYLON.TransformNode {
   deleteComponent(component: ComponentDefinition<unknown>) {
     this.usedComponents.delete(component.componentId)
     componentPutOperations[component.componentId]?.call(null, this, component)
+  }
+
+
+  _afterComputeWorldMatrix() {
+    if (this.ecsComponentValues.billboard) {
+      const billboardMode = this.ecsComponentValues.billboard.billboardMode ?? BillboardMode.BM_ALL
+      // save translation and scaling components of the world matrix calculated by Babylon
+      const position = Vector3.Zero()
+      const scale = Vector3.One()
+      this._worldMatrix.decompose(scale, undefined, position)
+
+      // compute the global position of the world matrix
+      const camera = this.getScene().activeCamera!
+      const entityGlobalPosition = Vector3.TransformCoordinates(Vector3.Zero(), this._worldMatrix)
+
+      // get the direction vector from the camera to the entity position
+      const directionVector = camera.globalPosition.subtract(entityGlobalPosition);
+      
+      // calculate the LookAt matrix from the direction vector towards zero
+      const rotMatrix = Matrix.LookAtLH(directionVector, Vector3.Zero(), camera.upVector).invert()
+      const rotation = Quaternion.FromRotationMatrix(rotMatrix)
+
+      if ((billboardMode & BillboardMode.BM_ALL) !== BillboardMode.BM_ALL) {
+        const eulerAngles = rotation.toEulerAngles();
+
+        if ((billboardMode & BillboardMode.BM_X) !== BillboardMode.BM_X) {
+          eulerAngles.x = 0;
+        }
+
+        if ((billboardMode & BillboardMode.BM_Y) !== BillboardMode.BM_Y) {
+          eulerAngles.y = 0;
+        }
+
+        if ((billboardMode & BillboardMode.BM_Z) !== BillboardMode.BM_Z) {
+          eulerAngles.z = 0;
+        }
+
+        Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, rotMatrix);
+      }
+
+      // restore the scale to a blank scaling matrix
+      const scalingMatrix = Matrix.Scaling(scale.x, scale.y, scale.z);
+
+      // apply the scale to the rotation matrix, into _worldMatrix
+      scalingMatrix.multiplyToRef(rotMatrix, this._worldMatrix)
+
+      // finally restore the translation into _worldMatrix
+      this._worldMatrix.setTranslation(position);
+    }
+
+    super._afterComputeWorldMatrix()
+  }
+
+  // this function should return false if the world matrix needs to be recalculated
+  _isSynchronized() {
+    const hasBillboard = !!this.ecsComponentValues.billboard
+    return !hasBillboard && super._isSynchronized()
   }
 
   /**

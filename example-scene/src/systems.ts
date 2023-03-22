@@ -16,12 +16,13 @@ import { createCube } from './factory'
  */
 export const BounceScaling = engine.defineComponent('BounceScaling', { t: Schemas.Number })
 
+export const RotatorTag = engine.defineComponent('Rotator', {})
+
 /**
  * All cubes rotating behavior
  */
 export function circularSystem(dt: number) {
-  const entitiesWithMeshRenderer = engine.getEntitiesWith(MeshRenderer, Transform)
-  for (const [entity, _meshRenderer, _transform] of entitiesWithMeshRenderer) {
+  for (const [entity] of engine.getEntitiesWith(Transform, RotatorTag)) {
     const mutableTransform = Transform.getMutable(entity)
 
     mutableTransform.rotation = Quaternion.multiply(

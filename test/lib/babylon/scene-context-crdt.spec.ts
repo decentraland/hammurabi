@@ -1,7 +1,7 @@
 import { Quaternion, Vector3 } from '@babylonjs/core'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { DeleteEntity, PutComponentOperation } from '../../../src/lib/decentraland/crdt-wire-protocol'
-import { transformSerde } from '../../../src/lib/decentraland/sdk-components/transform'
+import { transformSerde } from '../../../src/lib/decentraland/sdk-components/transform-component'
 import { Entity } from '../../../src/lib/decentraland/types'
 import { initTestEngine } from './babylon-test-helper'
 
