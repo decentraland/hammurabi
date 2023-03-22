@@ -1,16 +1,15 @@
 import { StaticEntities } from '../../../src/lib/babylon/scene/context'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { CrdtMessageType, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
-import { TRANSFORM_COMPONENT_ID } from '../../../src/lib/decentraland/sdk-components/transform-component'
-import { initTestEngine } from './babylon-test-helper'
+import { transformComponent } from '../../../src/lib/decentraland/sdk-components/transform-component'
+import { testWithEngine } from './babylon-test-helper'
 
-describe("static entities", () => {
-  const $ = initTestEngine({
-    baseUrl: '/',
-    entity: { content: [], metadata: {} },
-    id: '123',
-    enableStaticEntities: true
-  })
+testWithEngine("static entities", {
+  baseUrl: '/',
+  entity: { content: [], metadata: {} },
+  id: '123',
+  enableStaticEntities: true
+}, ($) => {
 
   test("ensure CameraEntity transform is being sent to the scene in the initial state (crdtGetState)", async () => {
     const { data } = await $.ctx.crdtGetState()
@@ -19,7 +18,7 @@ describe("static entities", () => {
 
     expect(messages).toMatchObject([
       {
-        componentId: TRANSFORM_COMPONENT_ID,
+        componentId: transformComponent.componentId,
         entityId: StaticEntities.CameraEntity,
         type: CrdtMessageType.PUT_COMPONENT
       }

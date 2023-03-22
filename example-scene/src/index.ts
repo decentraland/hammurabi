@@ -1,4 +1,4 @@
-import { Billboard, BillboardMode, engine, Entity, executeTask, Material, MeshCollider, MeshRenderer, Transform } from '@dcl/sdk/ecs'
+import { Billboard, BillboardMode, engine, Entity, executeTask, Material, MeshCollider, MeshRenderer, Raycast, RaycastQueryType, Schemas, Transform } from '@dcl/sdk/ecs'
 import { Color4, Matrix, Quaternion, Vector3 } from '@dcl/sdk/math'
 
 import { createCube } from './factory'
@@ -10,6 +10,7 @@ import { bounceScalingSystem, circularSystem, RotatorTag, spawnerSystem } from '
 export * from '@dcl/sdk'
 
 const BouncerComponent = engine.defineComponent("Bouncer", {})
+const TurretSegment = engine.defineComponent("TurretArticulatedSegment", { index: Schemas.Float, current: Schemas.Float })
 
 // Defining behavior. See `src/systems.ts` file.
 engine.addSystem(circularSystem)
@@ -23,8 +24,8 @@ executeTask(async function () {
   Material.setPbrMaterial(cube, { albedoColor: Color4.create(1.0, 0.0, 0.42) })
   RotatorTag.create(cube)
 
-  for (let x = 0.5; x < 16; x += 1) {
-    for (let y = 0.5; y < 16; y += 1) {
+  for (let x = 0.5; x < 4; x += 1) {
+    for (let y = 0.5; y < 4; y += 1) {
       const cube = createCube(x + 16, 0, y + 16, false)
       BouncerComponent.createOrReplace(cube)
     }
@@ -43,6 +44,50 @@ executeTask(async function () {
       transform.position.y =
         Math.cos(hoverState + Math.sqrt(Math.pow(transform.position.x - 8, 2) + Math.pow(transform.position.z - 8, 2)) / Math.PI) * 2 + 2
     }
+  })
+})
+
+
+executeTask(async function () {
+  const parent = engine.addEntity()
+  const parentTransform = Transform.create(parent)
+
+  parentTransform.position.x = 0
+  parentTransform.position.y = 4
+  parentTransform.position.z = 20
+
+  function addSegment(parent: Entity, index: number) {
+    const segment = engine.addEntity()
+    TurretSegment.create(segment, { index })
+    Transform.create(segment, { parent, position: { x: 0, y: 0, z: 1 } })
+    const cube = engine.addEntity()
+    Transform.create(cube, { parent: segment, scale: { x: 0.5 / index, y: 0.5 / index, z: 1 }, position: { x: 0, y: 0, z: 0.5 } })
+    MeshRenderer.setBox(cube)
+    return segment
+  }
+
+  const segment1 = addSegment(parent, 1)
+  const segment2 = addSegment(segment1, 2)
+  const segment3 = addSegment(segment2, 3)
+  const segment4 = addSegment(segment3, 4)
+
+  engine.addSystem(dt => {
+    for (const [entity] of engine.getEntitiesWith(TurretSegment)) {
+      const t = Transform.getMutable(entity)
+      const segment = TurretSegment.getMutable(entity)
+      segment.current += dt / segment.index
+      t.rotation = Quaternion.fromLookAt(Vector3.Zero(), { x: Math.sin(segment.current), y: Math.sin(segment.current * 2), z: Math.sin(segment.current + 1) + 0.5 })
+    }
+  })
+
+  Raycast.create(segment4, {
+    direction: {
+      $case: 'localDirection',
+      localDirection: Vector3.Forward()
+    },
+    continuous: true,
+    maxDistance: 999,
+    queryType: RaycastQueryType.RQT_HIT_FIRST
   })
 })
 

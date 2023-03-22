@@ -1,78 +1,146 @@
 import * as BABYLON from '@babylonjs/core'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { readFile, writeFile } from 'fs/promises'
 import { SceneContext } from '../../../src/lib/babylon/scene/context'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
-import { SerDe } from '../../../src/lib/decentraland/crdt-internal/components'
-import { DeleteComponent, PutComponentOperation } from '../../../src/lib/decentraland/crdt-wire-protocol'
+import { ComponentDeclaration, SerDe } from '../../../src/lib/decentraland/crdt-internal/components'
+import { DeleteComponent, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
+import { prettyPrintCrdtMessage } from '../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint'
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
 import { Entity } from '../../../src/lib/decentraland/types'
+import { coerceMaybeU8Array } from '../../../src/lib/quick-js/convert-handles'
 
-export function initTestEngine(params: Readonly<LoadableScene> & {
-  enableStaticEntities?: boolean
-}) {
-  let engine: BABYLON.NullEngine
-  let scene: BABYLON.Scene
-  let ctx: SceneContext
+/**
+ * This function creates a test suite with a babylon engine and a scene context.
+ */
+export function testWithEngine(
+  testName: string,
+  params: Readonly<LoadableScene> & {
+    enableStaticEntities?: boolean
+    snapshotFile?: string
+  },
+  fn: (args: {
+    engine: BABYLON.NullEngine
+    scene: BABYLON.Scene
+    ctx: SceneContext
+    loadableScene: LoadableScene
+    logMessage: (message: string) => void
+  }) => void
+) {
+  describe(testName, () => {
+    let engine: BABYLON.NullEngine
+    let scene: BABYLON.Scene
+    let ctx: SceneContext
 
-  beforeAll(() => {
-    BABYLON.Logger.LogLevels = BABYLON.Logger.WarningLogLevel | BABYLON.Logger.ErrorLogLevel
+    const messages: string[] = []
 
-    engine = new BABYLON.NullEngine({
-      renderWidth: 512,
-      renderHeight: 256,
-      textureSize: 512,
-      deterministicLockstep: true,
-      lockstepMaxSteps: 4,
-    });
+    beforeAll(() => {
+      BABYLON.Logger.LogLevels = BABYLON.Logger.WarningLogLevel | BABYLON.Logger.ErrorLogLevel
 
-    scene = new BABYLON.Scene(engine)
+      engine = new BABYLON.NullEngine({
+        renderWidth: 512,
+        renderHeight: 256,
+        textureSize: 512,
+        deterministicLockstep: true,
+        lockstepMaxSteps: 4,
+      });
 
-    ctx = new SceneContext(scene, params)
+      scene = new BABYLON.Scene(engine)
 
-    if (!params.enableStaticEntities) {
-      jest.spyOn(ctx, 'updateStaticEntities').mockImplementation(() => void 0)
+      ctx = new SceneContext(scene, params)
+
+      if (!params.enableStaticEntities) {
+        jest.spyOn(ctx, 'updateStaticEntities').mockImplementation(() => void 0)
+      }
+
+      function addMessages(data: Uint8Array, prefix: string) {
+        Array.from(readAllMessages(new ReadWriteByteBuffer(data))).forEach(_ => {
+          const component = 'componentId' in _ ? ctx.components[_.componentId] : undefined
+          messages.push(prefix + prettyPrintCrdtMessage(_, component?.declaration))
+        })
+      }
+
+      // the following functions "decorate" the function to instrument their inputs and outputs for snapshot generation
+      jest.spyOn(ctx, 'crdtSendToRenderer').mockImplementation(async function (param) {
+        messages.push(`  crdtSendToRenderer()`)
+        addMessages(coerceMaybeU8Array(param.data), '  scene->renderer: ')
+        const { data } = await SceneContext.prototype.crdtSendToRenderer.call(this, param)
+        data.forEach(_ => addMessages(_, '  renderer->scene: '))
+        return { data }
+      })
+
+      jest.spyOn(ctx, 'crdtGetState').mockImplementation(async function () {
+        messages.push(`  crdtGetState()`)
+        const { data } = await SceneContext.prototype.crdtGetState.call(this)
+        data.forEach(_ => addMessages(_, '  renderer->scene: '))
+        return { data }
+      })
+
+      engine.runRenderLoop(() => { })
+      engine.onBeginFrameObservable.add(() => messages.push(`BEGIN BABYLON_FRAME`))
+      engine.onEndFrameObservable.add(() => messages.push(`END BABYLON_FRAME`))
+    })
+
+    afterAll(() => {
+      scene.dispose()
+      engine.dispose()
+    })
+
+    fn({
+      get engine() {
+        if (!engine) throw new Error('You can only access the engine inside a test')
+        return engine
+      },
+      get scene() {
+        if (!scene) throw new Error('You can only access the scene inside a test')
+        return scene
+      },
+      get ctx() {
+        if (!ctx) throw new Error('You can only access the ctx inside a test')
+        return ctx
+      },
+      loadableScene: params,
+      logMessage(message) {
+        messages.push(message)
+      }
+    })
+
+    if (params.snapshotFile) {
+      it('checks the snapshot', () => {
+        const snapshotFileContents = existsSync(params.snapshotFile) ? readFileSync(params.snapshotFile, 'utf-8') : ''
+        const currentContents = messages.join('\n')
+
+        if (!snapshotFileContents || process.env.UPDATE_SNAPSHOTS) {
+          writeFileSync(params.snapshotFile, currentContents)
+        }
+
+        expect(currentContents).toEqual(snapshotFileContents)
+      })
     }
-
-    engine.runRenderLoop(() => void 0)
   })
-
-  afterAll(() => {
-    scene.dispose()
-    engine.dispose()
-  })
-
-  return {
-    get engine() {
-      if (!engine) throw new Error('You can only access the engine inside a test')
-      return engine
-    },
-    get scene() {
-      if (!scene) throw new Error('You can only access the scene inside a test')
-      return scene
-    },
-    get ctx() {
-      if (!ctx) throw new Error('You can only access the ctx inside a test')
-      return ctx
-    },
-    loadableScene: params,
-  }
 }
 
 export class CrdtBuilder {
   #buffer = new ReadWriteByteBuffer()
 
-  put<T>(componentId: number, entityId: Entity, timestamp: number, serde: SerDe<T>, value: T) {
+  put<T>(transformComponent: ComponentDeclaration<T>, entityId: Entity, timestamp: number, value: T) {
     const componentBuffer = new ReadWriteByteBuffer()
-    serde.serialize(value, componentBuffer)
-    PutComponentOperation.write(entityId, componentId, timestamp,  componentBuffer.toBinary(), this.#buffer)
+    transformComponent.serialize(value, componentBuffer)
+    PutComponentOperation.write({
+      componentId: transformComponent.componentId,
+      entityId,
+      timestamp,
+      data: componentBuffer.toBinary()
+    }, this.#buffer)
     return this
   }
 
-  delete(componentId: number, entityId: Entity, timestamp: number) {
-    DeleteComponent.write(entityId, componentId, timestamp, this.#buffer)
+  delete(transformComponent: ComponentDeclaration<any>, entityId: Entity, timestamp: number) {
+    DeleteComponent.write({ entityId, componentId: transformComponent.componentId, timestamp }, this.#buffer)
     return this
   }
 
-  toBinary() {
+  finish() {
     const ret = this.#buffer.toBinary()
     this.#buffer = new ReadWriteByteBuffer()
     return ret

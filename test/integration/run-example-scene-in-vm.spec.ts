@@ -1,32 +1,32 @@
 import { readFileSync } from "fs"
 import { withQuickJsVm } from "../../src/lib/quick-js"
-import { initTestEngine } from "../lib/babylon/babylon-test-helper"
+import { testWithEngine } from "../lib/babylon/babylon-test-helper"
 
 const sceneFile = 'example-scene/bin/index.js'
 
-describe("Run example scene in vm", () => {
-  const sceneCode = readFileSync(sceneFile, 'utf8')
+const sceneCode = readFileSync(sceneFile, 'utf8')
 
-  const $ = initTestEngine({
-    baseUrl: '/',
-    entity: { content: [], metadata: {} },
-    id: '123',
-    enableStaticEntities: true
-  })
-
-  it('onStart and onUpdate fail', async () =>
+testWithEngine("Run example scene in vm", {
+  baseUrl: '/',
+  entity: { content: [], metadata: {} },
+  id: '123',
+  enableStaticEntities: true,
+  snapshotFile: `test/integration/run-example-scene-in-vm.spec.ts.snapshot`
+}, ($) => {
+  test('onStart and onUpdate fail', async () =>
     withQuickJsVm(async (opts) => {
       const logs: any[] = []
       opts.provide({
         log(...args) {
-          console.log('[SCENE]' + JSON.stringify(args))
+          $.logMessage('  [SCENE LOG]' + JSON.stringify(args))
         },
         error(...args) {
+          $.logMessage('  [ERROR]' + JSON.stringify(args))
           console.error('[SCENE]' + JSON.stringify(args))
           process.exitCode = 1
         },
         require(moduleName) {
-          console.log('  REQUIRE: ' + moduleName)
+          $.logMessage('[REQUIRE] ' + moduleName)
 
           if (moduleName === '~system/EngineApi') {
             return {
@@ -53,7 +53,17 @@ describe("Run example scene in vm", () => {
 
       opts.eval(sceneCode, sceneFile)
 
+      $.logMessage('onStart()')
       await opts.onStart()
+      $.logMessage('onUpdate(0)')
       await opts.onUpdate(0)
+      $.logMessage('onUpdate(0.1)')
+      await opts.onUpdate(0.1)
+      $.logMessage('onUpdate(0.2)')
+      await opts.onUpdate(0.2)
+      $.logMessage('onUpdate(0.3)')
+      await opts.onUpdate(0.3)
+      $.logMessage('onUpdate(0.4)')
+      await opts.onUpdate(0.4)
     }))
 })

@@ -1,8 +1,8 @@
 import { ByteBuffer, ReadWriteByteBuffer } from "../../../src/lib/decentraland/ByteBuffer"
 import { CrdtMessageType, readAllMessages, readMessage } from "../../../src/lib/decentraland/crdt-wire-protocol"
-import { createLwwStoreFromSerde, createUpdateLwwFromCrdt } from "../../../src/lib/decentraland/crdt-internal/last-write-win-element-set"
+import { createLwwStore, createUpdateLwwFromCrdt } from "../../../src/lib/decentraland/crdt-internal/last-write-win-element-set"
 import { Entity } from "../../../src/lib/decentraland/types"
-import { SerDe } from "../../../src/lib/decentraland/crdt-internal/components"
+import { ComponentDeclaration } from "../../../src/lib/decentraland/crdt-internal/components"
 import { prettyPrintCrdtMessage } from "../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint"
 
 describe('Conflict resolution rules for LWW-ElementSet based components', () => {
@@ -313,7 +313,9 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 })
 
 describe('integration lww', () => {
-  const schema: SerDe<{ u8: number }> = {
+  const decl: ComponentDeclaration<{ u8: number }> = {
+    componentId: 1,
+    applyChanges() { },
     serialize(value, builder: ByteBuffer) {
       builder.writeInt8(value.u8)
     },
@@ -321,20 +323,19 @@ describe('integration lww', () => {
       return { u8: reader.readInt8() }
     }
   }
-  const componentId = 1
 
-  const component = createLwwStoreFromSerde(componentId, schema)
+  const component = createLwwStore(decl)
 
   function assertCrdtUpdates(...expected: string[]) {
     const buf = new ReadWriteByteBuffer()
-    component.getCrdtUpdates(buf)
-    expect(Array.from(readAllMessages(buf)).map(prettyPrintCrdtMessage)).toEqual(expected)
+    component.dumpCrdtUpdates(buf)
+    expect(Array.from(readAllMessages(buf)).map(_ => prettyPrintCrdtMessage(_))).toEqual(expected)
   }
 
   afterEach(() => {
     const buf = new ReadWriteByteBuffer()
-    component.getCrdtUpdates(buf)
-    const updates = Array.from(readAllMessages(buf)).map(prettyPrintCrdtMessage)
+    component.dumpCrdtUpdates(buf)
+    const updates = Array.from(readAllMessages(buf)).map(_ => prettyPrintCrdtMessage(_))
     if (updates.length) throw new Error('Some CRDT updates were not asserted:\n' + updates.join('\n'))
   })
 
@@ -354,9 +355,9 @@ describe('integration lww', () => {
     assertCrdtUpdates('PUT c=1 e=0x1 t=2 v=byte[1]')
   })
 
-  it('unexistent get throws', () => {
+  it('unexistent returns undefined', () => {
     const entity = 199 as Entity
-    expect(() => expect(component.get(entity))).toThrow()
+    expect(component.get(entity)).toBeUndefined()
   })
 
   it('deleteFrom', () => {

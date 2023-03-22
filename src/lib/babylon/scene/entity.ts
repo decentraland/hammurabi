@@ -3,14 +3,15 @@ import { SceneContext } from './context'
 import { Transform } from '../../decentraland/sdk-components/transform-component'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { Entity } from '../../decentraland/types'
-import { componentPutOperations } from '../../decentraland/sdk-components'
 import { Matrix, MeshBuilder, Quaternion, Vector3 } from '@babylonjs/core'
 import { BillboardMode, PBBillboard } from '@dcl/protocol/out-ts/decentraland/sdk/components/billboard.gen'
 
-export type EcsComponents = Partial<{
+// the following list of components is used to store a "staging" value to compare
+// against the previous applied value in the applyChanges function of each component
+export type AppliedComponents = {
   transform: Transform
   billboard: PBBillboard
-}>
+}
 
 /**
  * This class wraps a BabylonEntity and extends it with all the component-related
@@ -24,7 +25,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
   gltfContainer?: BABYLON.AbstractMesh
   gltfAssetContainer?: BABYLON.AssetContainer
 
-  ecsComponentValues: EcsComponents = {}
+  appliedComponents: Partial<AppliedComponents> = {}
 
   constructor(public entityId: Entity, public context: WeakRef<SceneContext>) {
     super(`ecs-${entityId.toString(16)}`)
@@ -41,18 +42,16 @@ export class BabylonEntity extends BABYLON.TransformNode {
 
   putComponent(component: ComponentDefinition<unknown>) {
     this.usedComponents.set(component.componentId, component)
-    componentPutOperations[component.componentId]?.call(null, this, component)
   }
 
   deleteComponent(component: ComponentDefinition<unknown>) {
     this.usedComponents.delete(component.componentId)
-    componentPutOperations[component.componentId]?.call(null, this, component)
   }
 
 
   _afterComputeWorldMatrix() {
-    if (this.ecsComponentValues.billboard) {
-      const billboardMode = this.ecsComponentValues.billboard.billboardMode ?? BillboardMode.BM_ALL
+    if (this.appliedComponents.billboard) {
+      const billboardMode = this.appliedComponents.billboard.billboardMode ?? BillboardMode.BM_ALL
       // save translation and scaling components of the world matrix calculated by Babylon
       const position = Vector3.Zero()
       const scale = Vector3.One()
@@ -102,7 +101,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
 
   // this function should return false if the world matrix needs to be recalculated
   _isSynchronized() {
-    const hasBillboard = !!this.ecsComponentValues.billboard
+    const hasBillboard = !!this.appliedComponents.billboard
     return !hasBillboard && super._isSynchronized()
   }
 
@@ -111,7 +110,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
    * Defaults to ROOT_ENTITY(0)
    */
   get expectedParentEntityId() {
-    return this.ecsComponentValues.transform?.parent ?? 0
+    return this.appliedComponents.transform?.parent ?? 0
   }
 
   /**

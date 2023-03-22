@@ -9,12 +9,13 @@ import { MaybeUint8Array } from '../../quick-js'
 import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
-import { Transform, transformSerde, TRANSFORM_COMPONENT_ID } from '../../decentraland/sdk-components/transform-component'
-import { createLwwStoreFromSerde } from '../../decentraland/crdt-internal/last-write-win-element-set'
+import { Transform, transformComponent } from '../../decentraland/sdk-components/transform-component'
+import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from '../../decentraland/sdk-components/cyclic-transform'
 import { Quaternion, Vector3 } from '@babylonjs/core'
-import { billboardSerDe, BILLBOARD_COMPONENT_ID } from '../../decentraland/sdk-components/billboard-component'
+import { billboardComponent } from '../../decentraland/sdk-components/billboard-component'
+import { raycastComponent, raycastResultComponent } from '../../decentraland/sdk-components/raycast-component'
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -40,8 +41,10 @@ export class SceneContext implements EngineApiInterface {
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
 
   components: Record<number, ComponentDefinition<any>> = {
-    [TRANSFORM_COMPONENT_ID]: createLwwStoreFromSerde(TRANSFORM_COMPONENT_ID, transformSerde),
-    [BILLBOARD_COMPONENT_ID]: createLwwStoreFromSerde(BILLBOARD_COMPONENT_ID, billboardSerDe)
+    [transformComponent.componentId]: createLwwStore(transformComponent),
+    [billboardComponent.componentId]: createLwwStore(billboardComponent),
+    [raycastComponent.componentId]: createLwwStore(raycastComponent),
+    [raycastResultComponent.componentId]: createLwwStore(raycastResultComponent),
   }
 
   // this flag is changed every time an entity changed its parent. the change
@@ -112,6 +115,8 @@ export class SceneContext implements EngineApiInterface {
                 entity.putComponent(component)
               else
                 entity.deleteComponent(component)
+
+              component.declaration.applyChanges(entity, component)
             }
 
             break
@@ -144,7 +149,7 @@ export class SceneContext implements EngineApiInterface {
    */
   updateStaticEntities() {
     // StaticEntities.CameraEntity
-    const Transform = this.components[TRANSFORM_COMPONENT_ID] as LastWriteWinElementSetComponentDefinition<Transform>
+    const Transform = this.components[transformComponent.componentId] as LastWriteWinElementSetComponentDefinition<Transform>
     if (!Transform.has(StaticEntities.CameraEntity)) Transform.create(StaticEntities.CameraEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
     const cameraTransform = Transform.getMutable(StaticEntities.CameraEntity)
     const engineCamera = this.babylonScene.activeCamera
@@ -182,7 +187,7 @@ export class SceneContext implements EngineApiInterface {
 
     // write all the CRDT updates in the outgoingMessagesBuffer
     for (const i in this.components) {
-      this.components[i].getCrdtUpdates(this.outgoingMessagesBuffer)
+      this.components[i].dumpCrdtUpdates(this.outgoingMessagesBuffer)
     }
 
     // finally resolve the future so the function "receiveBatch" is unblocked
@@ -215,7 +220,7 @@ export class SceneContext implements EngineApiInterface {
     // dump all the content of the components into a single outgoing buffer
     const outgoingMessages = new ReadWriteByteBuffer()
     for (const component of Object.values(this.components)) {
-      component.getCrdtUpdates(outgoingMessages)
+      component.dumpCrdtUpdates(outgoingMessages)
     }
 
     return { data: [outgoingMessages.toBinary()] }

@@ -1,6 +1,6 @@
 import { CrdtMessageProtocol } from './crdtMessageProtocol'
 import { ByteBuffer } from '../ByteBuffer'
-import { AppendValueMessage, CrdtMessageType, CRDT_MESSAGE_HEADER_LENGTH } from './types'
+import { AppendValueMessage, AppendValueMessageBody, CrdtMessageType, CRDT_MESSAGE_HEADER_LENGTH } from './types'
 import { Entity } from '../types'
 
 /**
@@ -13,21 +13,21 @@ export namespace AppendValueOperation {
    * Call this function for an optimal writing data passing the ByteBuffer
    *  already allocated
    */
-  export function write(entity: Entity, timestamp: number, componentId: number, data: Uint8Array, buf: ByteBuffer) {
-    const messageLength = CRDT_MESSAGE_HEADER_LENGTH + MESSAGE_HEADER_LENGTH + data.byteLength
+  export function write(message: Omit<AppendValueMessageBody, 'type'>, buf: ByteBuffer) {
+    const messageLength = CRDT_MESSAGE_HEADER_LENGTH + MESSAGE_HEADER_LENGTH + message.data.byteLength
 
     // Write CrdtMessage header
     buf.writeUint32(messageLength)
     buf.writeUint32(CrdtMessageType.APPEND_VALUE)
 
     // Write ComponentOperation header
-    buf.writeUint32(entity)
-    buf.writeUint32(componentId)
-    buf.writeUint32(timestamp)
-    buf.writeUint32(data.byteLength)
+    buf.writeUint32(message.entityId)
+    buf.writeUint32(message.componentId)
+    buf.writeUint32(message.timestamp)
+    buf.writeUint32(message.data.byteLength)
 
     // write body
-    buf.writeBuffer(data, false)
+    buf.writeBuffer(message.data, false)
   }
 
   export function read(buf: ByteBuffer): AppendValueMessage | null {
