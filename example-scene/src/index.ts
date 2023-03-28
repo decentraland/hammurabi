@@ -1,8 +1,11 @@
-import { Billboard, BillboardMode, engine, Entity, executeTask, Material, MeshCollider, MeshRenderer, Raycast, RaycastQueryType, Schemas, Transform } from '@dcl/sdk/ecs'
-import { Color4, Matrix, Quaternion, Vector3 } from '@dcl/sdk/math'
+import { engine, executeTask, Material, Transform } from '@dcl/sdk/ecs'
+import { Color4 } from '@dcl/sdk/math'
+import { initBillboardsScene } from './billboards'
+import { initCameraRotation } from './cameraRotation'
 
 import { createCube } from './factory'
 import { bounceScalingSystem, circularSystem, RotatorTag, spawnerSystem } from './systems'
+import { initRaycastTurrets } from './turrets'
 
 // import { setupUi } from './ui'
 
@@ -10,7 +13,6 @@ import { bounceScalingSystem, circularSystem, RotatorTag, spawnerSystem } from '
 export * from '@dcl/sdk'
 
 const BouncerComponent = engine.defineComponent("Bouncer", {})
-const TurretSegment = engine.defineComponent("TurretArticulatedSegment", { index: Schemas.Float, current: Schemas.Float })
 
 // Defining behavior. See `src/systems.ts` file.
 engine.addSystem(circularSystem)
@@ -47,125 +49,21 @@ executeTask(async function () {
   })
 })
 
-
-executeTask(async function () {
-  const parent = engine.addEntity()
-  const parentTransform = Transform.create(parent)
-
-  parentTransform.position.x = 0
-  parentTransform.position.y = 4
-  parentTransform.position.z = 20
-
-  function addSegment(parent: Entity, index: number) {
-    const segment = engine.addEntity()
-    TurretSegment.create(segment, { index })
-    Transform.create(segment, { parent, position: { x: 0, y: 0, z: 1 } })
-    const cube = engine.addEntity()
-    Transform.create(cube, { parent: segment, scale: { x: 0.5 / index, y: 0.5 / index, z: 1 }, position: { x: 0, y: 0, z: 0.5 } })
-    MeshRenderer.setBox(cube)
-    return segment
-  }
-
-  const segment1 = addSegment(parent, 1)
-  const segment2 = addSegment(segment1, 2)
-  const segment3 = addSegment(segment2, 3)
-  const segment4 = addSegment(segment3, 4)
-
-  engine.addSystem(dt => {
-    for (const [entity] of engine.getEntitiesWith(TurretSegment)) {
-      const t = Transform.getMutable(entity)
-      const segment = TurretSegment.getMutable(entity)
-      segment.current += dt / segment.index
-      t.rotation = Quaternion.fromLookAt(Vector3.Zero(), { x: Math.sin(segment.current), y: Math.sin(segment.current * 2), z: Math.sin(segment.current + 1) + 0.5 })
-    }
-  })
-
-  Raycast.create(segment4, {
-    direction: {
-      $case: 'localDirection',
-      localDirection: Vector3.Forward()
-    },
-    continuous: true,
-    maxDistance: 999,
-    queryType: RaycastQueryType.RQT_HIT_FIRST
-  })
+const turretsParent = engine.addEntity()
+Transform.create(turretsParent, {
+  position: { x: 0, y: 0, z: -16 }
 })
+initRaycastTurrets(turretsParent)
 
-
-// This function adds billboard elements
-executeTask(async function () {
-  const billboardParent = engine.addEntity()
-  Transform.create(billboardParent, {})
-
-  function makeMesh(x: number, z: number, mode: BillboardMode, parent?: Entity) {
-    const meshEntity = engine.addEntity()
-
-    Transform.create(meshEntity, { position: { x: x * 2, y: 1, z: z * 2 }, scale: { x: 1, y: 1, z: 0.5 }, parent: parent || billboardParent })
-    // set how the cube looks and collides
-    MeshRenderer.setBox(meshEntity)
-    MeshCollider.setBox(meshEntity)
-
-    Billboard.createOrReplace(meshEntity, { billboardMode: mode })
-
-    return meshEntity
-  }
-
-  makeMesh(-2, 0, BillboardMode.BM_NONE)
-  makeMesh(-1, 0, BillboardMode.BM_X)
-  makeMesh(0, 0, BillboardMode.BM_Y)
-  makeMesh(1, 0, BillboardMode.BM_Z)
-  makeMesh(2, 0, BillboardMode.BM_ALL)
-
-  const ref1 = makeMesh(-2, 2, BillboardMode.BM_NONE)
-  const ref2 = makeMesh(-1, 2, BillboardMode.BM_NONE)
-  const ref3 = makeMesh(0, 2, BillboardMode.BM_NONE)
-  const ref4 = makeMesh(1, 2, BillboardMode.BM_NONE)
-  const ref5 = makeMesh(2, 2, BillboardMode.BM_NONE)
-
-  const container = engine.addEntity()
-  Transform.create(container, { parent: billboardParent })
-
-  makeMesh(-2, 0, BillboardMode.BM_NONE, container)
-  makeMesh(-1, 0, BillboardMode.BM_X, container)
-  makeMesh(0, 0, BillboardMode.BM_Y, container)
-  makeMesh(1, 0, BillboardMode.BM_Z, container)
-  makeMesh(2, 0, BillboardMode.BM_ALL, container)
-
-  let a = 0;
-  engine.addSystem(function (dt) {
-
-    const cameraPosition = Transform.get(engine.CameraEntity)
-
-    const diff2 = Vector3.subtract(Transform.getMutable(ref2).position, cameraPosition.position)
-    const diff3 = Vector3.subtract(Transform.getMutable(ref3).position, cameraPosition.position)
-    const diff4 = Vector3.subtract(Transform.getMutable(ref4).position, cameraPosition.position)
-
-    Transform.getMutable(ref2).rotation = Quaternion.fromEulerDegrees(Math.atan2(-diff2.y, diff2.z), 0, 0)
-    Transform.getMutable(ref3).rotation = Quaternion.fromEulerDegrees(0, Math.atan2(diff3.x, diff3.z), 0)
-    Transform.getMutable(ref4).rotation = Quaternion.fromEulerDegrees(0, 0, Math.atan2(diff4.y, diff4.x))
-
-
-    // this step should have the same result as BM_ALL and it is described in ADR-198
-    const matrix = Matrix.Identity()
-    Matrix.fromQuaternionToRef(cameraPosition.rotation, matrix)
-    const invMatrix = Matrix.invert(matrix)
-    Quaternion.fromRotationMatrixToRef(invMatrix, Transform.getMutable(ref5).rotation)
-
-    Transform.getMutable(container).position.z = 4 * Math.cos(a);
-
-    a += dt;
-  })
+const billboardParent = engine.addEntity()
+Transform.create(billboardParent, {
+  position: { x: -16, y: 0, z: -16 }
 })
+initBillboardsScene(billboardParent)
 
-let renderNumber = 0
-engine.addSystem(function () {
-  if (renderNumber % 10 == 0) {
-    // this line is purposefully a .get instead of a .getOrNull because it
-    // should FAIL ig the Transform of the CameraEntity is not avaliable at this
-    // moment
-    const transform = Transform.get(engine.CameraEntity)
-    console.log(`CameraTransform: ${JSON.stringify(transform)}`)
-    renderNumber
-  }
+const cameraRotationParent = engine.addEntity()
+Transform.create(cameraRotationParent, {
+  position: { x: -32, y: 0, z: -16 }
 })
+initCameraRotation(cameraRotationParent)
 // setupUi()

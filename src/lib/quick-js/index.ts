@@ -41,7 +41,7 @@ export async function withQuickJsVm<T>(
         return ret
       },
       async onUpdate(dt) {
-        const result = vm.evalCode(`exports.onUpdate(${JSON.stringify(dt)})`, 'onUpdate')
+        const result = vm.evalCode(`module.exports.onUpdate(${JSON.stringify(dt)})`, 'onUpdate')
 
         const promiseHandle = vm.unwrapResult(result)
 
@@ -54,7 +54,7 @@ export async function withQuickJsVm<T>(
         return dumpAndDispose(vm, resolvedHandle)
       },
       async onStart() {
-        const result = vm.evalCode(`exports.onStart ? exports.onStart() : Promise.resolve()`, 'onStart')
+        const result = vm.evalCode(`module.exports.onStart ? module.exports.onStart() : Promise.resolve()`, 'onStart')
 
         const promiseHandle = vm.unwrapResult(result)
 

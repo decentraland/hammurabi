@@ -14,7 +14,7 @@ test:
 	@echo "~ Running tests..."
 	node_modules/.bin/jest --detectOpenHandles --colors --runInBand $(TESTARGS) --coverage
 
-update-snapshots:
+update-snapshots: build-example-scene
 	UPDATE_SNAPSHOTS=true make test
 
 test-watch:

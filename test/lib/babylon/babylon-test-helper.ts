@@ -31,6 +31,9 @@ export function testWithEngine(
     let engine: BABYLON.NullEngine
     let scene: BABYLON.Scene
     let ctx: SceneContext
+    let camera: BABYLON.Camera
+
+    let engineStarted = false
 
     const messages: string[] = []
 
@@ -46,6 +49,8 @@ export function testWithEngine(
       });
 
       scene = new BABYLON.Scene(engine)
+      camera = new BABYLON.FreeCamera('camera', BABYLON.Vector3.Zero(), scene)
+      scene.activeCamera = camera
 
       ctx = new SceneContext(scene, params)
 
@@ -69,6 +74,7 @@ export function testWithEngine(
         return { data }
       })
 
+
       jest.spyOn(ctx, 'crdtGetState').mockImplementation(async function () {
         messages.push(`  crdtGetState()`)
         const { data } = await SceneContext.prototype.crdtGetState.call(this)
@@ -76,7 +82,6 @@ export function testWithEngine(
         return { data }
       })
 
-      engine.runRenderLoop(() => { })
       engine.onBeginFrameObservable.add(() => messages.push(`BEGIN BABYLON_FRAME`))
       engine.onEndFrameObservable.add(() => messages.push(`END BABYLON_FRAME`))
     })
@@ -86,17 +91,27 @@ export function testWithEngine(
       engine.dispose()
     })
 
+    function startEngine() {
+      if (!engineStarted) {
+        engineStarted = true
+        engine.runRenderLoop(() => { })
+      }
+    }
+
     fn({
       get engine() {
         if (!engine) throw new Error('You can only access the engine inside a test')
+        startEngine()
         return engine
       },
       get scene() {
         if (!scene) throw new Error('You can only access the scene inside a test')
+        startEngine()
         return scene
       },
       get ctx() {
         if (!ctx) throw new Error('You can only access the ctx inside a test')
+        startEngine()
         return ctx
       },
       loadableScene: params,

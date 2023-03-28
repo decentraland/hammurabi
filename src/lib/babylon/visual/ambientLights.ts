@@ -12,7 +12,7 @@ export function setupEnvironment(scene: BABYLON.Scene) {
   skyMaterial.luminance = 1;
   skyMaterial.turbidity = 5;
   skyMaterial.useSunPosition = true;
-  skyMaterial.sunPosition.set(-1, 0.81, -1).scaleInPlace(5000000)
+  skyMaterial.sunPosition.set(-1, 0.81, -0.75).scaleInPlace(5000000)
   const hemiLight = new BABYLON.HemisphericLight('default light', skyMaterial.sunPosition, scene)
   const envHelper = new BABYLON.EnvironmentHelper({ groundShadowLevel: 0.6, createGround: true, groundSize: 1024 }, scene)
 

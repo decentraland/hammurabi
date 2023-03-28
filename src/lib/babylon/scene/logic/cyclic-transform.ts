@@ -1,5 +1,5 @@
-import { SceneContext } from "../../babylon/scene/context"
-import { BabylonEntity } from "../../babylon/scene/entity"
+import { SceneContext } from "../context"
+import { BabylonEntity } from "../entity"
 
 /**
  * This function perform the scheduled parenting operations (scene.unparentedEntities)

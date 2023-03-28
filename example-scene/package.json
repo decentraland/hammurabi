@@ -9,7 +9,7 @@
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
   },
   "devDependencies": {
-    "@dcl/sdk": "https://sdk-team-cdn.decentraland.org/@dcl/js-sdk-toolchain/branch/adr-200-raycast/dcl-sdk-7.1.3-4449361960.commit-1b2e62d.tgz"
+    "@dcl/sdk": "^7.1.4-4546888614.commit-9751782"
   },
   "prettier": {
     "semi": false,
@@ -18,6 +18,6 @@
     "trailingComma": "none"
   },
   "dependencies": {
-    "@dcl/protocol": "https://sdk-team-cdn.decentraland.org/@dcl/protocol/branch//dcl-protocol-1.0.0-4449150501.commit-27c8499.tgz"
+    "fp-future": "^1.0.1"
   }
 }

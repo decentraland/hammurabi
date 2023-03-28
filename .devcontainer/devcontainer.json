@@ -10,5 +10,9 @@
       "extensions": []
     }
   },
-  "appPort": 8099
+  "appPort": 8099,
+  "containerEnv": {
+    "DCL_DISABLE_ANALYTICS": "true",
+    "SHELL": "/usr/bin/zsh"
+  }
 }

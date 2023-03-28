@@ -3,14 +3,26 @@ import { SceneContext } from './context'
 import { Transform } from '../../decentraland/sdk-components/transform-component'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { Entity } from '../../decentraland/types'
-import { Matrix, MeshBuilder, Quaternion, Vector3 } from '@babylonjs/core'
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core'
 import { BillboardMode, PBBillboard } from '@dcl/protocol/out-ts/decentraland/sdk/components/billboard.gen'
+import { PBRaycast } from '@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen'
+import { PBMeshCollider } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
+import { isValidBillboardCombination } from './logic/billboards'
 
 // the following list of components is used to store a "staging" value to compare
 // against the previous applied value in the applyChanges function of each component
 export type AppliedComponents = {
   transform: Transform
   billboard: PBBillboard
+  raycast: {
+    value: PBRaycast
+    helper?: BABYLON.RayHelper
+    ray: BABYLON.Ray
+  }
+  meshCollider: {
+    info: PBMeshCollider
+    collider: BABYLON.AbstractMesh | null
+  }
 }
 
 /**
@@ -22,22 +34,11 @@ export class BabylonEntity extends BABYLON.TransformNode {
   usedComponents = new Map<number, ComponentDefinition<unknown>>()
 
   meshRenderer?: BABYLON.AbstractMesh
-  gltfContainer?: BABYLON.AbstractMesh
-  gltfAssetContainer?: BABYLON.AssetContainer
 
   appliedComponents: Partial<AppliedComponents> = {}
 
   constructor(public entityId: Entity, public context: WeakRef<SceneContext>) {
     super(`ecs-${entityId.toString(16)}`)
-    
-    if (entityId) {
-      // create a box and attach it to an entity
-      const baseBox = MeshBuilder.CreateBox('base-box', {
-        updatable: false,
-      })
-      baseBox.checkCollisions = false
-      baseBox.parent = this
-    }
   }
 
   putComponent(component: ComponentDefinition<unknown>) {
@@ -48,17 +49,21 @@ export class BabylonEntity extends BABYLON.TransformNode {
     this.usedComponents.delete(component.componentId)
   }
 
-
+  // This function is called after Babylon calculates the world matrix of the entity
+  // we hook into this lifecycle event to mutate the final _worldMatrix before it is
+  // settled
   _afterComputeWorldMatrix() {
-    if (this.appliedComponents.billboard) {
+    const camera = this.getScene().activeCamera
+
+    if (this.appliedComponents.billboard && camera) {
       const billboardMode = this.appliedComponents.billboard.billboardMode ?? BillboardMode.BM_ALL
+
       // save translation and scaling components of the world matrix calculated by Babylon
       const position = Vector3.Zero()
       const scale = Vector3.One()
       this._worldMatrix.decompose(scale, undefined, position)
 
       // compute the global position of the world matrix
-      const camera = this.getScene().activeCamera!
       const entityGlobalPosition = Vector3.TransformCoordinates(Vector3.Zero(), this._worldMatrix)
 
       // get the direction vector from the camera to the entity position
@@ -68,18 +73,18 @@ export class BabylonEntity extends BABYLON.TransformNode {
       const rotMatrix = Matrix.LookAtLH(directionVector, Vector3.Zero(), camera.upVector).invert()
       const rotation = Quaternion.FromRotationMatrix(rotMatrix)
 
-      if ((billboardMode & BillboardMode.BM_ALL) !== BillboardMode.BM_ALL) {
+      if (isValidBillboardCombination(billboardMode)) {
         const eulerAngles = rotation.toEulerAngles();
 
-        if ((billboardMode & BillboardMode.BM_X) !== BillboardMode.BM_X) {
+        if (!(billboardMode & BillboardMode.BM_X)) {
           eulerAngles.x = 0;
         }
 
-        if ((billboardMode & BillboardMode.BM_Y) !== BillboardMode.BM_Y) {
+        if (!(billboardMode & BillboardMode.BM_Y)) {
           eulerAngles.y = 0;
         }
 
-        if ((billboardMode & BillboardMode.BM_Z) !== BillboardMode.BM_Z) {
+        if (!(billboardMode & BillboardMode.BM_Z)) {
           eulerAngles.z = 0;
         }
 
@@ -100,6 +105,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
   }
 
   // this function should return false if the world matrix needs to be recalculated
+  // it is called internally by Babylon.js internal code
   _isSynchronized() {
     const hasBillboard = !!this.appliedComponents.billboard
     return !hasBillboard && super._isSynchronized()
