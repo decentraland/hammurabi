@@ -1,7 +1,7 @@
 import { engine, Raycast, RaycastQueryType, RaycastResult, Transform } from '@dcl/sdk/ecs'
 import { Quaternion, Vector3 } from '@dcl/sdk/math'
-import { test } from '../testing'
-import { assertComponentValue } from '../testing/assert'
+import { test } from '@dcl/sdk/testing'
+import { assertComponentValue } from '@dcl/sdk/testing/assert'
 export * from '@dcl/sdk'
 
 test("raycast: raycasting from an entity to global origin yields correct direction", function* (context) {

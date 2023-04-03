@@ -1,4 +1,4 @@
-import { test } from "../testing";
+import { test } from "@dcl/sdk/testing";
 import { Quaternion, Vector3 } from "@dcl/sdk/math";
 export * from '@dcl/sdk'
 

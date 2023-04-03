@@ -10,7 +10,7 @@
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
   },
   "devDependencies": {
-    "@dcl/sdk": "^7.1.4-4566053119.commit-f66a565"
+    "@dcl/sdk": "^7.1.4-4598596181.commit-a983260"
   },
   "prettier": {
     "semi": false,

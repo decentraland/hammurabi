@@ -38,7 +38,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test sanity: test camera position is updated"
-   # [setCameraPosition]{"position":{"x":1,"y":1,"z":1},"rotation":{"x":0.08682408883346517,"y":0.08682408883346517,"z":-0.007596123493895969,"w":0.9924038765061041}}
+   # [setCameraTransform]{"position":{"x":1,"y":1,"z":1},"rotation":{"x":0.08682408883346517,"y":0.08682408883346517,"z":-0.007596123493895969,"w":0.9924038765061041}}
   Note right of scene: "⏱️ yield promise"
   end
   scene->>renderer: crdtSendToRenderer()
@@ -68,7 +68,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed sanity: test camera position is updated"
-  # [TEST RESULT]{"name":"sanity: test camera position is updated","ok":true}
+  # [TEST RESULT]{"name":"sanity: test camera position is updated","ok":true,"totalFrames":2,"totalTime":1}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -81,7 +81,7 @@ sequenceDiagram
 
 The file that produced this snapshot was:
 ```typescript
-import { test } from "../testing";
+import { test } from "@dcl/sdk/testing";
 import { Quaternion, Vector3 } from "@dcl/sdk/math";
 export * from '@dcl/sdk'
 

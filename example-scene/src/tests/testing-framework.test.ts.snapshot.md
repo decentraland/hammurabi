@@ -151,7 +151,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed testing framework: yield works"
-  # [TEST RESULT]{"name":"testing framework: yield works","ok":true}
+  # [TEST RESULT]{"name":"testing framework: yield works","ok":true,"totalFrames":8,"totalTime":4}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -167,7 +167,7 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test testing framework: ensure previous test's yield are resolved"
   Note right of scene: "🟢 Test passed testing framework: ensure previous test's yield are resolved"
-  # [TEST RESULT]{"name":"testing framework: ensure previous test's yield are resolved","ok":true}
+  # [TEST RESULT]{"name":"testing framework: ensure previous test's yield are resolved","ok":true,"totalFrames":0,"totalTime":0}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -181,8 +181,8 @@ sequenceDiagram
 The file that produced this snapshot was:
 ```typescript
 import { engine } from "@dcl/sdk/ecs";
-import { assertEquals } from "../testing/assert";
-import { test } from "../testing";
+import { assertEquals } from "@dcl/sdk/testing/assert";
+import { test } from "@dcl/sdk/testing";
 export * from '@dcl/sdk'
 
 // this system counts the amount of times it was executed

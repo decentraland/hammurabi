@@ -1,17 +1,14 @@
+/// <reference path="../../../example-scene/node_modules/@dcl/js-runtime/apis.d.ts" />
+
 import { Quaternion, Vector3 } from "@babylonjs/core"
 import { Transform } from "../../../src/lib/decentraland/sdk-components/transform-component"
 import { SceneTestEnvironment } from "../../lib/babylon/babylon-test-helper"
-
-export type TestResult = {
-  name: string
-  ok: boolean
-  error?: string
-}
+import type { logTestResult, plan, setCameraTransform } from "~system/Testing"
 
 export type TestingModule = {
-  logResult(data: TestResult): Promise<any>
-  plan(data: { tests: { name: string }[] }): Promise<any>
-  setCameraPosition(transform: Pick<Transform, 'position' | 'rotation'>): Promise<any>
+  logTestResult: typeof logTestResult
+  plan: typeof plan
+  setCameraTransform: typeof setCameraTransform
 }
 
 export function prepareTestingFramework(env: SceneTestEnvironment) {
@@ -26,7 +23,7 @@ export function prepareTestingFramework(env: SceneTestEnvironment) {
   const pendingTests = new Set<string>()
 
   const module: TestingModule = {
-    async logResult(result: TestResult) {
+    async logTestResult(result: TestResult) {
       env.logMessage('  # [TEST RESULT]' + JSON.stringify(result))
       testResults.push(result)
       pendingTests.delete(result.name)
@@ -36,8 +33,8 @@ export function prepareTestingFramework(env: SceneTestEnvironment) {
       data.tests.forEach((test) => pendingTests.add(test.name))
       return {}
     },
-    async setCameraPosition(transform: Transform) {
-      env.logMessage('   # [setCameraPosition]' + JSON.stringify(transform))
+    async setCameraTransform(transform: Transform) {
+      env.logMessage('   # [setCameraTransform]' + JSON.stringify(transform))
 
       if (!env.camera.position) env.camera.position = new Vector3()
       if (!env.camera.rotationQuaternion) env.camera.rotationQuaternion = Quaternion.Identity()

@@ -1,7 +1,7 @@
 import { Raycast, RaycastQueryType, RaycastResult } from '@dcl/sdk/ecs'
 import { Quaternion, Vector3 } from '@dcl/sdk/math'
-import { test } from '../testing'
-import { assertComponentValue } from '../testing/assert'
+import { test } from '@dcl/sdk/testing'
+import { assertComponentValue } from '@dcl/sdk/testing/assert'
 import { createChainedEntities } from './helpers'
 export * from '@dcl/sdk'
 

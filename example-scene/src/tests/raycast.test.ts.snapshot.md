@@ -56,7 +56,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to global origin yields correct direction"
-  # [TEST RESULT]{"name":"raycast: raycasting from an entity to global origin yields correct direction","ok":true}
+  # [TEST RESULT]{"name":"raycast: raycasting from an entity to global origin yields correct direction","ok":true,"totalFrames":1,"totalTime":0.5}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -89,7 +89,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to local direction origin yields correct direction without transform"
-  # [TEST RESULT]{"name":"raycast: raycasting from an entity to local direction origin yields correct direction without transform","ok":true}
+  # [TEST RESULT]{"name":"raycast: raycasting from an entity to local direction origin yields correct direction without transform","ok":true,"totalFrames":1,"totalTime":0.5}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -123,7 +123,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to another entity works like globalTarget"
-  # [TEST RESULT]{"name":"raycast: raycasting from an entity to another entity works like globalTarget","ok":true}
+  # [TEST RESULT]{"name":"raycast: raycasting from an entity to another entity works like globalTarget","ok":true,"totalFrames":1,"totalTime":0.5}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -156,7 +156,7 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to local direction origin yields correct direction with last entity rotated"
-  # [TEST RESULT]{"name":"raycast: raycasting from an entity to local direction origin yields correct direction with last entity rotated","ok":true}
+  # [TEST RESULT]{"name":"raycast: raycasting from an entity to local direction origin yields correct direction with last entity rotated","ok":true,"totalFrames":1,"totalTime":0.5}
   end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
@@ -171,8 +171,8 @@ The file that produced this snapshot was:
 ```typescript
 import { engine, Raycast, RaycastQueryType, RaycastResult, Transform } from '@dcl/sdk/ecs'
 import { Quaternion, Vector3 } from '@dcl/sdk/math'
-import { test } from '../testing'
-import { assertComponentValue } from '../testing/assert'
+import { test } from '@dcl/sdk/testing'
+import { assertComponentValue } from '@dcl/sdk/testing/assert'
 export * from '@dcl/sdk'
 
 test("raycast: raycasting from an entity to global origin yields correct direction", function* (context) {

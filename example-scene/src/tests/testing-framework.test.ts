@@ -1,6 +1,6 @@
 import { engine } from "@dcl/sdk/ecs";
-import { assertEquals } from "../testing/assert";
-import { test } from "../testing";
+import { assertEquals } from "@dcl/sdk/testing/assert";
+import { test } from "@dcl/sdk/testing";
 export * from '@dcl/sdk'
 
 // this system counts the amount of times it was executed
