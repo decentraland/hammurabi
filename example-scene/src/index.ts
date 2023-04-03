@@ -1,5 +1,5 @@
 import { engine, executeTask, Material, Transform } from '@dcl/sdk/ecs'
-import { Color4 } from '@dcl/sdk/math'
+import { Color4, Quaternion, Vector3 } from '@dcl/sdk/math'
 import { initBillboardsScene } from './billboards'
 import { initCameraRotation } from './cameraRotation'
 

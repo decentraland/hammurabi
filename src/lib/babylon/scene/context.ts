@@ -49,6 +49,9 @@ export class SceneContext implements EngineApiInterface {
   // it won't be removed from the set
   pendingRaycastOperations = new Set<Entity>()
 
+  // log function for tests
+  log: (message: string) => void = () => void 0
+
   components: Record<number, ComponentDefinition<any>> = {
     [transformComponent.componentId]: createLwwStore(transformComponent),
     [billboardComponent.componentId]: createLwwStore(billboardComponent),
@@ -191,16 +194,17 @@ export class SceneContext implements EngineApiInterface {
     // update the components of the static entities to be sent to the scene
     this.updateStaticEntities()
 
+    // write all the CRDT updates in the outgoingMessagesBuffer
+    for (const i in this.components) {
+      this.components[i].dumpCrdtUpdates(this.outgoingMessagesBuffer)
+    }
+
     if (this.outgoingMessagesBuffer.currentWriteOffset()) {
       outMessages.push(this.outgoingMessagesBuffer.toBinary())
       this.outgoingMessagesBuffer.incrementWriteOffset(-this.outgoingMessagesBuffer.currentWriteOffset())
       this.outgoingMessagesBuffer.incrementReadOffset(-this.outgoingMessagesBuffer.currentReadOffset())
     }
 
-    // write all the CRDT updates in the outgoingMessagesBuffer
-    for (const i in this.components) {
-      this.components[i].dumpCrdtUpdates(this.outgoingMessagesBuffer)
-    }
 
     // finally resolve the future so the function "receiveBatch" is unblocked
     // and the next scripting frame is allowed to happen

@@ -29,3 +29,4 @@ static/js
 static/scene-info.json
 
 static/ipfs
+example-scene/src/tests/*.js.map

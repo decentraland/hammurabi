@@ -1,7 +1,7 @@
 import { withQuickJsVm } from '../../src/lib/quick-js/index'
 
 describe('ensure that VM works', () => {
-  it('runs no code and vm has no leaks', async () => withQuickJsVm(async () => {}))
+  it('runs no code and vm has no leaks', async () => withQuickJsVm(async () => { }))
 
   it('runs empty script and returns without leaks', async () =>
     withQuickJsVm(async (opts) => {
@@ -13,6 +13,12 @@ describe('ensure that VM works', () => {
       expect(opts.eval(`void 0`)).toEqual(void 0)
       expect(opts.eval(`1==1`)).toEqual(true)
     }))
+
+  it('test error handling', async () =>
+    expect(withQuickJsVm(async (opts) => {
+      opts.eval(`undefined.a = 1`)
+    })).rejects.toThrow("cannot set property 'a' of undefined")
+  )
 
   it('converts qjs types to js', async () =>
     withQuickJsVm(async (opts) => {
@@ -187,6 +193,51 @@ describe('ensure that VM works', () => {
 
       expect(logs).toEqual(['onStart', 'onUpdate', 0, 'onUpdate', 1])
     }))
+
+  it('eval graceful failure', async () =>
+    expect(withQuickJsVm(async (opts) => {
+      opts.eval(`
+        function test () {
+          throw new Error('test error')
+        }
+        test()
+      `)
+    })).rejects.toThrow('test error'))
+
+  it('eval syntax graceful failure', async () =>
+    expect(withQuickJsVm(async (opts) => {
+      opts.eval(`as{d`)
+    })).rejects.toThrow("expecting ';'"))
+
+  it('onStart graceful failure', async () =>
+    expect(withQuickJsVm(async (opts) => {
+      opts.eval(`
+        module.exports.onStart = async function () {
+          throw new Error('onStart error')
+        }
+      `)
+
+      await opts.onStart()
+    })).rejects.toThrow('onStart error'))
+
+
+  it('onStart graceful failure', async () =>
+    expect(withQuickJsVm(async (opts) => {
+      opts.eval(`
+      module.exports.onStart = async function () {
+        throw new Error('onStart error')
+      }
+    `)
+
+      await opts.onStart()
+    })).rejects.toThrow('onStart error'))
+
+  it('onUpdate graceful failure', async () =>
+    expect(withQuickJsVm(async (opts) => {
+      opts.eval(`module.exports.onUpdate = undefined`)
+
+      await opts.onUpdate(1)
+    })).rejects.toThrow('not a function'))
 
   it('setImmediate works resolving promise', async () =>
     withQuickJsVm(async (opts) => {

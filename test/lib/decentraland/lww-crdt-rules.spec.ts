@@ -346,13 +346,13 @@ describe('integration lww', () => {
     expect(component.has(entity)).toBe(true)
     expect(component.get(entity)).toEqual({ u8: 1 })
 
-    assertCrdtUpdates('PUT c=1 e=0x1 t=1 v=byte[1]')
+    assertCrdtUpdates('PUT c=1 e=0x1 t=1 #v=byte[1]')
 
     expect(() => component.create(entity, { u8: 1 })).toThrow()
     component.createOrReplace(entity, { u8: 2 })
     expect(component.get(entity)).toEqual({ u8: 2 })
 
-    assertCrdtUpdates('PUT c=1 e=0x1 t=2 v=byte[1]')
+    assertCrdtUpdates('PUT c=1 e=0x1 t=2 #v=byte[1]')
   })
 
   it('unexistent returns undefined', () => {
