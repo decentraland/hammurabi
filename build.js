@@ -81,7 +81,6 @@ function runTypeChecker() {
     typeCheckerFuture.resolve(code)
   })
 
-
   ts.stdout.pipe(process.stdout)
   ts.stderr.pipe(process.stderr)
 

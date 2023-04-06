@@ -1,4 +1,4 @@
-# snapshot test for example-scene/bin/index.js
+# snapshot test for testing-realm/scene-0_1/bin/index.js
 ```mermaid
 sequenceDiagram
   participant runtime

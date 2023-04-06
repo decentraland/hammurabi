@@ -1,5 +1,5 @@
 {
-  "name": "dcl-project",
+  "name": "scene-0_0",
   "version": "1.0.0",
   "description": "SDK7 Template scene",
   "scripts": {
@@ -8,9 +8,6 @@
     "build-tests": "sdk-commands build --single=src/tests/*.test.ts",
     "upgrade-sdk": "npm install --save-dev @dcl/sdk@latest",
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
-  },
-  "devDependencies": {
-    "@dcl/sdk": "^7.1.4-4598596181.commit-a983260"
   },
   "prettier": {
     "semi": false,

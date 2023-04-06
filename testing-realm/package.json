@@ -1,0 +1,25 @@
+{
+  "name": "testing-realm",
+  "scripts": {
+    "start": "sdk-commands start",
+    "build": "sdk-commands build",
+    "upgrade-sdk": "npm install --save-dev @dcl/sdk@latest",
+    "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
+  },
+  "devDependencies": {
+    "@dcl/sdk": "^7.1.4-4629772642.commit-2102c91"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 120,
+    "trailingComma": "none"
+  },
+  "dependencies": {
+    "fp-future": "^1.0.1"
+  },
+  "workspaces": [
+    "scene-0_0",
+    "scene-0_1"
+  ]
+}

@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+**/node_modules
+
 /.pnp
 .pnp.js
 
@@ -26,7 +28,11 @@ yarn-error.log*
 .env
 
 static/js
-static/scene-info.json
 
 static/ipfs
-example-scene/src/tests/*.js.map
+
+testing-realm/*/bin
+testing-realm/*/node_modules
+testing-realm/*/package-lock.json
+testing-realm/**/*.js
+testing-realm/**/*.js.map

@@ -1,4 +1,4 @@
-# snapshot test for example-scene/src/tests/raycasts-with-transfomed-origin.test.js
+# snapshot test for testing-realm/scene-0_0/src/tests/raycasts-with-transfomed-origin.test.js
 ```mermaid
 sequenceDiagram
   participant runtime
