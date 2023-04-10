@@ -5,11 +5,6 @@ sequenceDiagram
   participant scene
   participant renderer
   participant babylon
-  scene-->>runtime: require("buffer")
-  scene-->>runtime: require("long")
-  scene-->>runtime: require("~system/Testing")
-  scene-->>runtime: require("~system/EngineApi")
-  scene-->>runtime: require("~system/EngineApi")
   runtime-->>scene: onStart()
   activate scene
   activate renderer
@@ -24,7 +19,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
     babylon-->>renderer: render()
     babylon-->>renderer: lateRender()
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -39,7 +33,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: raycasting from a translated origin works"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x200 t=1 #v={"position":{"_isDirty":true,"_x":10,"_y":0,"_z":10},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -58,7 +51,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from a translated origin works"
   # [TEST RESULT]{"name":"raycast: raycasting from a translated origin works","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -73,7 +65,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: localDirection raycasting from a translated origin works"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x202 t=1 #v={"position":{"_isDirty":true,"_x":10,"_y":0,"_z":10},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.5,"_y":0.5,"_z":0.5},"parent":0}
@@ -92,7 +83,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: localDirection raycasting from a translated origin works"
   # [TEST RESULT]{"name":"raycast: localDirection raycasting from a translated origin works","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -107,7 +97,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: localDirection raycasting from a translated origin works, with rotated parent"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x204 t=1 #v={"position":{"_isDirty":true,"_x":10,"_y":0,"_z":10},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.5,"_y":0.5,"_z":0.5},"parent":0}
@@ -127,7 +116,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: localDirection raycasting from a translated origin works, with rotated parent"
   # [TEST RESULT]{"name":"raycast: localDirection raycasting from a translated origin works, with rotated parent","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -142,7 +130,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: localDirection raycasting from a translated origin works, with rotated parent and offsetOrigin"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x207 t=1 #v={"position":{"_isDirty":true,"_x":10,"_y":0,"_z":10},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.5,"_y":0.5,"_z":0.5},"parent":0}
@@ -162,7 +149,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: localDirection raycasting from a translated origin works, with rotated parent and offsetOrigin"
   # [TEST RESULT]{"name":"raycast: localDirection raycasting from a translated origin works, with rotated parent and offsetOrigin","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()

@@ -1,14 +1,14 @@
 import * as BABYLON from '@babylonjs/core'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { readFile, writeFile } from 'fs/promises'
 import { SceneContext } from '../../../src/lib/babylon/scene/context'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
-import { ComponentDeclaration, SerDe } from '../../../src/lib/decentraland/crdt-internal/components'
+import { ComponentDeclaration } from '../../../src/lib/decentraland/crdt-internal/components'
 import { DeleteComponent, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
 import { prettyPrintCrdtMessage } from '../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint'
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
 import { Entity } from '../../../src/lib/decentraland/types'
 import { coerceMaybeU8Array } from '../../../src/lib/quick-js/convert-handles'
+import { BootstrapDataResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/environment_api.gen'
 
 export type SceneTestEnvironment = {
   engine: BABYLON.NullEngine
@@ -17,6 +17,7 @@ export type SceneTestEnvironment = {
   ctx: SceneContext
   loadableScene: LoadableScene
   logMessage: (message: string) => void
+  startEngine: () => void
 }
 
 /**
@@ -98,10 +99,10 @@ export function testWithEngine(
       jest.spyOn(ctx, 'crdtGetState').mockImplementation(async function () {
         messages.push(`  activate renderer`)
         messages.push(`  scene-->>renderer: crdtGetState()`)
-        const { data } = await SceneContext.prototype.crdtGetState.call(this)
+        const { data, hasEntities } = await SceneContext.prototype.crdtGetState.call(this)
         data.forEach(_ => addMessages(_, '    renderer-->>scene: '))
         messages.push(`  deactivate renderer`)
-        return { data }
+        return { data, hasEntities }
       })
 
       engine.onBeginFrameObservable.add(() => {
@@ -117,39 +118,34 @@ export function testWithEngine(
       engine.dispose()
     })
 
-    function startEngine() {
-      if (!engineStarted) {
-        engineStarted = true
-        engine.runRenderLoop(() => {
-          scene.render(false)
-        })
-      }
-    }
-
     fn({
       get engine() {
         if (!engine) throw new Error('You can only access the engine inside a test')
-        startEngine()
         return engine
       },
       get scene() {
         if (!scene) throw new Error('You can only access the scene inside a test')
-        startEngine()
         return scene
       },
       get ctx() {
         if (!ctx) throw new Error('You can only access the ctx inside a test')
-        startEngine()
         return ctx
       },
       get camera() {
         if (!camera) throw new Error('You can only access the ctx inside a test')
-        startEngine()
         return camera
       },
       loadableScene: params,
       logMessage(message) {
         messages.push(message)
+      },
+      startEngine() {
+        if (!engineStarted) {
+          engineStarted = true
+          engine.runRenderLoop(() => {
+            scene.render(false)
+          })
+        }
       }
     })
 

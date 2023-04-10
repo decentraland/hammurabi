@@ -20,6 +20,8 @@ testWithEngine("transform component compliance tests", {
   const entity = 600 as Entity
   let timestamp = 0
 
+  beforeEach(() => $.startEngine())
+
   test('put a transform should create the entity and correctly reflect it on the entity\'s transform', async () => {
     // before processing the message, the entity doesn't exist
     expect($.ctx.entities.has(entity)).toBeFalsy()
@@ -70,7 +72,6 @@ testWithEngine("transform component compliance tests", {
     expect(babylonEntity.rotationQuaternion).toEqual(transform.rotation)
   })
 
-
   test('receiving same timestamp message with different data should produce a conflict resolution message', async () => {
     // the entity should exist in order to update it
     expect($.ctx.entities.has(entity)).toBeTruthy()
@@ -97,7 +98,6 @@ testWithEngine("transform component compliance tests", {
     const babylonEntity = $.ctx.entities.get(entity)
     expect(babylonEntity).toBeTruthy()
   })
-
 
   test('removing a component should take the transform values back to Transform.Identity', async () => {
     // the entity should exist in order to update it
@@ -138,6 +138,8 @@ testWithEngine("reparenting compliance tests, remove one node from the middle of
   const entityF = 0xF as Entity
 
   let timestamp = 0
+
+  beforeEach(() => $.startEngine())
 
   test('first create all entities', async () => {
     // act, sending the CRDT update to the engine and waiting for the frame to process
@@ -216,6 +218,8 @@ testWithEngine("reparenting compliance tests, parent to an unexistent entity use
 
   let timestamp = 0
 
+  beforeEach(() => $.startEngine())
+
   test('first create the tailing entities, not attached to existing entities', async () => {
     // act, sending the CRDT update to the engine and waiting for the frame to process
     await $.ctx.crdtSendToRenderer({
@@ -274,8 +278,6 @@ testWithEngine("reparenting compliance tests, parent to an unexistent entity use
   })
 })
 
-
-
 testWithEngine("reparenting compliance tests, remove one node from the middle of the chain", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
@@ -289,6 +291,8 @@ testWithEngine("reparenting compliance tests, remove one node from the middle of
   const entityF = 0xF as Entity
 
   let timestamp = 0
+
+  beforeEach(() => $.startEngine())
 
   test('first create all entities', async () => {
     // act, sending the CRDT update to the engine and waiting for the frame to process
@@ -424,6 +428,7 @@ for (const test of sequences) {
     entity: { content: [], metadata: {} },
     id: '123'
   }, ($) => {
+    beforeEach(() => $.startEngine())
 
     Object.entries(test).forEach(([step, state]) => {
       const _ = parseParentingCommand(step)
@@ -458,7 +463,7 @@ describe('cyclic recovery with permutations', () => {
       entity: { content: [], metadata: {} },
       id: '123'
     }, ($) => {
-
+      beforeEach(() => $.startEngine())
       test(`do the test in order ${permutation.cases}`, async () => {
         const builder = new CrdtBuilder()
 
@@ -493,7 +498,7 @@ describe('cyclic recovery with permutations', () => {
       entity: { content: [], metadata: {} },
       id: '123'
     }, ($) => {
-
+      beforeEach(() => $.startEngine())
       test(`do the test in order ${permutation.cases}`, async () => {
         // act, process one by one the messages
         for (const step of permutation.cases) {

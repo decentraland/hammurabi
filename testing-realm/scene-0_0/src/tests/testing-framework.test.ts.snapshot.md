@@ -5,11 +5,6 @@ sequenceDiagram
   participant scene
   participant renderer
   participant babylon
-  scene-->>runtime: require("buffer")
-  scene-->>runtime: require("long")
-  scene-->>runtime: require("~system/Testing")
-  scene-->>runtime: require("~system/EngineApi")
-  scene-->>runtime: require("~system/EngineApi")
   runtime-->>scene: onStart()
   activate scene
   activate renderer
@@ -24,7 +19,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
     babylon-->>renderer: render()
     babylon-->>renderer: lateRender()
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -39,7 +33,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test testing framework: yield works"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -53,7 +46,6 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "⏱️ yield promise"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -66,10 +58,9 @@ sequenceDiagram
   activate scene
   loop Run Systems
   scene-->>scene: engine.update()
-  end
+  Note right of scene: "⏱️ yield"
   scene->>renderer: crdtSendToRenderer()
   activate renderer
-  Note right of scene: "⏱️ yield"
     babylon-->>renderer: render()
     babylon-->>renderer: lateRender()
     renderer-->>scene: PUT c=1 e=0x2 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -81,7 +72,6 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "⏱️ yield function"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -95,7 +85,6 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -109,7 +98,6 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "⏱️ yield function"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -123,7 +111,6 @@ sequenceDiagram
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "⏱️ yield promise"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -136,10 +123,9 @@ sequenceDiagram
   activate scene
   loop Run Systems
   scene-->>scene: engine.update()
-  end
+  Note right of scene: "⏱️ yield"
   scene->>renderer: crdtSendToRenderer()
   activate renderer
-  Note right of scene: "⏱️ yield"
     babylon-->>renderer: render()
     babylon-->>renderer: lateRender()
     renderer-->>scene: PUT c=1 e=0x2 t=11 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -152,7 +138,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed testing framework: yield works"
   # [TEST RESULT]{"name":"testing framework: yield works","ok":true,"totalFrames":8,"totalTime":4}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -168,7 +153,6 @@ sequenceDiagram
   Note right of scene: "🧪 Running test testing framework: ensure previous test's yield are resolved"
   Note right of scene: "🟢 Test passed testing framework: ensure previous test's yield are resolved"
   # [TEST RESULT]{"name":"testing framework: ensure previous test's yield are resolved","ok":true,"totalFrames":0,"totalTime":0}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()

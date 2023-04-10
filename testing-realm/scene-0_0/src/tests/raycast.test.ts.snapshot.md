@@ -5,11 +5,6 @@ sequenceDiagram
   participant scene
   participant renderer
   participant babylon
-  scene-->>runtime: require("buffer")
-  scene-->>runtime: require("long")
-  scene-->>runtime: require("~system/Testing")
-  scene-->>runtime: require("~system/EngineApi")
-  scene-->>runtime: require("~system/EngineApi")
   runtime-->>scene: onStart()
   activate scene
   activate renderer
@@ -24,7 +19,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
     babylon-->>renderer: render()
     babylon-->>renderer: lateRender()
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -39,7 +33,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: raycasting from an entity to global origin yields correct direction"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x200 t=1 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -57,7 +50,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to global origin yields correct direction"
   # [TEST RESULT]{"name":"raycast: raycasting from an entity to global origin yields correct direction","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -72,7 +64,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: raycasting from an entity to local direction origin yields correct direction without transform"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x201 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":10,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -90,7 +81,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to local direction origin yields correct direction without transform"
   # [TEST RESULT]{"name":"raycast: raycasting from an entity to local direction origin yields correct direction without transform","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -105,7 +95,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: raycasting from an entity to another entity works like globalTarget"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x202 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":10,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -124,7 +113,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to another entity works like globalTarget"
   # [TEST RESULT]{"name":"raycast: raycasting from an entity to another entity works like globalTarget","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()
@@ -139,7 +127,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🧪 Running test raycast: raycasting from an entity to local direction origin yields correct direction with last entity rotated"
   Note right of scene: "⏱️ yield"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x204 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":10,"_z":0},"rotation":{"_isDirty":true,"_x":0.4619397521018982,"_y":0.19134171307086945,"_z":0.19134171307086945,"_w":0.8446232080459595},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -157,7 +144,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "🟢 Test passed raycast: raycasting from an entity to local direction origin yields correct direction with last entity rotated"
   # [TEST RESULT]{"name":"raycast: raycasting from an entity to local direction origin yields correct direction with last entity rotated","ok":true,"totalFrames":1,"totalTime":0.5}
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     babylon-->>renderer: render()

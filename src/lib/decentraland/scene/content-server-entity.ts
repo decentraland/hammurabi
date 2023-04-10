@@ -14,7 +14,7 @@ export type LoadableScene = Readonly<{
   entity: ContentServerEntity
 }>
 
-export function resolveFile(entity: ContentServerEntity, src: string): string | null {
+export function resolveFile(entity: Pick<ContentServerEntity, 'content'>, src: string): string | null {
   // filenames are lower cased as per https://adr.decentraland.org/adr/ADR-80
   const normalized = src.toLowerCase()
 

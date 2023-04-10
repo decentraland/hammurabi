@@ -2,7 +2,7 @@ import * as BABYLON from '@babylonjs/core'
 import { parseEntityUrn } from '../../decentraland/identifiers'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
 import { SceneContext } from "./context"
-import { connectSceneContextUsingQuickJs } from './quickjs-runtime'
+import { connectSceneContextUsingWebWorkerQuickJs } from './webworker-runtime'
 
 export const loadedScenesByEntityId = new Map<string /* EntityID, not URN */, SceneContext>()
 
@@ -22,10 +22,7 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, urn: string) 
 
   const ctx = new SceneContext(engineScene, loadableScene)
 
-  connectSceneContextUsingQuickJs(ctx, loadableScene, () => ctx.stopped.isPending).catch((err) => {
-    console.error(err)
-    debugger
-  })
+  connectSceneContextUsingWebWorkerQuickJs(ctx, loadableScene)
 
   loadedScenesByEntityId.set(parsed.entityId, ctx)
 }

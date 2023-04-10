@@ -1,4 +1,4 @@
-/// <reference path="../../../example-scene/node_modules/@dcl/js-runtime/apis.d.ts" />
+/// <reference path="../../../testing-realm/node_modules/@dcl/js-runtime/apis.d.ts" />
 
 import { Quaternion, Vector3 } from "@babylonjs/core"
 import { Transform } from "../../../src/lib/decentraland/sdk-components/transform-component"
