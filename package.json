@@ -13,6 +13,7 @@
   "dependencies": {
     "@dcl/protocol": "^1.0.0-4493564897.commit-c858f8a",
     "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
+    "@dcl/schemas": "^6.15.0",
     "@types/jest": "^29.4.0",
     "@types/node": "^18.14.4",
     "fp-future": "^1.0.1",

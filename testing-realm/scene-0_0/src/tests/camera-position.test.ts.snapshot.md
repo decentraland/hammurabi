@@ -1,4 +1,4 @@
-# snapshot test for example-scene/src/tests/camera-position.test.js
+# snapshot test for testing-realm/scene-0_0/src/tests/camera-position.test.js
 ```mermaid
 sequenceDiagram
   participant runtime

@@ -29,6 +29,10 @@ export const meshRendererComponent = declareComponentUsingProtobufJs(PBMeshRende
 
   // create a box and attach it to an entity
 
+  if (entity.meshRenderer) {
+    entity.meshRenderer.dispose()
+  }
+
   const instance = baseBox(entity.getScene()).createInstance("instance")
   instance.parent = entity
   instance.setEnabled(true)

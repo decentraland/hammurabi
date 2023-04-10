@@ -179,7 +179,7 @@ function pickingToRaycastHit(scene: SceneContext, pickingInfo: BABYLON.PickingIn
     direction: ray.direction,
     globalOrigin: globalCoordinatesToSceneCoordinates(scene, ray.origin),
     length: pickingInfo.distance,
-    position: pickingInfo.pickedPoint!,
+    position: globalCoordinatesToSceneCoordinates(scene, pickingInfo.pickedPoint!),
     entityId: getParentEntityId(pickingInfo.pickedMesh),
     meshName: pickingInfo.pickedMesh?.name
   }

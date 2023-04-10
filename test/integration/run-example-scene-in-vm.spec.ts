@@ -1,3 +1,3 @@
 import { runSnapshotTest } from "./testing-framework/runner"
 
-runSnapshotTest('example-scene/src/index.ts', 'example-scene/bin/index.js', `test/integration/run-example-scene-in-vm.spec.ts.snapshot.md`)
+runSnapshotTest('testing-realm/scene-0_1/src/index.ts', 'testing-realm/scene-0_1/bin/index.js', `test/integration/run-example-scene-in-vm.spec.ts.snapshot.md`)

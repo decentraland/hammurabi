@@ -13,14 +13,16 @@ import { Transform, transformComponent } from '../../decentraland/sdk-components
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from './logic/cyclic-transform'
-import { Matrix, Quaternion, Ray, Vector3, Vector4 } from '@babylonjs/core'
+import { Quaternion, Vector3 } from '@babylonjs/core'
+import { Scene } from '@dcl/schemas'
 import { billboardComponent } from '../../decentraland/sdk-components/billboard-component'
 import { raycastComponent, raycastResultComponent } from '../../decentraland/sdk-components/raycast-component'
-import { PBRaycast } from '@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen'
 import { meshRendererComponent } from '../../decentraland/sdk-components/mesh-renderer-component'
-import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from './coordinates'
 import { processRaycasts } from './logic/raycasts'
 import { meshColliderComponent } from '../../decentraland/sdk-components/mesh-collider-component'
+import { PARCEL_SIZE_METERS, parseParcelPosition } from '../../decentraland/positions'
+import { createParcelOutline } from '../visual/parcelOutline'
+import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from './coordinates'
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -72,6 +74,16 @@ export class SceneContext implements EngineApiInterface {
 
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
+
+    // the rootNode must be positioned according to the value of the "scenes.base" of the scene metadata (scene.json)
+    const metadata = loadableScene.entity.metadata as Scene
+    if (metadata.scene?.base) {
+      const base = parseParcelPosition(metadata.scene.base)
+      this.rootNode.position.set(base.x * PARCEL_SIZE_METERS, 0, base.y * PARCEL_SIZE_METERS)
+
+      const r = createParcelOutline(babylonScene, metadata.scene.base, metadata.scene.parcels)
+      r.result.parent = this.rootNode
+    }
 
     // add this scene to the update loop of the rendering engine
     babylonScene.getEngine().onBeginFrameObservable.add(this.update)
@@ -173,6 +185,10 @@ export class SceneContext implements EngineApiInterface {
       cameraTransform.rotation,
       cameraTransform.position
     )
+
+    // convert the camera position to scene-space coordinates
+    cameraTransform.position = globalCoordinatesToSceneCoordinates(this, cameraTransform.position)
+
     cameraTransform.scale.setAll(1)
   }
 
@@ -220,6 +236,7 @@ export class SceneContext implements EngineApiInterface {
     for (const [entityId] of this.entities) {
       this.removeEntity(entityId)
     }
+
     this.rootNode.parent = null
     this.rootNode.dispose()
 
