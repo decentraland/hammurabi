@@ -10,7 +10,7 @@ testWithEngine("static entities", {
   id: '123',
   enableStaticEntities: true
 }, ($) => {
-
+  beforeEach(() => $.startEngine())
   test("ensure CameraEntity transform is being sent to the scene in the initial state (crdtGetState)", async () => {
     const { data } = await $.ctx.crdtGetState()
 

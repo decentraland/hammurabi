@@ -7,7 +7,9 @@
       "settings": {
         "typescript.tsdk": "node_modules/typescript/lib"
       },
-      "extensions": []
+      "extensions": [
+        "bierner.markdown-mermaid"
+      ]
     }
   },
   "appPort": 8099,

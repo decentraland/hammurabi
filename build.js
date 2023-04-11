@@ -28,12 +28,12 @@ const nodeBuiltIns = () => {
   }
 }
 
-async function main() {
+async function buildBundle(entryPoint, output) {
   const context = await esbuild.context({
-    entryPoints: ['src/index.ts'],
+    entryPoints: [entryPoint],
     bundle: true,
     platform: 'browser',
-    outfile: 'static/js/bundle.js',
+    outfile: output,
     sourcemap: process.env.NO_SOURCEMAP ? undefined : 'linked',
     minify: PRODUCTION,
     plugins: [
@@ -42,16 +42,27 @@ async function main() {
   })
 
   if (WATCH_MODE) {
-    let { host, port } = await context.serve({
-      servedir: 'static',
-      port: 8099
-    })
-    console.log(`> Serving on http://${host}:${port}`)
+    await context.watch()
   } else {
     console.time(`> Building static files`)
     await context.rebuild()
     await context.dispose()
     console.timeEnd(`> Building static files`)
+  }
+  return context
+}
+
+async function main() {
+  const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
+
+  const ctxMain = await buildBundle('src/explorer/index.ts', 'static/js/bundle.js')
+
+  if (WATCH_MODE) {
+    let { host, port } = await ctxMain.serve({
+      servedir: 'static',
+      port: 8099
+    })
+    console.log(`> Serving on http://${host}:${port}`)
   }
 
   await runTypeChecker()
@@ -63,7 +74,7 @@ main().catch(err => {
 })
 
 function runTypeChecker() {
-  const args = [require.resolve('typescript/lib/tsc'), '-p', 'tsconfig.json']
+  const args = [require.resolve('typescript/lib/tsc'), '-p', 'tsconfig.json', '--preserveWatchOutput']
   if (WATCH_MODE) args.push('--watch')
 
   console.time('> Running typechecker')

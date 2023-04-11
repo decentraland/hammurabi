@@ -5,9 +5,7 @@ import { Entity } from '../../decentraland/types'
 import { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
-import { MaybeUint8Array } from '../../quick-js'
-import { coerceMaybeU8Array } from '../../quick-js/convert-handles'
-import { LoadableScene } from '../../decentraland/scene/content-server-entity'
+import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
 import { Transform, transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
@@ -23,6 +21,7 @@ import { meshColliderComponent } from '../../decentraland/sdk-components/mesh-co
 import { PARCEL_SIZE_METERS, parseParcelPosition } from '../../decentraland/positions'
 import { createParcelOutline } from '../visual/parcelOutline'
 import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from './coordinates'
+import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen'
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -221,7 +220,6 @@ export class SceneContext implements EngineApiInterface {
       this.outgoingMessagesBuffer.incrementReadOffset(-this.outgoingMessagesBuffer.currentReadOffset())
     }
 
-
     // finally resolve the future so the function "receiveBatch" is unblocked
     // and the next scripting frame is allowed to happen
     this.nextFrameFutures.forEach((fut) => fut.resolve({ data: outMessages }))
@@ -245,8 +243,23 @@ export class SceneContext implements EngineApiInterface {
     this.babylonScene.getEngine().onEndFrameObservable.removeCallback(this.lateUpdate)
   }
 
+  // impl RuntimeApi {
+    async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
+    // this method resolves a file deployed with the entity. it returns the content of the file and its hash
+    const hash = resolveFile(this.loadableScene.entity, file)
+    if (!hash) throw new Error(`File not found: ${file}`)
+
+    const absoluteLocation = resolveFileAbsolute(this.loadableScene, file)
+    if (!absoluteLocation) throw new Error(`File not found: ${file}`)
+
+    const result = await fetch(absoluteLocation).then($ => $.arrayBuffer())
+
+    return { content: new Uint8Array(result), hash }
+  }
+  // }
+
   // impl EngineApiInterface {
-  async crdtGetState(): Promise<{ data: Uint8Array[] }> {
+  async crdtGetState(): Promise<CrdtGetStateResponse> {
     // update the components of the static entities to be sent to the scene
     this.updateStaticEntities()
 
@@ -256,19 +269,17 @@ export class SceneContext implements EngineApiInterface {
       component.dumpCrdtUpdates(outgoingMessages)
     }
 
-    return { data: [outgoingMessages.toBinary()] }
+    return { hasEntities: false, data: [outgoingMessages.toBinary()] }
   }
-  async crdtSendToRenderer(payload: { data: MaybeUint8Array }): Promise<{ data: Uint8Array[] }> {
-    const incoming = coerceMaybeU8Array(payload.data)
-
-    if (incoming.byteLength) {
-      this.incomingMessages.push(new ReadWriteByteBuffer(incoming))
+  async crdtSendToRenderer(payload: CrdtSendToRendererRequest): Promise<CrdtSendToResponse> {
+    if (payload.data.byteLength) {
+      this.incomingMessages.push(new ReadWriteByteBuffer(payload.data))
     }
 
     // create a future to wait until all the messages are processed. even if there
     // are no updates, we must return the future for CRDT updates like the camera
     // position
-    const fut = future<{ data: Uint8Array[] }>()
+    const fut = future<CrdtSendToResponse>()
     this.nextFrameFutures.push(fut)
     return fut
   }

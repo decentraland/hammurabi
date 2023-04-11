@@ -10,6 +10,8 @@ testWithEngine("entities are removed on scene disposal", {
   entity: { content: [], metadata: {} },
   id: '123'
 }, ($) => {
+  beforeEach(() => $.startEngine())
+
   test('create an extra entity that will be deleted upon context disposal', async () => {
     const entityId = 2 as Entity
 
@@ -55,6 +57,8 @@ testWithEngine("scene context implents ADR-148", {
   entity: { content: [], metadata: {} },
   id: '123'
 }, ($) => {
+
+  beforeEach(() => $.startEngine())
 
   it('tests one empty update', async () => {
     const result = await $.ctx.crdtSendToRenderer({ data: new Uint8Array([]) })
@@ -110,6 +114,8 @@ testWithEngine("outgoingMessages are delivered on crdtSendToRenderer result", {
   entity: { content: [], metadata: {} },
   id: '123'
 }, ($) => {
+  beforeEach(() => $.startEngine())
+
   test('writing to outgoingMessagesBuffer redirects reaches crdtSendToRenderer', async () => {
     const entityId = 2 as Entity
 

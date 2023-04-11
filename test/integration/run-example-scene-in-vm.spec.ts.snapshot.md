@@ -5,10 +5,6 @@ sequenceDiagram
   participant scene
   participant renderer
   participant babylon
-  scene-->>runtime: require("buffer")
-  scene-->>runtime: require("long")
-  scene-->>runtime: require("~system/EngineApi")
-  scene-->>runtime: require("~system/EngineApi")
   runtime-->>scene: onStart()
   activate scene
   activate renderer
@@ -24,7 +20,6 @@ sequenceDiagram
     babylon-->>renderer: render()
     babylon-->>renderer: lateRender()
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x200 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":-16},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -341,7 +336,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 626"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x261 t=2 #v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0.008726535364985466,"_z":0,"_w":0.9999619126319885},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -403,7 +397,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 627"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x272 t=2 #v={"position":{"_isDirty":true,"_x":4,"_y":0.004999999888241291,"_z":-5.900000095367432},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.800000011920929,"_y":0.800000011920929,"_z":0.800000011920929},"parent":0}
@@ -466,7 +459,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 628"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x272 t=3 #v={"position":{"_isDirty":true,"_x":4,"_y":0.004999999888241291,"_z":-5.900000095367432},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.5,"_y":0.5,"_z":0.5},"parent":0}
@@ -530,7 +522,6 @@ sequenceDiagram
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 629"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
-  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x272 t=4 #v={"position":{"_isDirty":true,"_x":4,"_y":0.004999999888241291,"_z":-5.900000095367432},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.10000000149011612,"_y":0.10000000149011612,"_z":0.10000000149011612},"parent":0}

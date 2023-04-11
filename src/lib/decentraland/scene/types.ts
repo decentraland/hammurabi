@@ -27,7 +27,7 @@ export type EngineApiInterface = {
    * 
    * This function is suggested in ADR-133 in the "GetInitialState" stage
    */
-  crdtGetState(): Promise<{ data: Uint8Array[] }>
+  crdtGetState(): Promise<{ data: Uint8Array[], hasEntities: boolean }>
   /**
    * The crdtSendToRenderer function is executed every tick of the scene, the payload
    * includes all the updates from the scripted scene, its result includes all the updates

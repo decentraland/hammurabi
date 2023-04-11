@@ -1,4 +1,4 @@
-import { withQuickJsVm } from '../../src/lib/quick-js/index'
+import { withQuickJsVm } from '../../../src/lib/quick-js/index'
 
 describe('ensure that VM works', () => {
   it('runs no code and vm has no leaks', async () => withQuickJsVm(async () => { }))
@@ -219,7 +219,6 @@ describe('ensure that VM works', () => {
 
       await opts.onStart()
     })).rejects.toThrow('onStart error'))
-
 
   it('onStart graceful failure', async () =>
     expect(withQuickJsVm(async (opts) => {

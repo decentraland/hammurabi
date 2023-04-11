@@ -1,7 +1,7 @@
 import "@babylonjs/inspector"
-import { initEngine } from "./lib/babylon";
-import { loadedScenesByEntityId, loadSceneContext, unloadScene } from "./lib/babylon/scene/load";
-import { resolveRealmBaseUrl } from "./lib/decentraland/realm-resolution";
+import { initEngine } from "../lib/babylon";
+import { loadedScenesByEntityId, loadSceneContext, unloadScene } from "../lib/babylon/scene/load";
+import { resolveRealmBaseUrl } from "../lib/decentraland/realm-resolution";
 import type { AboutResponse } from "@dcl/protocol/out-ts/decentraland/bff/http_endpoints.gen";
 
 export const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement // Get the canvas element
