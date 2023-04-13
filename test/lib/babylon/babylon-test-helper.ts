@@ -5,10 +5,10 @@ import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { ComponentDeclaration } from '../../../src/lib/decentraland/crdt-internal/components'
 import { DeleteComponent, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
 import { prettyPrintCrdtMessage } from '../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint'
+import { initScheduler } from '../../../src/lib/babylon/scene/update-scheduler'
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
 import { Entity } from '../../../src/lib/decentraland/types'
 import { coerceMaybeU8Array } from '../../../src/lib/quick-js/convert-handles'
-import { BootstrapDataResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/environment_api.gen'
 
 export type SceneTestEnvironment = {
   engine: BABYLON.NullEngine
@@ -84,6 +84,7 @@ export function testWithEngine(
 
       // the following functions "decorate" the function to instrument their inputs and outputs for snapshot generation
       jest.spyOn(ctx, 'crdtSendToRenderer').mockImplementation(async function (param) {
+        messages.push('  end')
         messages.push(`  scene->>renderer: crdtSendToRenderer()`)
         messages.push(`  activate renderer`)
         addMessages(coerceMaybeU8Array(param.data), '    scene-->>renderer: ')
@@ -105,11 +106,14 @@ export function testWithEngine(
         return { data, hasEntities }
       })
 
-      engine.onBeginFrameObservable.add(() => {
-        messages.push(`    babylon-->>renderer: render()`)
+      jest.spyOn(ctx, 'update').mockImplementation(function (hasQuota) {
+        messages.push(`    babylon-->>renderer: update()`)
+        return SceneContext.prototype.update.call(this, hasQuota)
       })
-      engine.onEndFrameObservable.add(() => {
-        messages.push(`    babylon-->>renderer: lateRender()`)
+
+      jest.spyOn(ctx, 'lateUpdate').mockImplementation(function () {
+        messages.push(`    babylon-->>renderer: lateUpdate()`)
+        return SceneContext.prototype.lateUpdate.call(this)
       })
     })
 
@@ -142,6 +146,9 @@ export function testWithEngine(
       startEngine() {
         if (!engineStarted) {
           engineStarted = true
+          initScheduler(scene, () => [ctx], 1000000)
+          engine.onBeginFrameObservable.add(() => messages.push((`  activate babylon`)))
+          engine.onEndFrameObservable.add(() => messages.push((`  deactivate babylon`)))
           engine.runRenderLoop(() => {
             scene.render(false)
           })
@@ -159,8 +166,6 @@ export function testWithEngine(
           messages.push(readFileSync(params.sourceFile, 'utf-8'))
           messages.push('```')
         }
-
-
 
         const snapshotFileContents = existsSync(params.snapshotFile) ? readFileSync(params.snapshotFile, 'utf-8') : ''
         const currentContents = messages.join('\n')

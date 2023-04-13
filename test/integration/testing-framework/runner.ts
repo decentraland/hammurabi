@@ -76,9 +76,11 @@ export function runSnapshotTest(sourceFile: string, bundle: string, snapshotFile
             env.logMessage(`\n  runtime-->>scene: onUpdate(${dt}) frameNumber=${frameCount++}`)
             env.logMessage('  activate scene')
 
+            env.logMessage('  loop Frame')
             env.logMessage('  loop Run Systems')
             env.logMessage('  scene-->>scene: engine.update()')
             await opts.onUpdate(dt)
+            env.logMessage('  end')
             env.logMessage('  deactivate scene')
           }
 

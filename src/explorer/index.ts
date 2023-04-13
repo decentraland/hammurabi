@@ -42,6 +42,8 @@ async function loadRealm(realmConnectionString: string) {
       }
     }
   }
+
+  return url
 }
 
 {
@@ -49,7 +51,8 @@ async function loadRealm(realmConnectionString: string) {
   async function uiChangeRealm() {
     realmInput.setAttribute('disabled', 'true')
     try {
-      await loadRealm(realmInput.value)
+      const url = await loadRealm(realmInput.value)
+      realmInput.value = url
     } finally {
       realmInput.removeAttribute('disabled')
     }

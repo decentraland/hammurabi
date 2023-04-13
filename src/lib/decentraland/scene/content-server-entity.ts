@@ -29,7 +29,7 @@ export function resolveFile(entity: Pick<ContentServerEntity, 'content'>, src: s
 export function resolveFileAbsolute(scene: LoadableScene, src: string): string | null {
   const resolved = resolveFile(scene.entity, src)
 
-  if (src) return scene.baseUrl + resolved
+  if (resolved) return scene.baseUrl + resolved
 
   return null
 }
