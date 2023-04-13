@@ -39,7 +39,8 @@ export async function withQuickJsVm<T>(
 
         if (result.error) {
           const error = dumpAndDispose(vm, result.error)
-          throw Object.assign(new Error(error.message), error)
+          if (error instanceof Error) throw error
+          throw Object.assign(new Error(error.toString()), error)
         }
 
         const $ = vm.unwrapResult(result)
@@ -98,7 +99,10 @@ export async function withQuickJsVm<T>(
     })
   } catch (err: any) {
     failures.push(err)
-    throw err
+    if (err instanceof Error)
+      throw err
+    else
+      throw Object.assign(new Error(err.message || `${err}`), err)
   } finally {
     let counter = 1000
     while (immediates.hasPendingJobs() || vm.runtime.hasPendingJob()) {

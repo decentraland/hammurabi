@@ -15,11 +15,15 @@ sequenceDiagram
 
   runtime-->>scene: onUpdate(0) frameNumber=0
   activate scene
+  loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
-    babylon-->>renderer: render()
-    babylon-->>renderer: lateRender()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
+  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x200 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":-16},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -170,7 +174,7 @@ sequenceDiagram
     scene-->>renderer: PUT c=1090 e=0x243 t=1 #v={"billboardMode":7}
     scene-->>renderer: PUT c=1090 e=0x24f t=1 #v={"billboardMode":7}
     scene-->>renderer: PUT c=1090 e=0x257 t=1 #v={"billboardMode":7}
-    scene-->>renderer: PUT c=1062 e=0x261 t=1 #v=byte[33]
+    scene-->>renderer: PUT c=1062 e=0x261 t=1 #v={"pointerEvents":[{"eventType":1,"eventInfo":{"button":1,"hoverText":"Press E to spawn","maxDistance":100,"showFeedback":true}}]}
     scene-->>renderer: PUT c=1067 e=0x20b t=1 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"localDirection","localDirection":{"x":0,"y":0,"z":1}},"maxDistance":999,"queryType":0,"continuous":true}
     scene-->>renderer: PUT c=1067 e=0x216 t=1 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"globalTarget","globalTarget":{"x":0,"y":-1,"z":1}},"maxDistance":999,"queryType":0,"continuous":true}
     scene-->>renderer: PUT c=1067 e=0x221 t=1 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"globalDirection","globalDirection":{"x":0,"y":-1,"z":0}},"maxDistance":999,"queryType":0,"continuous":true,"collisionMask":2}
@@ -320,22 +324,27 @@ sequenceDiagram
     scene-->>renderer: PUT c=1019 e=0x26f t=1 #v={"mesh":{"$case":"box","box":{}}}
     scene-->>renderer: PUT c=1019 e=0x270 t=1 #v={"mesh":{"$case":"box","box":{}}}
     scene-->>renderer: PUT c=1019 e=0x271 t=1 #v={"mesh":{"$case":"box","box":{}}}
-    babylon-->>renderer: render()
-    babylon-->>renderer: lateRender()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1068 e=0x20b t=1 #v={"timestamp":0,"globalOrigin":{"x":12,"y":5,"z":2.0999999046325684},"direction":{"x":0,"y":0,"z":1},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x216 t=1 #v={"timestamp":0,"globalOrigin":{"x":8,"y":8,"z":-1.899999976158142},"direction":{"x":-0.645896852016449,"y":-0.7266339063644409,"z":0.23413759469985962},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x221 t=1 #v={"timestamp":0,"globalOrigin":{"x":4,"y":5,"z":-5.900000095367432},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":4,"y":0.004999999888241291,"z":-5.900000095367432},"globalOrigin":{"x":4,"y":5,"z":-5.900000095367432},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":4.994999885559082,"meshName":"collider-box","entityId":513}]}
     renderer-->>scene: PUT c=1068 e=0x25c t=1 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
   deactivate renderer
+  end
   deactivate scene
 
   runtime-->>scene: onUpdate(0.1) frameNumber=1
   activate scene
+  loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 626"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
+  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x261 t=2 #v={"position":{"_isDirty":true,"_x":-2,"_y":1,"_z":-2},"rotation":{"_isDirty":true,"_x":0,"_y":0.008726535364985466,"_z":0,"_w":0.9999619126319885},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
@@ -381,22 +390,27 @@ sequenceDiagram
     scene-->>renderer: PUT c=1 e=0x271 t=2 #v={"position":{"_isDirty":true,"_x":19.5,"_y":3.1645259857177734,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     scene-->>renderer: PUT c=1067 e=0x216 t=2 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"globalTarget","globalTarget":{"x":0.0998334139585495,"y":-1,"z":0.9950041770935059}},"maxDistance":999,"queryType":0,"continuous":true}
     scene-->>renderer: PUT c=1018 e=0x272 t=1 #v={"mesh":{"$case":"sphere","sphere":{}}}
-    babylon-->>renderer: render()
-    babylon-->>renderer: lateRender()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=4 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1068 e=0x20b t=2 #v={"timestamp":0,"globalOrigin":{"x":12.52703857421875,"y":5.26401424407959,"z":2.0634987354278564},"direction":{"x":0.13365408778190613,"y":0.06696882098913193,"z":0.9887627363204956},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x216 t=2 #v={"timestamp":0,"globalOrigin":{"x":8.438006401062012,"y":8.219356536865234,"z":-1.925059199333191},"direction":{"x":-0.6529991030693054,"y":-0.722008466720581,"z":0.22868303954601288},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x221 t=2 #v={"timestamp":0,"globalOrigin":{"x":4.497230529785156,"y":5.249053001403809,"z":-5.93255615234375},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":4.497230529785156,"y":0.004999999888241291,"z":-5.93255615234375},"globalOrigin":{"x":4.497230529785156,"y":5.249053001403809,"z":-5.93255615234375},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":5.244052886962891,"meshName":"collider-box","entityId":513}]}
     renderer-->>scene: PUT c=1068 e=0x25c t=2 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
   deactivate renderer
+  end
   deactivate scene
 
   runtime-->>scene: onUpdate(0.2) frameNumber=2
   activate scene
+  loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 627"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
+  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x272 t=2 #v={"position":{"_isDirty":true,"_x":4,"_y":0.004999999888241291,"_z":-5.900000095367432},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.800000011920929,"_y":0.800000011920929,"_z":0.800000011920929},"parent":0}
@@ -443,22 +457,27 @@ sequenceDiagram
     scene-->>renderer: PUT c=1 e=0x271 t=3 #v={"position":{"_isDirty":true,"_x":19.5,"_y":3.609992027282715,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     scene-->>renderer: PUT c=1067 e=0x216 t=3 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"globalTarget","globalTarget":{"x":0.29552021622657776,"y":-1,"z":0.9553365111351013}},"maxDistance":999,"queryType":0,"continuous":true}
     scene-->>renderer: PUT c=1018 e=0x273 t=1 #v={"mesh":{"$case":"sphere","sphere":{}}}
-    babylon-->>renderer: render()
-    babylon-->>renderer: lateRender()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=5 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1068 e=0x20b t=3 #v={"timestamp":0,"globalOrigin":{"x":13.474966049194336,"y":5.749396324157715,"z":1.8032841682434082},"direction":{"x":0.373268187046051,"y":0.19000588357448578,"z":0.9080576300621033},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x216 t=3 #v={"timestamp":0,"globalOrigin":{"x":9.232139587402344,"y":8.624689102172852,"z":-2.1039347648620605},"direction":{"x":-0.6626867651939392,"y":-0.7137099504470825,"z":0.22685742378234863},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x221 t=3 #v={"timestamp":0,"globalOrigin":{"x":5.395548343658447,"y":5.708364009857178,"z":-6.165409564971924},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":5.395548343658447,"y":0.004999999888241291,"z":-6.165409564971924},"globalOrigin":{"x":5.395548343658447,"y":5.708364009857178,"z":-6.165409564971924},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":5.70336389541626,"meshName":"collider-box","entityId":513}]}
     renderer-->>scene: PUT c=1068 e=0x25c t=3 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
   deactivate renderer
+  end
   deactivate scene
 
   runtime-->>scene: onUpdate(0.3) frameNumber=3
   activate scene
+  loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 628"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
+  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x272 t=3 #v={"position":{"_isDirty":true,"_x":4,"_y":0.004999999888241291,"_z":-5.900000095367432},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.5,"_y":0.5,"_z":0.5},"parent":0}
@@ -506,22 +525,27 @@ sequenceDiagram
     scene-->>renderer: PUT c=1 e=0x271 t=4 #v={"position":{"_isDirty":true,"_x":19.5,"_y":3.973200559616089,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     scene-->>renderer: PUT c=1067 e=0x216 t=4 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"globalTarget","globalTarget":{"x":0.5646424889564514,"y":-1,"z":0.8253356218338013}},"maxDistance":999,"queryType":0,"continuous":true}
     scene-->>renderer: PUT c=1018 e=0x274 t=1 #v={"mesh":{"$case":"sphere","sphere":{}}}
-    babylon-->>renderer: render()
-    babylon-->>renderer: lateRender()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1068 e=0x20b t=4 #v={"timestamp":0,"globalOrigin":{"x":14.586153984069824,"y":6.373244285583496,"z":1.085394263267517},"direction":{"x":0.6429452896118164,"y":0.34357091784477234,"z":0.6845293045043945},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x216 t=4 #v={"timestamp":0,"globalOrigin":{"x":10.19977855682373,"y":9.159587860107422,"z":-2.6028285026550293},"direction":{"x":-0.6683892607688904,"y":-0.7047704458236694,"z":0.23781169950962067},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x221 t=4 #v={"timestamp":0,"globalOrigin":{"x":6.464929103851318,"y":6.304361343383789,"z":-6.812770366668701},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":6.464929103851318,"y":0.004999999888241291,"z":-6.812770366668701},"globalOrigin":{"x":6.464929103851318,"y":6.304361343383789,"z":-6.812770366668701},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":6.299361228942871,"meshName":"collider-box","entityId":513}]}
     renderer-->>scene: PUT c=1068 e=0x25c t=4 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
   deactivate renderer
+  end
   deactivate scene
 
   runtime-->>scene: onUpdate(0.4) frameNumber=4
   activate scene
+  loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
   Note right of scene: "creating new entity 629"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
+  end
   scene->>renderer: crdtSendToRenderer()
   activate renderer
     scene-->>renderer: PUT c=1 e=0x272 t=4 #v={"position":{"_isDirty":true,"_x":4,"_y":0.004999999888241291,"_z":-5.900000095367432},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":0.10000000149011612,"_y":0.10000000149011612,"_z":0.10000000149011612},"parent":0}
@@ -570,14 +594,17 @@ sequenceDiagram
     scene-->>renderer: PUT c=1 e=0x271 t=5 #v={"position":{"_isDirty":true,"_x":19.5,"_y":3.788154125213623,"_z":19.5},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     scene-->>renderer: PUT c=1067 e=0x216 t=5 #v={"originOffset":{"x":0,"y":0,"z":1.100000023841858},"direction":{"$case":"globalTarget","globalTarget":{"x":0.8414709568023682,"y":-1,"z":0.5403022766113281}},"maxDistance":999,"queryType":0,"continuous":true}
     scene-->>renderer: PUT c=1018 e=0x275 t=1 #v={"mesh":{"$case":"sphere","sphere":{}}}
-    babylon-->>renderer: render()
-    babylon-->>renderer: lateRender()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=7 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1068 e=0x20b t=5 #v={"timestamp":0,"globalOrigin":{"x":15.481843948364258,"y":7.039275646209717,"z":-0.19572320580482483},"direction":{"x":0.8224282264709473,"y":0.48890915513038635,"z":0.29082587361335754},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x216 t=5 #v={"timestamp":0,"globalOrigin":{"x":11.082706451416016,"y":9.774856567382812,"z":-3.5219240188598633},"direction":{"x":-0.6645640730857849,"y":-0.6991913318634033,"z":0.26360195875167847},"hits":[]}
     renderer-->>scene: PUT c=1068 e=0x221 t=5 #v={"timestamp":0,"globalOrigin":{"x":7.36585807800293,"y":6.95431661605835,"z":-7.984397888183594},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":7.36585807800293,"y":0.004999999888241291,"z":-7.984397888183594},"globalOrigin":{"x":7.36585807800293,"y":6.95431661605835,"z":-7.984397888183594},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":6.949316501617432,"meshName":"collider-box","entityId":513}]}
     renderer-->>scene: PUT c=1068 e=0x25c t=5 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
   deactivate renderer
+  end
   deactivate scene
 ```
 

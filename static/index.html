@@ -37,7 +37,12 @@
 </style>
 
 <nav>
-  <input id="realm-input" type="text" placeholder="Realm URL" value="/ipfs/testing-realm" />
+  <input id="realm-input" type="text" placeholder="Realm URL" value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main" list="programmingLanguages"/>
+  <datalist id="programmingLanguages">
+    <option value="/ipfs/testing-realm">/ipfs/testing-realm</option>
+    <option value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main">https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main</option>
+    <option value="menduz.dcl.eth">menduz.dcl.eth</option>
+  </datalist>
 </nav>
 
 <canvas id="renderCanvas" touch-action="none"></canvas>
