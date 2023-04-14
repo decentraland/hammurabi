@@ -48,6 +48,11 @@ export function setupEnvironment(scene: BABYLON.Scene) {
   envHelper.ground!.applyFog = true
   envHelper.ground!.checkCollisions = true
 
+  // here we add XR support
+  scene.createDefaultXRExperienceAsync({
+    floorMeshes: [envHelper.ground!],
+  });
+
   skybox.material = skyMaterial
 
   hemiLight.diffuse = BABYLON.Color3.White()

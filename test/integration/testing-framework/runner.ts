@@ -6,7 +6,7 @@ import { createRpcClient, createRpcServer } from "@dcl/rpc"
 import * as codegen from "@dcl/rpc/dist/codegen"
 import { TestingServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/testing.gen"
 import { MemoryTransport } from "@dcl/rpc/dist/transports/Memory"
-import { startSceneRuntime } from "../../../src/lib/quick-js/rpc-scene-runtime"
+import { startQuickJsSceneRuntime } from "../../../src/lib/quick-js/rpc-scene-runtime"
 import { connectContextToRpcServer } from "../../../src/lib/babylon/scene/connect-context-rpc"
 import { SceneContext } from "../../../src/lib/babylon/scene/context"
 
@@ -60,7 +60,7 @@ export function runSnapshotTest(sourceFile: string, bundle: string, snapshotFile
       const port = await client.createPort(bundle)
 
       // once the socket is connected, we proceed to start the runtime
-      await startSceneRuntime(port, {
+      await startQuickJsSceneRuntime(port, {
         log(...args) {
           env.logMessage('  Note right of scene: ' + args.map(_ => JSON.stringify(_)).join(', '))
         },

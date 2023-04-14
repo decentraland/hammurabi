@@ -1,4 +1,4 @@
-import { MaybeUint8Array } from "../../quick-js"
+import { CrdtGetStateResponse, CrdtMessageFromRendererRequest, CrdtMessageFromRendererResponse } from "@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen"
 
 /**
  * The scenes in any renderer implementing the Decentraland Protocol are controlled
@@ -27,14 +27,14 @@ export type EngineApiInterface = {
    * 
    * This function is suggested in ADR-133 in the "GetInitialState" stage
    */
-  crdtGetState(): Promise<{ data: Uint8Array[], hasEntities: boolean }>
+  crdtGetState(): Promise<CrdtGetStateResponse>
   /**
    * The crdtSendToRenderer function is executed every tick of the scene, the payload
    * includes all the updates from the scripted scene, its result includes all the updates
    * from the renderer engine for the scripted scene e.g. input events, camera position updates,
    * etc.
    */
-  crdtSendToRenderer(payload: { data: MaybeUint8Array }): Promise<{ data: Uint8Array[] }>
+  crdtSendToRenderer(payload: CrdtMessageFromRendererRequest): Promise<CrdtMessageFromRendererResponse>
 }
 
 

@@ -58,6 +58,8 @@ function removeCurrentGltf(entity: BabylonEntity) {
   }
 }
 
+const tmpVector = new BABYLON.Vector3()
+
 export function instantiateAassetContainer(assetContainer: BABYLON.AssetContainer, entity: BabylonEntity): BABYLON.InstantiatedEntries {
   const instances = assetContainer.instantiateModelsToScene(name => name, false)
 
@@ -79,6 +81,37 @@ export function instantiateAassetContainer(assetContainer: BABYLON.AssetContaine
           return !entity.context.deref()?.rootNode.isEnabled || (mesh._masterMesh !== null && mesh._masterMesh !== undefined)
         },
       })
+
+      const originalF = mesh.isInFrustum
+      /**
+       * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
+       * A mesh is in the frustum if its bounding box intersects the frustum
+       * @param frustumPlanes defines the frustum to test
+       * @returns true if the mesh is in the frustum planes
+       */
+      mesh.isInFrustum = function (this: BABYLON.AbstractMesh, frustumPlanes: BABYLON.Plane[]): boolean {
+        if (this.absolutePosition) {
+          const distanceToObject = tmpVector.copyFrom(this.absolutePosition).subtract(this.getScene().activeCamera!.position).length()
+
+          // cull out elements farther than 300meters
+          if (distanceToObject > 300)
+            return false
+
+          if (this._boundingInfo) {
+            if (this._boundingInfo.diagonalLength < 0.50 && distanceToObject > 30)
+              return false
+            // cull elements smaller than 20cm at 40meters
+            if (this._boundingInfo.diagonalLength < 0.20 && distanceToObject > 20)
+              return false
+            // cull elements smaller than 10cm at 20meters
+            if (this._boundingInfo.diagonalLength < 0.10 && distanceToObject > 15)
+              return false
+          }
+        }
+
+        return originalF.call(this, frustumPlanes)
+      }
+
     })
   }
 
