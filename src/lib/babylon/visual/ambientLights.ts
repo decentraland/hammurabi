@@ -22,6 +22,9 @@ export function setupEnvironment(scene: BABYLON.Scene) {
   gridGroundMaterial.mainColor.set(0.1, 0.1, 0.1).scaleInPlace(6)
   gridGroundMaterial.lineColor.set(0, 0, 0)
 
+  // prevent z-fighting with ground planes
+  gridGroundMaterial.disableDepthWrite = true
+
   envHelper.skybox?.setEnabled(false)
 
   const skybox = BABYLON.MeshBuilder.CreateSphere(
@@ -87,7 +90,8 @@ export function setupEnvironment(scene: BABYLON.Scene) {
 
   return {
     setCamera,
-    repositionCamera
+    repositionCamera,
+    reflectionProbe
   }
 }
 

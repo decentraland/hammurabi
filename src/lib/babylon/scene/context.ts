@@ -7,27 +7,24 @@ import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-p
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
 import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
-import { Transform, transformComponent } from '../../decentraland/sdk-components/transform-component'
+import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
-import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
+import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from './logic/cyclic-transform'
-import { Quaternion, Vector3 } from '@babylonjs/core'
+import { Vector3 } from '@babylonjs/core'
 import { Scene } from '@dcl/schemas'
 import { billboardComponent } from '../../decentraland/sdk-components/billboard-component'
 import { raycastComponent, raycastResultComponent } from '../../decentraland/sdk-components/raycast-component'
 import { meshRendererComponent } from '../../decentraland/sdk-components/mesh-renderer-component'
 import { processRaycasts } from './logic/raycasts'
 import { meshColliderComponent } from '../../decentraland/sdk-components/mesh-collider-component'
-import { PARCEL_SIZE_METERS, parseParcelPosition } from '../../decentraland/positions'
+import { PARCEL_SIZE_METERS, gridToWorld, parseParcelPosition } from '../../decentraland/positions'
 import { createParcelOutline } from '../visual/parcelOutline'
-import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from './coordinates'
 import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen'
-
-export const StaticEntities = {
-  RootEntity: 0 as Entity,
-  PlayerEntity: 1 as Entity,
-  CameraEntity: 2 as Entity,
-} as const
+import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-component'
+import { AssetManager } from './asset-manager'
+import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
+import { StaticEntities, updateStaticEntities } from './logic/static-entities'
 
 export class SceneContext implements EngineApiInterface {
   entities = new Map<Entity, BabylonEntity>()
@@ -45,6 +42,9 @@ export class SceneContext implements EngineApiInterface {
   incomingMessages: ByteBuffer[] = []
   // stash of outgoing messages ready to be sent to back to the scripting scene
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
+  // when we finish to process all the income messages of a tick, 
+  // set finishedProcessingFrame to true to send the outgoing messages, then to false.
+  finishedProcessingFrame: boolean = false
 
   // the follwing set contains a list of pending raycast queries. if a query is continous,
   // it won't be removed from the set
@@ -60,6 +60,8 @@ export class SceneContext implements EngineApiInterface {
     [raycastResultComponent.componentId]: createLwwStore(raycastResultComponent),
     [meshRendererComponent.componentId]: createLwwStore(meshRendererComponent),
     [meshColliderComponent.componentId]: createLwwStore(meshColliderComponent),
+    [gltfContainerComponent.componentId]: createLwwStore(gltfContainerComponent),
+    [pointerEventsComponent.componentId]: createLwwStore(pointerEventsComponent),
   }
 
   // this flag is changed every time an entity changed its parent. the change
@@ -71,6 +73,14 @@ export class SceneContext implements EngineApiInterface {
   hierarchyChanged: boolean = false
   unparentedEntities = new Set<Entity>
 
+  // the assetmanager is used to centralize all the loadinng/unloading of assets
+  // of this scene. 
+  assetManager = new AssetManager(this)
+
+  // bounding vectors to calculate the distance to the outer bounds of the scene
+  // for the throttling mechanism
+  boundingBox?: BABYLON.BoundingBox
+
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
 
@@ -78,15 +88,45 @@ export class SceneContext implements EngineApiInterface {
     const metadata = loadableScene.entity.metadata as Scene
     if (metadata.scene?.base) {
       const base = parseParcelPosition(metadata.scene.base)
-      this.rootNode.position.set(base.x * PARCEL_SIZE_METERS, 0, base.y * PARCEL_SIZE_METERS)
+      this.rootNode.name = metadata.scene.base
+      gridToWorld(base.x, base.y, this.rootNode.position)
 
       const r = createParcelOutline(babylonScene, metadata.scene.base, metadata.scene.parcels)
       r.result.parent = this.rootNode
     }
 
-    // add this scene to the update loop of the rendering engine
-    babylonScene.getEngine().onBeginFrameObservable.add(this.update)
-    babylonScene.getEngine().onEndFrameObservable.add(this.lateUpdate)
+    // calculate a naive bounding box for the scene to calculate the distance to the outer bounds
+    // and use that distance to prioritize the message quota for ADR-148
+    if (metadata.scene?.parcels) {
+      let minX: number | null = null
+      let minZ: number | null = null
+      let maxX: number | null = null
+      let maxZ: number | null = null
+      for (const position of metadata.scene.parcels) {
+        const vec = parseParcelPosition(position)
+        if (minX == null || vec.x < minX) minX = vec.x
+        if (minZ == null || vec.y < minZ) minZ = vec.y
+        if (maxX == null || vec.x > maxX) maxX = vec.x
+        if (maxZ == null || vec.y > maxZ) maxZ = vec.y
+      }
+
+      // as per https://docs.decentraland.org/creator/development-guide/scene-limitations/
+      const height = Math.log2(metadata.scene.parcels.length + 1) * 20
+
+      if (minX) {
+        this.boundingBox = new BABYLON.BoundingBox(
+          new Vector3(minX! * PARCEL_SIZE_METERS, -1, minZ! * PARCEL_SIZE_METERS),
+          new Vector3((maxX! + 1) * PARCEL_SIZE_METERS, height, (maxZ! + 1) * PARCEL_SIZE_METERS)
+        )
+      }
+    }
+  }
+
+  // naivest implementation of the distance to the outer bounds of the scene
+  distanceToPoint(point: BABYLON.Vector3) {
+    if (!this.boundingBox) return 0
+    if (this.boundingBox?.intersectsPoint(point)) return 0
+    return this.boundingBox?.centerWorld.subtract(point).length()
   }
 
   removeEntity(entityId: Entity) {
@@ -119,8 +159,11 @@ export class SceneContext implements EngineApiInterface {
    * 
    * This function is declared as a property to be added and removed to the
    * rendering engine without binding the SceneContext object.
+   * 
+   * Returns false if the quota was exceeded. True if there is still time to continue
+   * processing more messages, similar to cooperative scheduling.
    */
-  readonly update = async () => {
+  update(hasQuota: () => boolean) {
     // process all the incoming messages
     while (this.incomingMessages.length) {
       const message = this.incomingMessages[0]
@@ -152,12 +195,11 @@ export class SceneContext implements EngineApiInterface {
           }
         }
 
-        // TODO: implement quota based processing as suggested in ADR-148
-        const quotaExceeded = false
-
         // if we exceeded the quota, finish the processing of this "message" and yield
         // the execution control back to the event loop
-        if (quotaExceeded) return
+        if (!hasQuota()) {
+          return false
+        }
       }
 
       // at this point, the whole "message" was consumed, we proceed to its removal
@@ -166,29 +208,10 @@ export class SceneContext implements EngineApiInterface {
       // this process resolves the re parenting of all entities preventing cycles
       resolveCyclicParening(this)
     }
-  }
 
-  /**
-   * This method updates the static entities to be reported back to the scene once
-   * per frame and when the scene asks for the initial state.
-   */
-  updateStaticEntities() {
-    // StaticEntities.CameraEntity
-    const Transform = this.components[transformComponent.componentId] as LastWriteWinElementSetComponentDefinition<Transform>
-    if (!Transform.has(StaticEntities.CameraEntity)) Transform.create(StaticEntities.CameraEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
-    const cameraTransform = Transform.getMutable(StaticEntities.CameraEntity)
-    const engineCamera = this.babylonScene.activeCamera
-
-    engineCamera?.getWorldMatrix().decompose(
-      undefined,
-      cameraTransform.rotation,
-      cameraTransform.position
-    )
-
-    // convert the camera position to scene-space coordinates
-    cameraTransform.position = globalCoordinatesToSceneCoordinates(this, cameraTransform.position)
-
-    cameraTransform.scale.setAll(1)
+    // mark the frame as processed. this signals the lateUpdate to respond to the scene with updates
+    this.finishedProcessingFrame = true
+    return true
   }
 
   /**
@@ -198,7 +221,14 @@ export class SceneContext implements EngineApiInterface {
    * The lateUpdate function is declared as a property to be added and removed to the
    * rendering engine without binding the SceneContext object.
    */
-  readonly lateUpdate = async () => {
+  lateUpdate() {
+    // only emit messages if there are receiver promises
+    if (!this.nextFrameFutures.length) return
+
+    // only finalize the frame once the incoming messages were cleared
+    if (!this.finishedProcessingFrame) return
+    this.finishedProcessingFrame = false
+
     const outMessages: Uint8Array[] = []
 
     processRaycasts(this)
@@ -229,22 +259,25 @@ export class SceneContext implements EngineApiInterface {
   }
 
   dispose() {
-    this.stopped.resolve()
-
     for (const [entityId] of this.entities) {
       this.removeEntity(entityId)
     }
 
+    this.stopped.resolve()
+
+    this.assetManager.dispose()
     this.rootNode.parent = null
     this.rootNode.dispose()
+  }
 
-    // remove this scene from the rendering update loop
-    this.babylonScene.getEngine().onBeginFrameObservable.removeCallback(this.update)
-    this.babylonScene.getEngine().onEndFrameObservable.removeCallback(this.lateUpdate)
+  // this method exists to be a wrapper of the function. so it can be mocked for tests without
+  // wizzardy
+  updateStaticEntities() {
+    updateStaticEntities(this)
   }
 
   // impl RuntimeApi {
-    async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
+  async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
     // this method resolves a file deployed with the entity. it returns the content of the file and its hash
     const hash = resolveFile(this.loadableScene.entity, file)
     if (!hash) throw new Error(`File not found: ${file}`)
@@ -260,6 +293,7 @@ export class SceneContext implements EngineApiInterface {
 
   // impl EngineApiInterface {
   async crdtGetState(): Promise<CrdtGetStateResponse> {
+
     // update the components of the static entities to be sent to the scene
     this.updateStaticEntities()
 

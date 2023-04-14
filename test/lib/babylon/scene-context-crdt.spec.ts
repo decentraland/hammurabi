@@ -4,6 +4,7 @@ import { DeleteEntity, PutComponentOperation } from '../../../src/lib/decentrala
 import { transformComponent } from '../../../src/lib/decentraland/sdk-components/transform-component'
 import { Entity } from '../../../src/lib/decentraland/types'
 import { testWithEngine } from './babylon-test-helper'
+import { StaticEntities } from '../../../src/lib/babylon/scene/logic/static-entities'
 
 testWithEngine("entities are removed on scene disposal", {
   baseUrl: '/',
@@ -13,7 +14,7 @@ testWithEngine("entities are removed on scene disposal", {
   beforeEach(() => $.startEngine())
 
   test('create an extra entity that will be deleted upon context disposal', async () => {
-    const entityId = 2 as Entity
+    const entityId = 21 as Entity
 
     // first there is no entity
     expect($.ctx.entities.has(entityId)).toEqual(false)
@@ -112,31 +113,46 @@ testWithEngine("scene context implents ADR-148", {
 testWithEngine("outgoingMessages are delivered on crdtSendToRenderer result", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  id: '123',
+  enableStaticEntities: false
 }, ($) => {
   beforeEach(() => $.startEngine())
 
-  test('writing to outgoingMessagesBuffer redirects reaches crdtSendToRenderer', async () => {
-    const entityId = 2 as Entity
+  test('writing to outgoingMessagesBuffer are returned by crdtSendToRenderer', async () => {
+    {
+      const out = new ReadWriteByteBuffer()
+      transformComponent.serialize({ parent: 0, position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity() }, out)
 
-    const out = new ReadWriteByteBuffer()
-    transformComponent.serialize({ parent: 0, position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity() }, out)
+      // write an outgoing message to the scene's buffer
+      PutComponentOperation.write({
+        entityId: StaticEntities.CameraEntity,
+        componentId: 1,
+        timestamp: 1,
+        data: out.toBinary()
+      }, $.ctx.outgoingMessagesBuffer)
+    }
 
-    // write an outgoing message to the scene's buffer
-    PutComponentOperation.write({
-      entityId,
-      componentId: 1,
-      timestamp: 1,
-      data: out.toBinary()
-    }, $.ctx.outgoingMessagesBuffer)
+    {
+      const out = new ReadWriteByteBuffer()
+      transformComponent.serialize({ parent: 0, position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity() }, out)
+
+      PutComponentOperation.write({
+        entityId: StaticEntities.PlayerEntity,
+        componentId: 1,
+        timestamp: 1,
+        data: out.toBinary()
+      }, $.ctx.outgoingMessagesBuffer)
+    }
 
     // then call crdtSendToRenderer
     const expectedResult = $.ctx.outgoingMessagesBuffer.toBinary()
     const result = await $.ctx.crdtSendToRenderer({ data: Uint8Array.of() })
-    expect(result).toEqual({ data: [expectedResult] })
 
     // and the buffer's writing head should be reset
     expect($.ctx.outgoingMessagesBuffer.currentWriteOffset()).toEqual(0)
+    
+    // because its content was sent over the wire
+    expect(result).toEqual({ data: [expectedResult] })
   })
 
   test('outgoingMessagesBuffer should be empty after the first time', async () => {

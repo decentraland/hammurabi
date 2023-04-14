@@ -8,6 +8,9 @@ import { BillboardMode, PBBillboard } from '@dcl/protocol/out-ts/decentraland/sd
 import { PBRaycast } from '@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen'
 import { PBMeshCollider } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
 import { isValidBillboardCombination } from './logic/billboards'
+import { PBGltfContainer } from '@dcl/protocol/out-ts/decentraland/sdk/components/gltf_container.gen'
+import { PBPointerEvents } from '@dcl/protocol/out-ts/decentraland/sdk/components/pointer_events.gen'
+import { PBMeshRenderer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_renderer.gen'
 
 // the following list of components is used to store a "staging" value to compare
 // against the previous applied value in the applyChanges function of each component
@@ -23,6 +26,16 @@ export type AppliedComponents = {
     info: PBMeshCollider
     collider: BABYLON.AbstractMesh | null
   }
+  meshRenderer: {
+    info: PBMeshRenderer
+    mesh: BABYLON.AbstractMesh | null
+  }
+  gltfContainer: {
+    value: PBGltfContainer
+    gltfContainer: BABYLON.AbstractMesh | null
+    instancedEntries: BABYLON.InstantiatedEntries | null
+  }
+  pointerEvents: PBPointerEvents
 }
 
 /**
@@ -32,9 +45,6 @@ export type AppliedComponents = {
 export class BabylonEntity extends BABYLON.TransformNode {
   readonly isDCLEntity = true
   usedComponents = new Map<number, ComponentDefinition<unknown>>()
-
-  meshRenderer?: BABYLON.AbstractMesh
-
   appliedComponents: Partial<AppliedComponents> = {}
 
   constructor(public entityId: Entity, public context: WeakRef<SceneContext>) {
@@ -68,7 +78,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
 
       // get the direction vector from the camera to the entity position
       const directionVector = camera.globalPosition.subtract(entityGlobalPosition);
-      
+
       // calculate the LookAt matrix from the direction vector towards zero
       const rotMatrix = Matrix.LookAtLH(directionVector, Vector3.Zero(), camera.upVector).invert()
       const rotation = Quaternion.FromRotationMatrix(rotMatrix)
@@ -101,7 +111,7 @@ export class BabylonEntity extends BABYLON.TransformNode {
       this._worldMatrix.setTranslation(position);
     }
 
-    super._afterComputeWorldMatrix()
+    return super._afterComputeWorldMatrix()
   }
 
   // this function should return false if the world matrix needs to be recalculated

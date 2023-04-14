@@ -1,7 +1,7 @@
+import * as BABYLON from '@babylonjs/core'
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { PBMeshRenderer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_renderer.gen";
 import { ComponentType } from "../crdt-internal/components";
-import * as BABYLON from '@babylonjs/core'
 import { memoize } from "../../misc/memoize";
 
 const baseBox = memoize((scene: BABYLON.Scene) => {
@@ -29,13 +29,20 @@ export const meshRendererComponent = declareComponentUsingProtobufJs(PBMeshRende
 
   // create a box and attach it to an entity
 
-  if (entity.meshRenderer) {
-    entity.meshRenderer.dispose()
+  if (entity.appliedComponents.meshRenderer) {
+    entity.appliedComponents.meshRenderer.mesh?.dispose()
   }
 
-  const instance = baseBox(entity.getScene()).createInstance("instance")
-  instance.parent = entity
-  instance.setEnabled(true)
+  const info = component.get(entity.entityId)
 
-  entity.meshRenderer = instance
+  if (info) {
+    const mesh = baseBox(entity.getScene()).createInstance("instance")
+    mesh.parent = entity
+    mesh.setEnabled(true)
+
+    entity.appliedComponents.meshRenderer = {
+      mesh,
+      info
+    }
+  }
 })
