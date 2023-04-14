@@ -105,12 +105,12 @@ export function testWithEngine(
         messages.push(`  deactivate renderer`)
         return { data, hasEntities }
       })
-      
+
       jest.spyOn(ctx, 'update').mockImplementation(function (hasQuota) {
         messages.push(`    babylon-->>renderer: update()`)
         return SceneContext.prototype.update.call(this, hasQuota)
       })
-      
+
       jest.spyOn(ctx, 'lateUpdate').mockImplementation(function () {
         messages.push(`    babylon-->>renderer: lateUpdate()`)
         return SceneContext.prototype.lateUpdate.call(this)

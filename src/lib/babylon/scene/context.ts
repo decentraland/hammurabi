@@ -7,11 +7,11 @@ import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-p
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
 import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './entity'
-import { Transform, transformComponent } from '../../decentraland/sdk-components/transform-component'
+import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
-import { ComponentDefinition, LastWriteWinElementSetComponentDefinition } from '../../decentraland/crdt-internal/components'
+import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from './logic/cyclic-transform'
-import { Quaternion, Vector3 } from '@babylonjs/core'
+import { Vector3 } from '@babylonjs/core'
 import { Scene } from '@dcl/schemas'
 import { billboardComponent } from '../../decentraland/sdk-components/billboard-component'
 import { raycastComponent, raycastResultComponent } from '../../decentraland/sdk-components/raycast-component'
@@ -24,7 +24,7 @@ import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } f
 import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-component'
 import { AssetManager } from './asset-manager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
-import { StaticEntities, createStaticEntities, updateStaticEntities } from './logic/static-entities'
+import { StaticEntities, updateStaticEntities } from './logic/static-entities'
 
 export class SceneContext implements EngineApiInterface {
   entities = new Map<Entity, BabylonEntity>()
@@ -120,8 +120,6 @@ export class SceneContext implements EngineApiInterface {
         )
       }
     }
-
-    createStaticEntities(this)
   }
 
   // naivest implementation of the distance to the outer bounds of the scene
@@ -224,6 +222,9 @@ export class SceneContext implements EngineApiInterface {
    * rendering engine without binding the SceneContext object.
    */
   lateUpdate() {
+    // only emit messages if there are receiver promises
+    if (!this.nextFrameFutures.length) return
+
     // only finalize the frame once the incoming messages were cleared
     if (!this.finishedProcessingFrame) return
     this.finishedProcessingFrame = false
@@ -236,7 +237,7 @@ export class SceneContext implements EngineApiInterface {
     // TODO: Collect events into this.outgoingMessages
 
     // update the components of the static entities to be sent to the scene
-    updateStaticEntities(this)
+    this.updateStaticEntities()
 
     // write all the CRDT updates in the outgoingMessagesBuffer
     for (const i in this.components) {
@@ -269,6 +270,12 @@ export class SceneContext implements EngineApiInterface {
     this.rootNode.dispose()
   }
 
+  // this method exists to be a wrapper of the function. so it can be mocked for tests without
+  // wizzardy
+  updateStaticEntities() {
+    updateStaticEntities(this)
+  }
+
   // impl RuntimeApi {
   async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
     // this method resolves a file deployed with the entity. it returns the content of the file and its hash
@@ -286,8 +293,9 @@ export class SceneContext implements EngineApiInterface {
 
   // impl EngineApiInterface {
   async crdtGetState(): Promise<CrdtGetStateResponse> {
+
     // update the components of the static entities to be sent to the scene
-    updateStaticEntities(this)
+    this.updateStaticEntities()
 
     // dump all the content of the components into a single outgoing buffer
     const outgoingMessages = new ReadWriteByteBuffer()

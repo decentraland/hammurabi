@@ -10,6 +10,7 @@ sequenceDiagram
   activate renderer
   scene-->>renderer: crdtGetState()
     renderer-->>scene: PUT c=1 e=0x2 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
   deactivate renderer
   deactivate scene
 
@@ -29,7 +30,8 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x2 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x2 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
   deactivate renderer
   end
   deactivate scene
@@ -49,7 +51,8 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x2 t=4 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0.08682409673929214,"_y":0.08682409673929214,"_z":-0.007596122566610575,"_w":0.9924038648605347},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=3 #v={"position":{"_isDirty":true,"_x":1,"_y":-0.6000000238418579,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x2 t=3 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0.08682409673929214,"_y":0.08682409673929214,"_z":-0.007596122566610575,"_w":0.9924038648605347},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
   deactivate renderer
   end
   deactivate scene
@@ -67,7 +70,8 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x2 t=5 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0.08682409673929214,"_y":0.08682409673929214,"_z":-0.007596122566610575,"_w":0.9924038648605347},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=4 #v={"position":{"_isDirty":true,"_x":1,"_y":-0.6000000238418579,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x2 t=4 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0.08682409673929214,"_y":0.08682409673929214,"_z":-0.007596122566610575,"_w":0.9924038648605347},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
   deactivate renderer
   end
   deactivate scene
@@ -86,7 +90,8 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x2 t=6 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0.08682409673929214,"_y":0.08682409673929214,"_z":-0.007596122566610575,"_w":0.9924038648605347},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=5 #v={"position":{"_isDirty":true,"_x":1,"_y":-0.6000000238418579,"_z":1},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x2 t=5 #v={"position":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"rotation":{"_isDirty":true,"_x":0.08682409673929214,"_y":0.08682409673929214,"_z":-0.007596122566610575,"_w":0.9924038648605347},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
   deactivate renderer
   end
   deactivate scene
