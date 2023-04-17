@@ -3,14 +3,17 @@
 // this file starts a scene runtime in a web worker
 import { createRpcClient } from '@dcl/rpc'
 import { WebWorkerTransport } from '@dcl/rpc/dist/transports/WebWorker'
-import { defaultUpdateLoop, startSceneRuntime } from '../lib/quick-js/rpc-scene-runtime'
+import { startQuickJsSceneRuntime } from '../lib/quick-js/rpc-scene-runtime'
+import { defaultUpdateLoop } from '../lib/common-runtime/game-loop'
+import { startWebWorkerSceneRuntime } from '../lib/web-worker-runtime/web-worker-scene-runtime'
 
 createRpcClient(WebWorkerTransport(self))
   .then(async client => {
     // rpc initialization code
     const workerName = self.name
     const clientPort = await client.createPort(`scene-${workerName}`)
-    startSceneRuntime(clientPort, {
+    // startQuickJsSceneRuntime(clientPort, {
+    startWebWorkerSceneRuntime(clientPort, {
       // create some console wrappers
       error(...args) {
         console.error(`[SCENE ERROR ${self.name}]`, ...args)
