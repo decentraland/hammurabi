@@ -4,10 +4,10 @@ import { ApplyComponentOperation, ComponentDeclaration } from "../crdt-internal/
 /**
  * This function creates a serializer and deserializer based on a Protobufjs type
  */
-export function declareComponentUsingProtobufJs<T>(protobufType: {
+export function declareComponentUsingProtobufJs<T, Num extends number>(protobufType: {
   decode(bytes: Uint8Array): T
   encode(value: T, writer: Writer): void
-}, componentId: number, applyChanges: ApplyComponentOperation<T>): ComponentDeclaration<T> {
+}, componentId: Num, applyChanges: ApplyComponentOperation<T>): ComponentDeclaration<T, Num> {
   return {
     componentId,
     applyChanges,

@@ -4,7 +4,7 @@
  */
 
 import { RpcServerPort } from "@dcl/rpc";
-import { SceneContext } from "./context";
+import { SceneContext } from "./scene-context";
 import * as codegen from "@dcl/rpc/dist/codegen"
 import { EngineApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen";
 import { RuntimeServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/runtime.gen";

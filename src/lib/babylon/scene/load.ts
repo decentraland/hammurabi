@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import { parseEntityUrn } from '../../decentraland/identifiers'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
-import { SceneContext } from "./context"
+import { SceneContext } from "./scene-context"
 import { connectSceneContextUsingWebWorkerQuickJs } from './webworker-runtime'
 
 export const loadedScenesByEntityId = new Map<string /* EntityID, not URN */, SceneContext>()

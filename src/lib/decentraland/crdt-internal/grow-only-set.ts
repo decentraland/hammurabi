@@ -30,8 +30,8 @@ export type ValueSetOptions<T> = {
   maxElements: number
 }
 
-export function createValueSetComponentStore<T>(
-  declaration: ComponentDeclaration<T>,
+export function createValueSetComponentStore<T, ComponentNumber extends number>(
+  declaration: ComponentDeclaration<T, ComponentNumber>,
   options: ValueSetOptions<T>
 ): GrowOnlyValueSetComponentDefinition<T> {
   type InternalDatastructure = {

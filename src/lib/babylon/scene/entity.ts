@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core'
-import { SceneContext } from './context'
+import { SceneContext } from './scene-context'
 import { Transform } from '../../decentraland/sdk-components/transform-component'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { Entity } from '../../decentraland/types'

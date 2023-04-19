@@ -136,7 +136,7 @@ export function createGetCrdtMessagesForLww<T>(
   }
 }
 
-export function createLwwStore<T>(componentDeclaration: ComponentDeclaration<T>): LastWriteWinElementSetComponentDefinition<T> {
+export function createLwwStore<T, Num extends number>(componentDeclaration: ComponentDeclaration<T, Num>): LastWriteWinElementSetComponentDefinition<T> {
   const data = new Map<Entity, T>()
   const dirtyIterator = new Set<Entity>()
   const timestamps = new Map<Entity, number>()

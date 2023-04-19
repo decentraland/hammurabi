@@ -48,10 +48,12 @@ export function setupEnvironment(scene: BABYLON.Scene) {
   envHelper.ground!.applyFog = true
   envHelper.ground!.checkCollisions = true
 
-  // here we add XR support
-  scene.createDefaultXRExperienceAsync({
-    floorMeshes: [envHelper.ground!],
-  });
+  if (document.location.protocol === 'https:') {
+    // here we add XR support
+    scene.createDefaultXRExperienceAsync({
+      floorMeshes: [envHelper.ground!],
+    });
+  }
 
   skybox.material = skyMaterial
 

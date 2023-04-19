@@ -9,7 +9,7 @@ import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentral
 import { BabylonEntity } from './entity'
 import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
-import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
+import { BaseComponent, ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from './logic/cyclic-transform'
 import { Vector3 } from '@babylonjs/core'
 import { Scene } from '@dcl/schemas'
@@ -25,6 +25,7 @@ import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-c
 import { AssetManager } from './asset-manager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
 import { StaticEntities, updateStaticEntities } from './logic/static-entities'
+import { animatorComponent } from '../../decentraland/sdk-components/animator-component'
 
 export class SceneContext implements EngineApiInterface {
   entities = new Map<Entity, BabylonEntity>()
@@ -53,7 +54,7 @@ export class SceneContext implements EngineApiInterface {
   // log function for tests
   log: (message: string) => void = () => void 0
 
-  components: Record<number, ComponentDefinition<any>> = {
+  components = {
     [transformComponent.componentId]: createLwwStore(transformComponent),
     [billboardComponent.componentId]: createLwwStore(billboardComponent),
     [raycastComponent.componentId]: createLwwStore(raycastComponent),
@@ -62,7 +63,8 @@ export class SceneContext implements EngineApiInterface {
     [meshColliderComponent.componentId]: createLwwStore(meshColliderComponent),
     [gltfContainerComponent.componentId]: createLwwStore(gltfContainerComponent),
     [pointerEventsComponent.componentId]: createLwwStore(pointerEventsComponent),
-  }
+    [animatorComponent.componentId]: createLwwStore(animatorComponent),
+  } as const
 
   // this flag is changed every time an entity changed its parent. the change
   // in the hierarchy is not immediately applied, instead, it should be queued
@@ -174,7 +176,7 @@ export class SceneContext implements EngineApiInterface {
           case CrdtMessageType.DELETE_COMPONENT:
           case CrdtMessageType.PUT_COMPONENT: {
             const entity = this.getOrCreateEntity(crdtMessage.entityId)
-            const component = this.components[crdtMessage.componentId]
+            const component = (this.components as any)[crdtMessage.componentId] as ComponentDefinition<any> | void
 
             // if the change is accepted, then we instruct the entity to update its internal state
             // via putComponent or deleteComponent calls
@@ -240,8 +242,8 @@ export class SceneContext implements EngineApiInterface {
     this.updateStaticEntities()
 
     // write all the CRDT updates in the outgoingMessagesBuffer
-    for (const i in this.components) {
-      this.components[i].dumpCrdtUpdates(this.outgoingMessagesBuffer)
+    for (const component of Object.values(this.components)) {
+      component.dumpCrdtUpdates(this.outgoingMessagesBuffer)
     }
 
     if (this.outgoingMessagesBuffer.currentWriteOffset()) {

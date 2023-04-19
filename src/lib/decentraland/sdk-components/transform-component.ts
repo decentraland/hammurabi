@@ -9,7 +9,7 @@ export type Transform = {
   parent: Entity
 }
 
-export const transformComponent: ComponentDeclaration<Transform> = {
+export const transformComponent: ComponentDeclaration<Transform, 1> = {
   componentId: 1,
   deserialize(buffer) {
     return {

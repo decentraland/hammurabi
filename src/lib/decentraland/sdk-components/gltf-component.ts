@@ -4,6 +4,7 @@ import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { ComponentType } from '../crdt-internal/components';
 import { BabylonEntity } from '../../babylon/scene/entity';
 import { updatePointerEventsMeshProperties } from './pointer-events';
+import { applyAnimations } from './logic/apply-animations';
 
 export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfContainer, 1041, (entity, component) => {
   if (component.componentType !== ComponentType.LastWriteWinElementSet) return
@@ -36,20 +37,27 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
         removeCurrentGltf(entity)
 
         // and attach the new one
-        newGltfContainerValue.instancedEntries = instantiateAassetContainer(assetContainer, entity)
+        newGltfContainerValue.instancedEntries = instantiateAssetContainer(assetContainer, entity)
+
+        // apply animations if needed
+        applyAnimations(entity)
       }
     })
   } else if (!newValue) {
-    entity.appliedComponents.gltfContainer = undefined
     removeCurrentGltf(entity)
   }
 })
 
+// this function releases the current gltf allocated resources and its container
+// it won't remove the base meshes, models and textures that are used for the instance
+// only the copies
 function removeCurrentGltf(entity: BabylonEntity) {
+  // first remove the instance of the gltf
   if (entity.appliedComponents.gltfContainer?.instancedEntries) {
     entity.appliedComponents.gltfContainer.instancedEntries.dispose()
     entity.appliedComponents.gltfContainer.instancedEntries = null
   }
+  // and then its container
   if (entity.appliedComponents.gltfContainer?.gltfContainer) {
     entity.appliedComponents.gltfContainer.gltfContainer.setEnabled(false)
     entity.appliedComponents.gltfContainer.gltfContainer.parent = null
@@ -60,7 +68,7 @@ function removeCurrentGltf(entity: BabylonEntity) {
 
 const tmpVector = new BABYLON.Vector3()
 
-export function instantiateAassetContainer(assetContainer: BABYLON.AssetContainer, entity: BabylonEntity): BABYLON.InstantiatedEntries {
+export function instantiateAssetContainer(assetContainer: BABYLON.AssetContainer, entity: BabylonEntity): BABYLON.InstantiatedEntries {
   const instances = assetContainer.instantiateModelsToScene(name => name, false)
 
   for (let node of instances.rootNodes) {
@@ -83,11 +91,15 @@ export function instantiateAassetContainer(assetContainer: BABYLON.AssetContaine
       })
 
       const originalF = mesh.isInFrustum
+
       /**
        * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
        * A mesh is in the frustum if its bounding box intersects the frustum
        * @param frustumPlanes defines the frustum to test
        * @returns true if the mesh is in the frustum planes
+       * 
+       * In this case, we are monkey patching the isInFrustum method to cull out meshes that are too far away
+       * or are too small based on the distance to the camera.
        */
       mesh.isInFrustum = function (this: BABYLON.AbstractMesh, frustumPlanes: BABYLON.Plane[]): boolean {
         if (this.absolutePosition) {
@@ -111,70 +123,16 @@ export function instantiateAassetContainer(assetContainer: BABYLON.AssetContaine
 
         return originalF.call(this, frustumPlanes)
       }
-
     })
   }
 
-  for (let ag of instances.animationGroups) {
-    ag.stop()
-    for (let animatable of ag.animatables) {
+  // by default animations will be configured with weight 0
+  for (let animationGroup of instances.animationGroups) {
+    animationGroup.stop()
+    for (let animatable of animationGroup.animatables) {
       animatable.weight = 0
     }
   }
 
   return instances
-}
-
-function disposeDelegate($: { dispose: Function }) {
-  $.dispose()
-}
-
-function disposeNodeDelegate($: BABYLON.Node | null) {
-  if (!$) return
-  $.setEnabled(false)
-  $.parent = null
-  $.dispose(false)
-}
-
-function disposeSkeleton($: BABYLON.Skeleton) {
-  $.dispose()
-  $.bones.forEach(($) => {
-    $.parent = null
-    $.dispose()
-  })
-}
-
-function disposeAnimatable($: BABYLON.Animatable | null) {
-  if (!$) return
-  $.disposeOnEnd = true
-  $.loopAnimation = false
-  $.stop()
-  $._animate(0)
-}
-
-export function disposeAnimationGroups($: BABYLON.AnimationGroup) {
-  $.animatables.forEach(disposeAnimatable)
-
-  $.targetedAnimations.forEach(($) => {
-    // disposeAnimatable(scene.getAnimatableByTarget($.target))
-  })
-
-  $.dispose()
-}
-
-export function cleanupAssetContainer($: BABYLON.AssetContainer) {
-  if ($) {
-    $.removeAllFromScene()
-    $.transformNodes && $.transformNodes.forEach(disposeNodeDelegate)
-    $.rootNodes && $.rootNodes.forEach(disposeNodeDelegate)
-    $.meshes && $.meshes.forEach(disposeNodeDelegate)
-    // Textures disposals are handled by monkeyLoader.ts
-    // NOTE: $.textures && $.textures.forEach(disposeDelegate)
-    $.animationGroups && $.animationGroups.forEach(disposeAnimationGroups)
-    $.multiMaterials && $.multiMaterials.forEach(disposeDelegate)
-    $.sounds && $.sounds.forEach(disposeDelegate)
-    $.skeletons && $.skeletons.forEach(disposeSkeleton)
-    $.materials && $.materials.forEach(disposeDelegate)
-    $.lights && $.lights.forEach(disposeDelegate)
-  }
 }
