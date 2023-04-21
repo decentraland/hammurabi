@@ -7,7 +7,7 @@
 import * as BABYLON from '@babylonjs/core'
 import { resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from '@babylonjs/loaders/glTF/glTFFileLoader'
-import { SceneContext } from './context'
+import { SceneContext } from './scene-context'
 import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
 import { markAsCollider } from './colliders'
 
@@ -104,6 +104,9 @@ BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
 })
 
 function processAssetContainer(assetContainer: BABYLON.AssetContainer, context: SceneContext) {
+  // by default, the models will be added to the scene at 0,0,0. We will remove that instance
+  assetContainer.removeAllFromScene()
+
   // keep track of every generated mes and submesh
   assetContainer.meshes.forEach((mesh) => {
     if (mesh instanceof BABYLON.Mesh) {

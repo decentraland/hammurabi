@@ -32,9 +32,9 @@ export type SerDe<T> = {
   deserialize(buffer: ByteBuffer): T
 }
 
-export type ComponentDeclaration<T> = SerDe<T> & {
+export type ComponentDeclaration<T, ComponentNumber extends number> = SerDe<T> & {
   // numeric ID of the component as defined in the protocol
-  componentId: number
+  readonly componentId: ComponentNumber
   // applyChanges is in charge of reflecting the changes of the component value
   // into the BabylonEngine. It is called after a CRDT message is received and
   // after it is reflected in the component definition (the storage)
@@ -50,7 +50,7 @@ export type ApplyComponentOperation<T> = (ecsEntity: BabylonEntity, componentDef
 export interface BaseComponent<T> {
   readonly componentId: number
   readonly componentType: ComponentType
-  readonly declaration: ComponentDeclaration<T>
+  readonly declaration: ComponentDeclaration<T, number>
 
   /**
    * This function receives a CRDT update and returns true if the change is accepted.

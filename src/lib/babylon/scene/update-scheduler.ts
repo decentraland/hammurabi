@@ -1,5 +1,5 @@
 import { Scene, Vector3 } from "@babylonjs/core";
-import { SceneContext } from "./context";
+import { SceneContext } from "./scene-context";
 
 // this function runs the initial part of the tick defined in ADR-148,
 // before sending GPU commands

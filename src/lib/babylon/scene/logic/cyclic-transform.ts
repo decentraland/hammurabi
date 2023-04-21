@@ -1,4 +1,4 @@
-import { SceneContext } from "../context"
+import { SceneContext } from "../scene-context"
 import { BabylonEntity } from "../entity"
 
 /**

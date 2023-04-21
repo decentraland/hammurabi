@@ -5,7 +5,7 @@ import { PBRaycast, RaycastQueryType } from "@dcl/protocol/out-ts/decentraland/s
 import { PBRaycastResult } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast_result.gen";
 import { LastWriteWinElementSetComponentDefinition } from "../../../decentraland/crdt-internal/components";
 import { raycastComponent, raycastResultComponent } from "../../../decentraland/sdk-components/raycast-component";
-import { SceneContext } from "../context";
+import { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from "../coordinates";
 import { BabylonEntity } from "../entity";
 
@@ -18,12 +18,13 @@ import { BabylonEntity } from "../entity";
  * 4. If necessary, removes the raycast from pendingRaycastOperations
  */
 export function processRaycasts(scene: SceneContext) {
-  const RaycastResult = scene.components[raycastResultComponent.componentId] as LastWriteWinElementSetComponentDefinition<PBRaycastResult>
+  const RaycastResult = scene.components[raycastResultComponent.componentId]
+  const Raycast = scene.components[raycastComponent.componentId]
 
   // clone the set into an array to mutate the set while iterating
   const iter = Array.from(scene.pendingRaycastOperations)
   for (const entityId of iter) {
-    const raycast = scene.components[raycastComponent.componentId].get(entityId) as PBRaycast | null
+    const raycast = Raycast.getOrNull(entityId)
 
     if (raycast) {
       const entity = scene.getEntityOrNull(entityId)

@@ -8,7 +8,7 @@ import { TestingServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kern
 import { MemoryTransport } from "@dcl/rpc/dist/transports/Memory"
 import { startQuickJsSceneRuntime } from "../../../src/lib/quick-js/rpc-scene-runtime"
 import { connectContextToRpcServer } from "../../../src/lib/babylon/scene/connect-context-rpc"
-import { SceneContext } from "../../../src/lib/babylon/scene/context"
+import { SceneContext } from "../../../src/lib/babylon/scene/scene-context"
 
 export function runSnapshotTest(sourceFile: string, bundle: string, snapshotFile?: string) {
   testWithEngine(`snapshot test for ${bundle}`, {

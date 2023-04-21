@@ -1,5 +1,5 @@
 import { Vector3 } from "@babylonjs/core";
-import { SceneContext } from "./context";
+import { SceneContext } from "./scene-context";
 
 // This function converts a "global" coordinate to a "scene" coordinate system
 export function globalCoordinatesToSceneCoordinates(scene: SceneContext, coordinates: Vector3) {

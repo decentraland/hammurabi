@@ -1,7 +1,6 @@
 import { Vector3, Quaternion } from "@babylonjs/core";
-import { LastWriteWinElementSetComponentDefinition } from "../../../decentraland/crdt-internal/components";
-import { transformComponent, Transform } from "../../../decentraland/sdk-components/transform-component";
-import type { SceneContext } from "../context";
+import { transformComponent } from "../../../decentraland/sdk-components/transform-component";
+import type { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates } from "../coordinates";
 import { Entity } from "../../../decentraland/types";
 
@@ -18,7 +17,7 @@ export const PLAYER_HEIGHT = 1.6
  * per frame and when the scene asks for the initial state.
  */
 export function updateStaticEntities(context: SceneContext) {
-  const Transform = context.components[transformComponent.componentId] as LastWriteWinElementSetComponentDefinition<Transform>
+  const Transform = context.components[transformComponent.componentId]
 
   if (!Transform.has(StaticEntities.CameraEntity))
     Transform.create(StaticEntities.CameraEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })

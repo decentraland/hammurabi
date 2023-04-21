@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { SceneContext } from '../../../src/lib/babylon/scene/context'
+import { SceneContext } from '../../../src/lib/babylon/scene/scene-context'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { ComponentDeclaration } from '../../../src/lib/decentraland/crdt-internal/components'
 import { DeleteComponent, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'

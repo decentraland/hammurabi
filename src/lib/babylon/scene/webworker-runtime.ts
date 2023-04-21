@@ -2,7 +2,7 @@ import { EngineApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/ke
 import { EnvironmentApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/environment_api.gen"
 import { createRpcServer } from "@dcl/rpc"
 import { LoadableScene } from "../../decentraland/scene/content-server-entity"
-import { SceneContext } from "./context"
+import { SceneContext } from "./scene-context"
 import * as codegen from "@dcl/rpc/dist/codegen"
 import { Scene } from "@dcl/schemas"
 import { WebWorkerTransport } from "@dcl/rpc/dist/transports/WebWorker"

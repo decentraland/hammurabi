@@ -10,8 +10,8 @@
   - [x] Distance-to-scene based processing prioritization
   - [x] Scene "Tick"
 - Loading scenes
-  - [-] Scene runtime ([ADR-133](https://adr.decentraland.org/adr/ADR-133))
-    - [-] RuntimeApi
+  - [x] Scene runtime ([ADR-133](https://adr.decentraland.org/adr/ADR-133))
+    - [x] RuntimeApi
       - [ ] update ADR
       - [x] `getSceneInformation`
       - [ ] `getRealm`
@@ -68,8 +68,8 @@
 - [ ] MeshRenderer component [ADR-?]
 - [ ] MeshCollider component [ADR-?]
 - [ ] PointerEvents & PointerEventsResult components ([ADR-125](https://adr.decentraland.org/adr/ADR-125)) & ([ADR-200](https://adr.decentraland.org/adr/ADR-200))
-- [ ] GltfContainer component [ADR-?]
-- [ ] Animator component [ADR-?]
+- [x] GltfContainer component ([ADR-215](https://adr.decentraland.org/adr/ADR-215))
+- [x] Animator component [ADR-?]
 - [ ] Cinematic Camera Component [ADR-?]
 - [ ] AvatarAttach Component [ADR-?]
 - [ ] AudioSource Component [ADR-?]
@@ -97,14 +97,14 @@
 - [ ] UiDropdown & UiDropdownResult Component ([ADR-125](https://adr.decentraland.org/adr/ADR-125))
 
 ## Static entities
-- [ ] Create ADR
-- [ ] CameraEntity
-  - [x] TransformComponent
-  - [ ] PointerLock component
-- [ ] RootEntity
-  - ... components (including UI)
-- [ ] Player entity
-  - [x] TransformComponent
+- [x] Create [ADR-219](https://adr.decentraland.org/adr/ADR-219)
+  - [ ] CameraEntity
+    - [x] TransformComponent
+    - [ ] PointerLock component
+  - [ ] RootEntity
+    - ... components (including UI)
+  - [ ] Player entity
+    - [x] TransformComponent
 
 # Pending tests
 
