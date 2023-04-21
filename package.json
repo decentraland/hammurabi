@@ -11,10 +11,10 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@dcl/protocol": "^1.0.0-4671230683.commit-a8d74c3",
+    "@dcl/protocol": "^1.0.0-4747376947.commit-d770e0d",
     "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
     "@dcl/rpc": "^1.1.2",
-    "@dcl/schemas": "^6.15.0",
+    "@dcl/schemas": "^6.17.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
     "fp-future": "^1.0.1",
@@ -24,12 +24,11 @@
     "typescript": "^5.0.4"
   },
   "devDependencies": {
-    "@babylonjs/core": "^5.55.0",
-    "@babylonjs/gui": "^5.55.0",
-    "@babylonjs/inspector": "^5.55.0",
-    "@babylonjs/loaders": "^5.55.0",
-    "@babylonjs/materials": "^5.55.0",
-    "esbuild": "^0.17.16",
-    "esbuild-jest-transform": "^1.1.1"
+    "@babylonjs/core": "^6.0.0",
+    "@babylonjs/gui": "^6.0.0",
+    "@babylonjs/inspector": "^6.0.0",
+    "@babylonjs/loaders": "^6.0.0",
+    "@babylonjs/materials": "^6.0.0",
+    "esbuild": "^0.17.17"
   }
 }

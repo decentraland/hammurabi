@@ -158,6 +158,9 @@ function processAssetContainer(assetContainer: BABYLON.AssetContainer, context: 
     }
 
     if (material instanceof BABYLON.PBRMaterial) {
+      // static materials for the moment
+      material.freeze();
+
       // then replace the reflection probe of the materials when needed
       material.reflectionTexture = assetContainer.scene.reflectionProbes.find($ => $.name === 'skyReflection')?.cubeTexture || null
 
