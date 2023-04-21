@@ -41,6 +41,9 @@ export function initEngine(canvas: HTMLCanvasElement) {
   scene.fogStart = 128
   scene.fogEnabled = true
   scene.actionManager = new BABYLON.ActionManager(scene)
+  scene.blockMaterialDirtyMechanism = true
+  scene.autoClear = false // Color buffer
+  scene.autoClearDepthAndStencil = false // Depth and stencil, obviously
   // scene.gravity = new BABYLON.Vector3(0, playerConfigurations.gravity, 0)
   // scene.enablePhysics(scene.gravity, new BABYLON.OimoJSPlugin(2))
   scene.getBoundingBoxRenderer().showBackLines = true
