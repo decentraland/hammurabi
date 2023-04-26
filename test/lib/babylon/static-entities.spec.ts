@@ -1,6 +1,7 @@
 import { StaticEntities } from '../../../src/lib/babylon/scene/logic/static-entities'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { CrdtMessageType, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
+import { engineInfoComponent } from '../../../src/lib/decentraland/sdk-components/engine-info'
 import { transformComponent } from '../../../src/lib/decentraland/sdk-components/transform-component'
 import { testWithEngine } from './babylon-test-helper'
 
@@ -25,6 +26,11 @@ testWithEngine("static entities", {
       {
         componentId: transformComponent.componentId,
         entityId: StaticEntities.PlayerEntity,
+        type: CrdtMessageType.PUT_COMPONENT
+      },
+      {
+        componentId: engineInfoComponent.componentId,
+        entityId: StaticEntities.RootEntity,
         type: CrdtMessageType.PUT_COMPONENT
       }
     ])

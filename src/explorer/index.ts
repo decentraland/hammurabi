@@ -17,7 +17,7 @@ async function loadRealm(realmConnectionString: string) {
   // in the future many optimization could be applied here, like only destroying
   // the scenes that will be replaced by the new realm.
 
-  const url = await resolveRealmBaseUrl(realmConnectionString)
+  const url = (await resolveRealmBaseUrl(realmConnectionString)).replace(/\/$/, '')
 
   // fetch the standard /about endpoint for the realm
   const realm = await fetch(url + '/about').then(res => res.json()) as AboutResponse
@@ -47,6 +47,14 @@ async function loadRealm(realmConnectionString: string) {
 }
 
 {
+
+  const realmInput = document.getElementById('realm-input') as HTMLInputElement
+
+  const url = new URLSearchParams(location.search)
+  if (url.has('realm')) {
+    realmInput.value = url.get('realm')!
+  }
+
   // UI bindings
   async function uiChangeRealm() {
     realmInput.setAttribute('disabled', 'true')
@@ -58,7 +66,6 @@ async function loadRealm(realmConnectionString: string) {
     }
   }
 
-  const realmInput = document.getElementById('realm-input') as HTMLInputElement
   realmInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       uiChangeRealm()

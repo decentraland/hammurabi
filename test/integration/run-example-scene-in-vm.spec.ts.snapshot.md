@@ -9,8 +9,13 @@ sequenceDiagram
   activate scene
   activate renderer
   scene-->>renderer: crdtGetState()
+  activate babylon
+    babylon-->>renderer: update()
+    babylon-->>renderer: lateUpdate()
+  deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x1 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1048 e=0x0 t=1 #v={"frameNumber":0,"totalRuntime":1,"tickNumber":0}
   deactivate renderer
   deactivate scene
 
@@ -19,10 +24,6 @@ sequenceDiagram
   loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
-  activate babylon
-    babylon-->>renderer: update()
-    babylon-->>renderer: lateUpdate()
-  deactivate babylon
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
   end
   scene->>renderer: crdtSendToRenderer()
@@ -331,10 +332,11 @@ sequenceDiagram
   deactivate babylon
     renderer-->>scene: PUT c=1 e=0x1 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
-    renderer-->>scene: PUT c=1068 e=0x20b t=1 #v={"timestamp":0,"globalOrigin":{"x":12,"y":5,"z":2.0999999046325684},"direction":{"x":0,"y":0,"z":1},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x216 t=1 #v={"timestamp":0,"globalOrigin":{"x":8,"y":8,"z":-1.899999976158142},"direction":{"x":-0.645896852016449,"y":-0.7266339063644409,"z":0.23413759469985962},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x221 t=1 #v={"timestamp":0,"globalOrigin":{"x":4,"y":5,"z":-5.900000095367432},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":4,"y":0.004999999888241291,"z":-5.900000095367432},"globalOrigin":{"x":4,"y":5,"z":-5.900000095367432},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":4.994999885559082,"meshName":"collider-box","entityId":513}]}
-    renderer-->>scene: PUT c=1068 e=0x25c t=1 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
+    renderer-->>scene: PUT c=1048 e=0x0 t=2 #v={"frameNumber":1,"totalRuntime":1,"tickNumber":1}
+    renderer-->>scene: PUT c=1068 e=0x20b t=1 #v={"timestamp":0,"globalOrigin":{"x":12,"y":5,"z":2.0999999046325684},"direction":{"x":0,"y":0,"z":1},"hits":[],"tickNumber":1}
+    renderer-->>scene: PUT c=1068 e=0x216 t=1 #v={"timestamp":0,"globalOrigin":{"x":8,"y":8,"z":-1.899999976158142},"direction":{"x":-0.645896852016449,"y":-0.7266339063644409,"z":0.23413759469985962},"hits":[],"tickNumber":1}
+    renderer-->>scene: PUT c=1068 e=0x221 t=1 #v={"timestamp":0,"globalOrigin":{"x":4,"y":5,"z":-5.900000095367432},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":4,"y":0.004999999888241291,"z":-5.900000095367432},"globalOrigin":{"x":4,"y":5,"z":-5.900000095367432},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":4.994999885559082,"meshName":"box_collider","entityId":513}],"tickNumber":1}
+    renderer-->>scene: PUT c=1068 e=0x25c t=1 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":1}
   deactivate renderer
   end
   deactivate scene
@@ -398,10 +400,11 @@ sequenceDiagram
   deactivate babylon
     renderer-->>scene: PUT c=1 e=0x1 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
-    renderer-->>scene: PUT c=1068 e=0x20b t=2 #v={"timestamp":0,"globalOrigin":{"x":12.52703857421875,"y":5.26401424407959,"z":2.0634987354278564},"direction":{"x":0.13365408778190613,"y":0.06696882098913193,"z":0.9887627363204956},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x216 t=2 #v={"timestamp":0,"globalOrigin":{"x":8.438006401062012,"y":8.219356536865234,"z":-1.925059199333191},"direction":{"x":-0.6529991030693054,"y":-0.722008466720581,"z":0.22868303954601288},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x221 t=2 #v={"timestamp":0,"globalOrigin":{"x":4.497230529785156,"y":5.249053001403809,"z":-5.93255615234375},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":4.497230529785156,"y":0.004999999888241291,"z":-5.93255615234375},"globalOrigin":{"x":4.497230529785156,"y":5.249053001403809,"z":-5.93255615234375},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":5.244052886962891,"meshName":"collider-box","entityId":513}]}
-    renderer-->>scene: PUT c=1068 e=0x25c t=2 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
+    renderer-->>scene: PUT c=1048 e=0x0 t=3 #v={"frameNumber":2,"totalRuntime":1,"tickNumber":2}
+    renderer-->>scene: PUT c=1068 e=0x20b t=2 #v={"timestamp":0,"globalOrigin":{"x":12.52703857421875,"y":5.26401424407959,"z":2.0634987354278564},"direction":{"x":0.13365408778190613,"y":0.06696882098913193,"z":0.9887627363204956},"hits":[],"tickNumber":2}
+    renderer-->>scene: PUT c=1068 e=0x216 t=2 #v={"timestamp":0,"globalOrigin":{"x":8.438006401062012,"y":8.219356536865234,"z":-1.925059199333191},"direction":{"x":-0.6529991030693054,"y":-0.722008466720581,"z":0.22868303954601288},"hits":[],"tickNumber":2}
+    renderer-->>scene: PUT c=1068 e=0x221 t=2 #v={"timestamp":0,"globalOrigin":{"x":4.497230529785156,"y":5.249053001403809,"z":-5.93255615234375},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":4.497230529785156,"y":0.004999999888241291,"z":-5.93255615234375},"globalOrigin":{"x":4.497230529785156,"y":5.249053001403809,"z":-5.93255615234375},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":5.244052886962891,"meshName":"box_collider","entityId":513}],"tickNumber":2}
+    renderer-->>scene: PUT c=1068 e=0x25c t=2 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":2}
   deactivate renderer
   end
   deactivate scene
@@ -466,10 +469,11 @@ sequenceDiagram
   deactivate babylon
     renderer-->>scene: PUT c=1 e=0x1 t=4 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=4 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
-    renderer-->>scene: PUT c=1068 e=0x20b t=3 #v={"timestamp":0,"globalOrigin":{"x":13.474966049194336,"y":5.749396324157715,"z":1.8032841682434082},"direction":{"x":0.373268187046051,"y":0.19000588357448578,"z":0.9080576300621033},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x216 t=3 #v={"timestamp":0,"globalOrigin":{"x":9.232139587402344,"y":8.624689102172852,"z":-2.1039347648620605},"direction":{"x":-0.6626867651939392,"y":-0.7137099504470825,"z":0.22685742378234863},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x221 t=3 #v={"timestamp":0,"globalOrigin":{"x":5.395548343658447,"y":5.708364009857178,"z":-6.165409564971924},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":5.395548343658447,"y":0.004999999888241291,"z":-6.165409564971924},"globalOrigin":{"x":5.395548343658447,"y":5.708364009857178,"z":-6.165409564971924},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":5.70336389541626,"meshName":"collider-box","entityId":513}]}
-    renderer-->>scene: PUT c=1068 e=0x25c t=3 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
+    renderer-->>scene: PUT c=1048 e=0x0 t=4 #v={"frameNumber":3,"totalRuntime":1,"tickNumber":3}
+    renderer-->>scene: PUT c=1068 e=0x20b t=3 #v={"timestamp":0,"globalOrigin":{"x":13.474966049194336,"y":5.749396324157715,"z":1.8032841682434082},"direction":{"x":0.373268187046051,"y":0.19000588357448578,"z":0.9080576300621033},"hits":[],"tickNumber":3}
+    renderer-->>scene: PUT c=1068 e=0x216 t=3 #v={"timestamp":0,"globalOrigin":{"x":9.232139587402344,"y":8.624689102172852,"z":-2.1039347648620605},"direction":{"x":-0.6626867651939392,"y":-0.7137099504470825,"z":0.22685742378234863},"hits":[],"tickNumber":3}
+    renderer-->>scene: PUT c=1068 e=0x221 t=3 #v={"timestamp":0,"globalOrigin":{"x":5.395548343658447,"y":5.708364009857178,"z":-6.165409564971924},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":5.395548343658447,"y":0.004999999888241291,"z":-6.165409564971924},"globalOrigin":{"x":5.395548343658447,"y":5.708364009857178,"z":-6.165409564971924},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":5.70336389541626,"meshName":"box_collider","entityId":513}],"tickNumber":3}
+    renderer-->>scene: PUT c=1068 e=0x25c t=3 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":3}
   deactivate renderer
   end
   deactivate scene
@@ -535,10 +539,11 @@ sequenceDiagram
   deactivate babylon
     renderer-->>scene: PUT c=1 e=0x1 t=5 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=5 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
-    renderer-->>scene: PUT c=1068 e=0x20b t=4 #v={"timestamp":0,"globalOrigin":{"x":14.586153984069824,"y":6.373244285583496,"z":1.085394263267517},"direction":{"x":0.6429452896118164,"y":0.34357091784477234,"z":0.6845293045043945},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x216 t=4 #v={"timestamp":0,"globalOrigin":{"x":10.19977855682373,"y":9.159587860107422,"z":-2.6028285026550293},"direction":{"x":-0.6683892607688904,"y":-0.7047704458236694,"z":0.23781169950962067},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x221 t=4 #v={"timestamp":0,"globalOrigin":{"x":6.464929103851318,"y":6.304361343383789,"z":-6.812770366668701},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":6.464929103851318,"y":0.004999999888241291,"z":-6.812770366668701},"globalOrigin":{"x":6.464929103851318,"y":6.304361343383789,"z":-6.812770366668701},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":6.299361228942871,"meshName":"collider-box","entityId":513}]}
-    renderer-->>scene: PUT c=1068 e=0x25c t=4 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
+    renderer-->>scene: PUT c=1048 e=0x0 t=5 #v={"frameNumber":4,"totalRuntime":1,"tickNumber":4}
+    renderer-->>scene: PUT c=1068 e=0x20b t=4 #v={"timestamp":0,"globalOrigin":{"x":14.586153984069824,"y":6.373244285583496,"z":1.085394263267517},"direction":{"x":0.6429452896118164,"y":0.34357091784477234,"z":0.6845293045043945},"hits":[],"tickNumber":4}
+    renderer-->>scene: PUT c=1068 e=0x216 t=4 #v={"timestamp":0,"globalOrigin":{"x":10.19977855682373,"y":9.159587860107422,"z":-2.6028285026550293},"direction":{"x":-0.6683892607688904,"y":-0.7047704458236694,"z":0.23781169950962067},"hits":[],"tickNumber":4}
+    renderer-->>scene: PUT c=1068 e=0x221 t=4 #v={"timestamp":0,"globalOrigin":{"x":6.464929103851318,"y":6.304361343383789,"z":-6.812770366668701},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":6.464929103851318,"y":0.004999999888241291,"z":-6.812770366668701},"globalOrigin":{"x":6.464929103851318,"y":6.304361343383789,"z":-6.812770366668701},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":6.299361228942871,"meshName":"box_collider","entityId":513}],"tickNumber":4}
+    renderer-->>scene: PUT c=1068 e=0x25c t=4 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":4}
   deactivate renderer
   end
   deactivate scene
@@ -605,10 +610,11 @@ sequenceDiagram
   deactivate babylon
     renderer-->>scene: PUT c=1 e=0x1 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
-    renderer-->>scene: PUT c=1068 e=0x20b t=5 #v={"timestamp":0,"globalOrigin":{"x":15.481843948364258,"y":7.039275646209717,"z":-0.19572320580482483},"direction":{"x":0.8224282264709473,"y":0.48890915513038635,"z":0.29082587361335754},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x216 t=5 #v={"timestamp":0,"globalOrigin":{"x":11.082706451416016,"y":9.774856567382812,"z":-3.5219240188598633},"direction":{"x":-0.6645640730857849,"y":-0.6991913318634033,"z":0.26360195875167847},"hits":[]}
-    renderer-->>scene: PUT c=1068 e=0x221 t=5 #v={"timestamp":0,"globalOrigin":{"x":7.36585807800293,"y":6.95431661605835,"z":-7.984397888183594},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":7.36585807800293,"y":0.004999999888241291,"z":-7.984397888183594},"globalOrigin":{"x":7.36585807800293,"y":6.95431661605835,"z":-7.984397888183594},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":6.949316501617432,"meshName":"collider-box","entityId":513}]}
-    renderer-->>scene: PUT c=1068 e=0x25c t=5 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[]}
+    renderer-->>scene: PUT c=1048 e=0x0 t=6 #v={"frameNumber":5,"totalRuntime":1,"tickNumber":5}
+    renderer-->>scene: PUT c=1068 e=0x20b t=5 #v={"timestamp":0,"globalOrigin":{"x":15.481843948364258,"y":7.039275646209717,"z":-0.19572320580482483},"direction":{"x":0.8224282264709473,"y":0.48890915513038635,"z":0.29082587361335754},"hits":[],"tickNumber":5}
+    renderer-->>scene: PUT c=1068 e=0x216 t=5 #v={"timestamp":0,"globalOrigin":{"x":11.082706451416016,"y":9.774856567382812,"z":-3.5219240188598633},"direction":{"x":-0.6645640730857849,"y":-0.6991913318634033,"z":0.26360195875167847},"hits":[],"tickNumber":5}
+    renderer-->>scene: PUT c=1068 e=0x221 t=5 #v={"timestamp":0,"globalOrigin":{"x":7.36585807800293,"y":6.95431661605835,"z":-7.984397888183594},"direction":{"x":0,"y":-1,"z":0},"hits":[{"position":{"x":7.36585807800293,"y":0.004999999888241291,"z":-7.984397888183594},"globalOrigin":{"x":7.36585807800293,"y":6.95431661605835,"z":-7.984397888183594},"direction":{"x":0,"y":-1,"z":0},"normalHit":{"x":0,"y":1,"z":0},"length":6.949316501617432,"meshName":"box_collider","entityId":513}],"tickNumber":5}
+    renderer-->>scene: PUT c=1068 e=0x25c t=5 #v={"timestamp":0,"globalOrigin":{"x":-22,"y":1,"z":-8},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":5}
   deactivate renderer
   end
   deactivate scene

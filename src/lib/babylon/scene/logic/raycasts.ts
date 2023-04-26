@@ -3,11 +3,12 @@ import { Ray, Vector3 } from "@babylonjs/core";
 import { RaycastHit } from "@dcl/protocol/out-ts/decentraland/sdk/components/common/raycast_hit.gen";
 import { PBRaycast, RaycastQueryType } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen";
 import { PBRaycastResult } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast_result.gen";
-import { LastWriteWinElementSetComponentDefinition } from "../../../decentraland/crdt-internal/components";
 import { raycastComponent, raycastResultComponent } from "../../../decentraland/sdk-components/raycast-component";
 import { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from "../coordinates";
 import { BabylonEntity } from "../entity";
+import { pickMeshesForMask } from "./colliders";
+import { ColliderLayer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
 
 /**
  * The processRaycasts function iterates over a copy of the pendingRaycastOperations
@@ -32,24 +33,13 @@ export function processRaycasts(scene: SceneContext) {
         const ray = computeRayDirection(scene, raycast, entity.appliedComponents.raycast.ray, entity)
 
         // get a list of all possible meshes to project this ray to
-        const intersectableMeshes = Array.from(getMeshesWithMask(scene.rootNode, raycast.collisionMask ?? 0xffff_ffff))
+        const DEFAULT_RAYCAST_MASK = ColliderLayer.CL_POINTER | ColliderLayer.CL_PHYSICS
+        const intersectableMeshes = Array.from(pickMeshesForMask(scene.rootNode, raycast.collisionMask ?? DEFAULT_RAYCAST_MASK))
 
         // then perform the actual raycast
         const results = ray.intersectsMeshes(intersectableMeshes, false)
 
-        // and start preparing the result
-        const raycastResult: PBRaycastResult = {
-          direction: Vector3.Normalize(ray.direction),
-          globalOrigin: globalCoordinatesToSceneCoordinates(scene, ray.origin),
-          timestamp: raycast.timestamp || 0,
-          hits: []
-        }
-
-        if (raycast.queryType === RaycastQueryType.RQT_HIT_FIRST && results.length) {
-          raycastResult.hits = [pickingToRaycastHit(scene, pickClosest(results)!, ray)]
-        } else if (raycast.queryType === RaycastQueryType.RQT_QUERY_ALL && results.length) {
-          raycastResult.hits = results.map(_ => pickingToRaycastHit(scene, _, ray))
-        }
+        const raycastResult = raycastResultFromRay(scene, ray, results, raycast.queryType, raycast.timestamp || 0)
 
         // send the result back to the scene
         RaycastResult.createOrReplace(entity.entityId, raycastResult)
@@ -62,6 +52,25 @@ export function processRaycasts(scene: SceneContext) {
       scene.pendingRaycastOperations.delete(entityId)
     }
   }
+}
+
+export function raycastResultFromRay(scene: SceneContext, ray: Ray, results: BABYLON.PickingInfo[], queryType: RaycastQueryType, timestamp: number) {
+  // start preparing the result
+  const raycastResult: PBRaycastResult = {
+    direction: Vector3.Normalize(ray.direction),
+    globalOrigin: globalCoordinatesToSceneCoordinates(scene, ray.origin),
+    timestamp,
+    hits: [],
+    tickNumber: scene.currentTick
+  }
+
+  if (queryType === RaycastQueryType.RQT_HIT_FIRST && results.length) {
+    raycastResult.hits = [pickingToRaycastHit(scene, pickClosest(results)!, ray)]
+  } else if (queryType === RaycastQueryType.RQT_QUERY_ALL && results.length) {
+    raycastResult.hits = results.map(_ => pickingToRaycastHit(scene, _, ray))
+  }
+
+  return raycastResult
 }
 
 /**
@@ -145,38 +154,13 @@ function computeRayDirection(scene: SceneContext, raycast: PBRaycast, ray: Ray, 
   return ray
 }
 
-function* getMeshesWithMask(entity: BabylonEntity, mask: number): Iterable<BABYLON.AbstractMesh> {
-  // if (entity.meshRenderer) yield* getMeshes(entity.meshRenderer, mask)
-  if (entity.appliedComponents.meshCollider) {
-    const givenMask = entity.appliedComponents.meshCollider.info.collisionMask ?? 0xffffffff
-    if (bitIntersects(givenMask, mask))
-      yield* getMeshes(entity.appliedComponents.meshCollider!.collider, mask)
-  }
-
-  for (const child of entity.childrenEntities()) {
-    yield* getMeshesWithMask(child, mask)
-  }
-}
-
-function bitIntersects(a: number, b: number) {
-  return (a & b) !== 0
-}
-
-/**
- * Returns an iterator of all the child meshes and the current mesh.
- */
-function* getMeshes(node: BABYLON.AbstractMesh | null, mask: number): Iterable<BABYLON.AbstractMesh> {
-  if (!node) return
-  yield node
-  yield* node.getChildMeshes()
-}
-
 /**
  * Converts a result of a raycast (PickingInfo) into a RaycastHit of the Decentraland Protocol
  */
-function pickingToRaycastHit(scene: SceneContext, pickingInfo: BABYLON.PickingInfo, ray: BABYLON.Ray): RaycastHit {
+export function pickingToRaycastHit(scene: SceneContext, pickingInfo: BABYLON.PickingInfo, ray: BABYLON.Ray): RaycastHit {
+  if (!pickingInfo.pickedPoint) debugger
   return {
-    normalHit: pickingInfo.getNormal(true)!,
+    normalHit: pickingInfo.getNormal(true) || undefined,
     direction: ray.direction,
     globalOrigin: globalCoordinatesToSceneCoordinates(scene, ray.origin),
     length: pickingInfo.distance,

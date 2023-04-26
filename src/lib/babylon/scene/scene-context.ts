@@ -9,7 +9,7 @@ import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentral
 import { BabylonEntity } from './entity'
 import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
-import { BaseComponent, ComponentDefinition } from '../../decentraland/crdt-internal/components'
+import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from './logic/cyclic-transform'
 import { Vector3 } from '@babylonjs/core'
 import { Scene } from '@dcl/schemas'
@@ -26,6 +26,11 @@ import { AssetManager } from './asset-manager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
 import { StaticEntities, updateStaticEntities } from './logic/static-entities'
 import { animatorComponent } from '../../decentraland/sdk-components/animator-component'
+import { engineInfoComponent } from '../../decentraland/sdk-components/engine-info'
+import { gltfContainerLoadingStateComponent } from '../../decentraland/sdk-components/gltf-loading-state'
+import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen'
+import { pointerEventsResultComponent } from '../../decentraland/sdk-components/pointer-events-result'
+import { createValueSetComponentStore } from '../../decentraland/crdt-internal/grow-only-set'
 
 export class SceneContext implements EngineApiInterface {
   entities = new Map<Entity, BabylonEntity>()
@@ -52,7 +57,15 @@ export class SceneContext implements EngineApiInterface {
   pendingRaycastOperations = new Set<Entity>()
 
   // log function for tests
-  log: (message: string) => void = () => void 0
+  log: (...args: any[]) => void = (...args) => console.log(this.rootNode.name, ...args)
+
+  // tick counter for EngineInfo
+  currentTick = 0
+
+  // start time for EngineInfo
+  readonly startTime = performance.now()
+  // start frame for EngineInfo
+  readonly startFrame = this.babylonScene.getEngine().frameId
 
   components = {
     [transformComponent.componentId]: createLwwStore(transformComponent),
@@ -63,7 +76,15 @@ export class SceneContext implements EngineApiInterface {
     [meshColliderComponent.componentId]: createLwwStore(meshColliderComponent),
     [gltfContainerComponent.componentId]: createLwwStore(gltfContainerComponent),
     [pointerEventsComponent.componentId]: createLwwStore(pointerEventsComponent),
+    [pointerEventsResultComponent.componentId]: createValueSetComponentStore(pointerEventsResultComponent, {
+      maxElements: 10,
+      timestampFunction(value) {
+        return value.tickNumber
+      },
+    }),
     [animatorComponent.componentId]: createLwwStore(animatorComponent),
+    [gltfContainerLoadingStateComponent.componentId]: createLwwStore(gltfContainerLoadingStateComponent),
+    [engineInfoComponent.componentId]: createLwwStore(engineInfoComponent),
   } as const
 
   // this flag is changed every time an entity changed its parent. the change
@@ -75,7 +96,7 @@ export class SceneContext implements EngineApiInterface {
   hierarchyChanged: boolean = false
   unparentedEntities = new Set<Entity>
 
-  // the assetmanager is used to centralize all the loadinng/unloading of assets
+  // the assetmanager is used to centralize all the loading/unloading of assets
   // of this scene. 
   assetManager = new AssetManager(this)
 
@@ -122,6 +143,11 @@ export class SceneContext implements EngineApiInterface {
         )
       }
     }
+  }
+
+  // this function returns the total elapsed time in seconds since the SceneContext was created
+  getElapsedTime() {
+    return (performance.now() - this.startTime) / 1000
   }
 
   // naivest implementation of the distance to the outer bounds of the scene
@@ -231,8 +257,35 @@ export class SceneContext implements EngineApiInterface {
     if (!this.finishedProcessingFrame) return
     this.finishedProcessingFrame = false
 
+    // on the first frame, as per ADR-148, the crdtSendToRenderer should only respond
+    // if and only if all assets finished loading to properly process the raycasts
+    //
+    // to compy with that statement, we early-finalize this procedure if a component is in
+    // LOADING state. the engine will catch up and finish the crdtSendToRenderer on the
+    // next renderer frame
+    if (this.currentTick === 0) {
+      const loadingComponents = this.components[gltfContainerLoadingStateComponent.componentId]
+      for (const [_entity, component] of loadingComponents.iterator()) {
+        if (component.currentState === LoadingState.LOADING) {
+          this.log(`Haltinf first frame because of LOADING for scene`)
+          return
+        }
+      }
+    }
+
     const outMessages: Uint8Array[] = []
 
+    this.physicsPhase(outMessages)
+
+    // finally resolve the future so the function "receiveBatch" is unblocked
+    // and the next scripting frame is allowed to happen
+    this.nextFrameFutures.forEach((fut) => fut.resolve({ data: outMessages }))
+
+    // finally clean the futures
+    this.nextFrameFutures.length = 0
+  }
+
+  physicsPhase(outMessages: Uint8Array[]) {
     processRaycasts(this)
 
     // TODO: Execute queries into this.outgoingMessages
@@ -240,6 +293,9 @@ export class SceneContext implements EngineApiInterface {
 
     // update the components of the static entities to be sent to the scene
     this.updateStaticEntities()
+
+    // increment the tick number, as per ADR-148
+    this.currentTick++
 
     // write all the CRDT updates in the outgoingMessagesBuffer
     for (const component of Object.values(this.components)) {
@@ -251,13 +307,6 @@ export class SceneContext implements EngineApiInterface {
       this.outgoingMessagesBuffer.incrementWriteOffset(-this.outgoingMessagesBuffer.currentWriteOffset())
       this.outgoingMessagesBuffer.incrementReadOffset(-this.outgoingMessagesBuffer.currentReadOffset())
     }
-
-    // finally resolve the future so the function "receiveBatch" is unblocked
-    // and the next scripting frame is allowed to happen
-    this.nextFrameFutures.forEach((fut) => fut.resolve({ data: outMessages }))
-
-    // finally clean the futures
-    this.nextFrameFutures.length = 0
   }
 
   dispose() {
@@ -287,29 +336,17 @@ export class SceneContext implements EngineApiInterface {
     const absoluteLocation = resolveFileAbsolute(this.loadableScene, file)
     if (!absoluteLocation) throw new Error(`File not found: ${file}`)
 
-    const result = await fetch(absoluteLocation).then($ => $.arrayBuffer())
+    const res = await fetch(absoluteLocation)
 
-    return { content: new Uint8Array(result), hash }
+    if (!res.ok) throw new Error(`Error loading URL: ${absoluteLocation}`)
+
+    return { content: new Uint8Array(await res.arrayBuffer()), hash }
   }
   // }
 
-  // impl EngineApiInterface {
-  async crdtGetState(): Promise<CrdtGetStateResponse> {
-
-    // update the components of the static entities to be sent to the scene
-    this.updateStaticEntities()
-
-    // dump all the content of the components into a single outgoing buffer
-    const outgoingMessages = new ReadWriteByteBuffer()
-    for (const component of Object.values(this.components)) {
-      component.dumpCrdtUpdates(outgoingMessages)
-    }
-
-    return { hasEntities: false, data: [outgoingMessages.toBinary()] }
-  }
-  async crdtSendToRenderer(payload: CrdtSendToRendererRequest): Promise<CrdtSendToResponse> {
-    if (payload.data.byteLength) {
-      this.incomingMessages.push(new ReadWriteByteBuffer(payload.data))
+  private async _crdtSendToRenderer(data: Uint8Array) {
+    if (data.byteLength) {
+      this.incomingMessages.push(new ReadWriteByteBuffer(data))
     }
 
     // create a future to wait until all the messages are processed. even if there
@@ -318,6 +355,30 @@ export class SceneContext implements EngineApiInterface {
     const fut = future<CrdtSendToResponse>()
     this.nextFrameFutures.push(fut)
     return fut
+  }
+
+  // impl EngineApiInterface {
+  async crdtGetState(): Promise<CrdtGetStateResponse> {
+    let mainCrdt = Uint8Array.of()
+
+    // load the main.crdt as specified by ADR-133 and ADR-148. the tick number zero
+    // is always completed by either the contents of main.crdt or by an empty array
+    try {
+      const file = 'main.crdt'
+      if (resolveFileAbsolute(this.loadableScene, file)) {
+        const { content } = await this.readFile(file)
+        mainCrdt = content
+      }
+    } catch (err: any) {
+      this.log(err)
+    }
+
+    const result = await this._crdtSendToRenderer(mainCrdt)
+
+    return { hasEntities: mainCrdt.length > 0, data: result.data }
+  }
+  async crdtSendToRenderer(payload: CrdtSendToRendererRequest): Promise<CrdtSendToResponse> {
+    return this._crdtSendToRenderer(payload.data)
   }
   // }
 }

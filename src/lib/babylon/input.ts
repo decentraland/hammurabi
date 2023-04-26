@@ -1,4 +1,6 @@
 import * as BABYLON from '@babylonjs/core'
+import { interactWithScene } from './scene/logic/pointer-events'
+import { InputAction, PointerEventType } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/input_action.gen'
 
 enum Keys {
   KEY_W = 87,
@@ -20,21 +22,51 @@ enum Keys {
   KEY_Q = 81,
 }
 
-function isFirstPersonCamera(scene: BABYLON.Scene) {
-  return scene.activeCamera instanceof BABYLON.FreeCamera
-}
-
 /// --- EXPORTS ---
 
 export { Keys }
 
+export function registerUpDownActionKeys(scene: BABYLON.Scene, key: string, action: InputAction) {
+  scene.actionManager.registerAction(
+    new BABYLON.ExecuteCodeAction({
+      trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: key
+    }, () => {
+      interactWithScene(PointerEventType.PET_DOWN, action)
+    })
+  )
+  scene.actionManager.registerAction(
+    new BABYLON.ExecuteCodeAction({
+      trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: key
+    }, () => {
+      interactWithScene(PointerEventType.PET_UP, action)
+    })
+  )
+}
+
 export function initKeyboard(scene: BABYLON.Scene, firstPersonCamera: BABYLON.FreeCamera) {
-  enableMouseLockBehavior(scene)
+  enableMouseLockBehaviorAndPointerEvents(scene)
 
   firstPersonCamera.keysUp = [Keys.KEY_W, Keys.KEY_UP] // W
   firstPersonCamera.keysDown = [Keys.KEY_S, Keys.KEY_DOWN] // S
   firstPersonCamera.keysLeft = [Keys.KEY_A, Keys.KEY_LEFT] // A
   firstPersonCamera.keysRight = [Keys.KEY_D, Keys.KEY_RIGHT] // D
+
+  registerUpDownActionKeys(scene, 'e', InputAction.IA_PRIMARY)
+  registerUpDownActionKeys(scene, 'f', InputAction.IA_SECONDARY)
+  registerUpDownActionKeys(scene, '1', InputAction.IA_ACTION_3)
+  registerUpDownActionKeys(scene, '2', InputAction.IA_ACTION_4)
+  registerUpDownActionKeys(scene, '3', InputAction.IA_ACTION_5)
+  registerUpDownActionKeys(scene, '4', InputAction.IA_ACTION_6)
+  registerUpDownActionKeys(scene, 'space', InputAction.IA_JUMP)
+  registerUpDownActionKeys(scene, 'w', InputAction.IA_FORWARD)
+  registerUpDownActionKeys(scene, 'a', InputAction.IA_LEFT)
+  registerUpDownActionKeys(scene, 'd', InputAction.IA_RIGHT)
+  registerUpDownActionKeys(scene, 's', InputAction.IA_BACKWARD)
+
+  registerUpDownActionKeys(scene, 'w', InputAction.IA_WALK)
+  registerUpDownActionKeys(scene, 'a', InputAction.IA_WALK)
+  registerUpDownActionKeys(scene, 'd', InputAction.IA_WALK)
+  registerUpDownActionKeys(scene, 's', InputAction.IA_WALK)
 
   /**
    * This is a map of keys (see enum Keys): boolean
@@ -59,17 +91,13 @@ export function initKeyboard(scene: BABYLON.Scene, firstPersonCamera: BABYLON.Fr
   return { keyState }
 }
 
-export function interactWithScene(scene: BABYLON.Scene, pointerEvent: 'pointerUp' | 'pointerDown', x: number, y: number, pointerId: number) {
-  // placeholder to handle the mouse event entity.handleClick(pointerEvent, pointerId, pickingResult!)
-}
-
 /**
  * Upon mouse interaction, if the canvas has no "pointerlock" then ignore the event and proceed
  * to request a "pointerlock".
  * 
  * Otherwise, handle the event via `interactWithScene`
  **/
-export function enableMouseLockBehavior(scene: BABYLON.Scene) {
+export function enableMouseLockBehaviorAndPointerEvents(scene: BABYLON.Scene) {
   const hasPointerLock = () => !!document.pointerLockElement
 
   const canvas = scene.getEngine().getRenderingCanvas()!
@@ -80,21 +108,16 @@ export function enableMouseLockBehavior(scene: BABYLON.Scene) {
 
   scene.onPointerObservable.add((e) => {
     if (e.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-      const evt = e.event as PointerEvent
       if (hasPointerLock()) {
         canvas.focus()
-        interactWithScene(scene, 'pointerDown', canvas.width / 2, canvas.height / 2, evt.pointerId)
+        interactWithScene(PointerEventType.PET_DOWN, InputAction.IA_POINTER)
       } else {
         canvas.requestPointerLock()
         canvas.focus()
       }
     } else if (e.type === BABYLON.PointerEventTypes.POINTERUP) {
-      const evt = e.event as PointerEvent
-
-      if (!isFirstPersonCamera(scene)) {
-        interactWithScene(scene, 'pointerUp', evt.offsetX, evt.offsetY, evt.pointerId)
-      } else if (hasPointerLock()) {
-        interactWithScene(scene, 'pointerUp', canvas.width / 2, canvas.height / 2, evt.pointerId)
+      if (hasPointerLock()) {
+        interactWithScene(PointerEventType.PET_UP, InputAction.IA_POINTER)
       }
     }
   })

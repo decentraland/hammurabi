@@ -1,7 +1,8 @@
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
-import { PBMeshCollider } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
+import { ColliderLayer, PBMeshCollider } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
 import { ComponentType } from "../crdt-internal/components";
 import { MeshBuilder } from '@babylonjs/core';
+import { setColliderMask } from "../../babylon/scene/logic/colliders";
 
 
 // TODO: this component is a stub that will be replaced by the real implementation later in a dedicated PR
@@ -24,10 +25,12 @@ export const meshColliderComponent = declareComponentUsingProtobufJs(PBMeshColli
 
   if (isAddingNewValue || isReplacingValue) {
     // create a box and attach it to an entity
-    const baseBox = MeshBuilder.CreateBox('collider-box', {
+    const baseBox = MeshBuilder.CreateBox('box_collider', {
       updatable: false,
     })
-    baseBox.checkCollisions = true
+
+    const DEFAULT_COLLIDER_LAYERS = ColliderLayer.CL_PHYSICS | ColliderLayer.CL_POINTER
+    setColliderMask(baseBox, newValue?.collisionMask ?? DEFAULT_COLLIDER_LAYERS)
     baseBox.parent = entity
 
     entity.appliedComponents.meshCollider = {

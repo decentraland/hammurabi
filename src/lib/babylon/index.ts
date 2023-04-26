@@ -5,6 +5,9 @@ import { addGlowLayer } from './visual/glowLayer'
 import { initSceneCulling, initScheduler } from './scene/update-scheduler'
 import { loadedScenesByEntityId } from './scene/load'
 import { PLAYER_HEIGHT } from './scene/logic/static-entities'
+import { addCrosshair } from './visual/reticle'
+import { Vector3 } from '@dcl/protocol/out-ts/decentraland/common/vectors.gen'
+import { pickPointerEventsMesh } from './scene/logic/pointer-events'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -16,10 +19,12 @@ export function initEngine(canvas: HTMLCanvasElement) {
   const babylon = new BABYLON.Engine(canvas, true, {
     audioEngine: true,
     autoEnableWebVR: true,
+    powerPreference: 'high-performance',
+    xrCompatible: true,
     deterministicLockstep: true,
     lockstepMaxSteps: 4,
     alpha: false,
-    antialias: true,
+    antialias: false,
     stencil: true,
   })
   babylon.disableManifestCheck = true
@@ -51,10 +56,11 @@ export function initEngine(canvas: HTMLCanvasElement) {
   initScheduler(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
   initSceneCulling(scene, () => loadedScenesByEntityId.values())
 
-
   // setup visual parts and environment
   addGlowLayer(scene)
   const { setCamera } = setupEnvironment(scene)
+
+  scene.gravity.set(0, -0.2, 0)
 
   // init the cameras
   const firstPersonCamera = new BABYLON.FreeCamera('1st person camera', new BABYLON.Vector3(5, PLAYER_HEIGHT, 5), scene)
@@ -64,9 +70,14 @@ export function initEngine(canvas: HTMLCanvasElement) {
   firstPersonCamera.speed = 2
   firstPersonCamera.fov = 1
   firstPersonCamera.angularSensibility = 1000
+  firstPersonCamera.ellipsoid = new BABYLON.Vector3(0.3, 0.8, 0.3);
+  firstPersonCamera.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
+
   const thirdPersonCamera = new BABYLON.ArcRotateCamera('3rd person camera', -Math.PI / 2, Math.PI / 2.5, 15, new BABYLON.Vector3(0, 0, 0), scene)
 
   setCamera(firstPersonCamera)
+
+  addCrosshair(scene, firstPersonCamera)
 
   // init our rendering systems
   initKeyboard(scene, firstPersonCamera)
@@ -79,6 +90,10 @@ export function initEngine(canvas: HTMLCanvasElement) {
   // Watch for browser/canvas resize events
   window.addEventListener('resize', function () {
     babylon.resize()
+  })
+
+  scene.onBeforeRenderObservable.add(() => {
+    pickPointerEventsMesh(scene)
   })
 
   return { scene, thirdPersonCamera, firstPersonCamera, setCamera }
