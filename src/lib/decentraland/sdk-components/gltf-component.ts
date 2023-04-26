@@ -3,8 +3,14 @@ import { PBGltfContainer } from "@dcl/protocol/out-ts/decentraland/sdk/component
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { ComponentType } from '../crdt-internal/components';
 import { BabylonEntity } from '../../babylon/scene/entity';
-import { updatePointerEventsMeshProperties } from './pointer-events';
-import { applyAnimations } from './logic/apply-animations';
+import { applyAnimations } from '../../babylon/scene/logic/apply-animations';
+import { gltfContainerLoadingStateComponent } from './gltf-loading-state';
+import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen';
+import { setColliderMask } from '../../babylon/scene/logic/colliders';
+import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen';
+
+const DEFAULT_VISIBLE_COLLIDER_LAYERS = 0
+const DEFAULT_INVISIBLE_COLLIDER_LAYERS = ColliderLayer.CL_PHYSICS | ColliderLayer.CL_POINTER
 
 export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfContainer, 1041, (entity, component) => {
   if (component.componentType !== ComponentType.LastWriteWinElementSet) return
@@ -18,12 +24,17 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
       instancedEntries: oldValue?.instancedEntries || null
     }
 
-    // for simplicity of the example, we will remove the Gltf on every update.
     const context = entity.context.deref()
-
     if (!context) return
 
     const newSrc = newValue.src
+
+    // inform the component is loading
+    const loadingStateComponent = context.components[gltfContainerLoadingStateComponent.componentId]
+    loadingStateComponent.createOrReplace(entity.entityId, {
+      currentState: LoadingState.LOADING
+    })
+
     // this procedure loads a GLTF into a babylonEntity. the model loading will happen in parallel by another
     // procedure. once the model becomes available (downloaded + loaded) this method will create
     // an instance or copy of the required meshes/bodies/bones and attach them to the entity
@@ -37,14 +48,56 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
         removeCurrentGltf(entity)
 
         // and attach the new one
-        newGltfContainerValue.instancedEntries = instantiateAssetContainer(assetContainer, entity)
+        const instanced = newGltfContainerValue.instancedEntries = instantiateAssetContainer(assetContainer, entity)
+
+        // inform the component loaded
+        loadingStateComponent.createOrReplace(entity.entityId, {
+          currentState: LoadingState.FINISHED
+        })
+
+        // setup colliders
+        instanced.rootNodes.forEach(root => {
+          for (const mesh of root.getChildMeshes(false)) {
+            if (mesh.name.endsWith('_collider')) {
+              setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_INVISIBLE_COLLIDER_LAYERS)
+            } else {
+              setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_VISIBLE_COLLIDER_LAYERS)
+            }
+          }
+        })
 
         // apply animations if needed
         applyAnimations(entity)
       }
+    }).catch(() => {
+      const isCurrentValueUpdated = newSrc === entity.appliedComponents.gltfContainer?.value.src
+
+      if (isCurrentValueUpdated) {
+        // inform the component is failed loading
+        loadingStateComponent.createOrReplace(entity.entityId, {
+          currentState: LoadingState.FINISHED_WITH_ERROR
+        })
+      }
+    })
+  } else if (newValue) {
+    // this condition is "set same value, didn't change .src"
+    entity.appliedComponents.gltfContainer?.instancedEntries?.rootNodes.forEach(root => {
+      for (const mesh of root.getChildMeshes(false)) {
+        if (mesh.name.endsWith('_collider')) {
+          setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_INVISIBLE_COLLIDER_LAYERS)
+        } else {
+          setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_VISIBLE_COLLIDER_LAYERS)
+        }
+      }
     })
   } else if (!newValue) {
     removeCurrentGltf(entity)
+
+    // remove the loading state of the removed entity
+    const loadingStateComponent = entity.context.deref()?.components[gltfContainerLoadingStateComponent.componentId]
+    if (loadingStateComponent) {
+      loadingStateComponent.deleteFrom(entity.entityId)
+    }
   }
 })
 
@@ -74,9 +127,6 @@ export function instantiateAssetContainer(assetContainer: BABYLON.AssetContainer
   for (let node of instances.rootNodes) {
     // reparent the root node inside the entity
     node.parent = entity
-
-    // update pointer events
-    updatePointerEventsMeshProperties(entity, node)
 
     node.getChildMeshes(false).forEach(mesh => {
       // this override makes all meshes not renderable if the rootNode is not enabled.

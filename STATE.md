@@ -112,3 +112,6 @@ Babylon
 - When a SceneContext is disposed, all entities should be deleted
 - When an entity is deleted all components should be disposed
 - When a component is removed all resources should be disposed
+- All models from the first frame should be loaded before finishing the tick
+- When a gltfcontainer is added, the engine should add a gltfcontainerloadingstate component automatically
+- pickMeshesForMask

@@ -9,7 +9,8 @@ import { resolveFile, resolveFileAbsolute } from '../../decentraland/scene/conte
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from '@babylonjs/loaders/glTF/glTFFileLoader'
 import { SceneContext } from './scene-context'
 import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
-import { markAsCollider } from './colliders'
+import { setColliderMask } from './logic/colliders'
+import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
 
 export class AssetManager {
   models = new Map<string, Promise<BABYLON.AssetContainer>>()
@@ -138,8 +139,10 @@ function processAssetContainer(assetContainer: BABYLON.AssetContainer, context: 
       }
     }
 
-    if (mesh.name.toLowerCase().endsWith('_collider')) {
-      markAsCollider(mesh)
+    if (mesh.name.endsWith('_collider')) {
+      setColliderMask(mesh, ColliderLayer.CL_PHYSICS | ColliderLayer.CL_POINTER)
+    } else {
+      setColliderMask(mesh, ColliderLayer.CL_NONE)
     }
   })
 

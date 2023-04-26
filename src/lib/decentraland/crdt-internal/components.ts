@@ -151,6 +151,8 @@ export interface LastWriteWinElementSetComponentDefinition<T> extends BaseCompon
    * @param entity - Entity to get the component from
    */
   getMutableOrNull(entity: Entity): T | null
+
+  iterator(): Iterable<[Entity, T]>
 }
 
 export interface GrowOnlyValueSetComponentDefinition<T> extends BaseComponent<T> {

@@ -3,6 +3,7 @@ import { transformComponent } from "../../../decentraland/sdk-components/transfo
 import type { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates } from "../coordinates";
 import { Entity } from "../../../decentraland/types";
+import { engineInfoComponent } from "../../../decentraland/sdk-components/engine-info";
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -17,6 +18,17 @@ export const PLAYER_HEIGHT = 1.6
  * per frame and when the scene asks for the initial state.
  */
 export function updateStaticEntities(context: SceneContext) {
+  const EngineInfo = context.components[engineInfoComponent.componentId]
+
+  if (!EngineInfo.has(StaticEntities.RootEntity))
+    EngineInfo.create(StaticEntities.RootEntity, { frameNumber: 0, tickNumber: 0, totalRuntime: 0 })
+
+  const info = EngineInfo.getMutable(StaticEntities.RootEntity)
+
+  info.tickNumber = context.currentTick
+  info.totalRuntime = context.getElapsedTime()
+  info.frameNumber = context.babylonScene.getEngine().frameId - context.startFrame
+
   const Transform = context.components[transformComponent.componentId]
 
   if (!Transform.has(StaticEntities.CameraEntity))

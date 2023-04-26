@@ -96,6 +96,9 @@ export function testWithEngine(
         return { data }
       })
 
+      jest.spyOn(ctx, 'getElapsedTime').mockImplementation(function () {
+        return 1
+      })
 
       jest.spyOn(ctx, 'crdtGetState').mockImplementation(async function () {
         messages.push(`  activate renderer`)
@@ -183,7 +186,7 @@ export function testWithEngine(
 export class CrdtBuilder {
   #buffer = new ReadWriteByteBuffer()
 
-  put<T>(transformComponent: ComponentDeclaration<T>, entityId: Entity, timestamp: number, value: T) {
+  put<T>(transformComponent: ComponentDeclaration<T, number>, entityId: Entity, timestamp: number, value: T) {
     const componentBuffer = new ReadWriteByteBuffer()
     transformComponent.serialize(value, componentBuffer)
     PutComponentOperation.write({
@@ -195,7 +198,7 @@ export class CrdtBuilder {
     return this
   }
 
-  delete(transformComponent: ComponentDeclaration<any>, entityId: Entity, timestamp: number) {
+  delete(transformComponent: ComponentDeclaration<any, number>, entityId: Entity, timestamp: number) {
     DeleteComponent.write({ entityId, componentId: transformComponent.componentId, timestamp }, this.#buffer)
     return this
   }
