@@ -22,6 +22,8 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, urn: string) 
 
   const ctx = new SceneContext(engineScene, loadableScene)
 
+  await ctx.initAsyncJobs()
+
   connectSceneContextUsingWebWorkerQuickJs(ctx, loadableScene)
 
   loadedScenesByEntityId.set(parsed.entityId, ctx)

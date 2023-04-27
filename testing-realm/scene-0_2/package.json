@@ -1,13 +1,13 @@
 {
-  "name": "testing-realm",
+  "name": "scene-0_2",
+  "version": "1.0.0",
+  "description": "SDK7 Template scene",
   "scripts": {
     "start": "sdk-commands start",
     "build": "sdk-commands build",
+    "build-tests": "sdk-commands build --single=src/tests/*.test.ts",
     "upgrade-sdk": "npm install --save-dev @dcl/sdk@latest",
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
-  },
-  "devDependencies": {
-    "@dcl/sdk": "^7.1.9-4800925008.commit-808a4dd"
   },
   "prettier": {
     "semi": false,
@@ -17,10 +17,5 @@
   },
   "dependencies": {
     "fp-future": "^1.0.1"
-  },
-  "workspaces": [
-    "scene-0_0",
-    "scene-0_1",
-    "scene-0_2"
-  ]
+  }
 }

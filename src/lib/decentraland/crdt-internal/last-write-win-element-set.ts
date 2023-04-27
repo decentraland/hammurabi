@@ -205,10 +205,8 @@ export function createLwwStore<T, Num extends number>(componentDeclaration: Comp
         yield [entity, component]
       }
     },
-    *dirtyIterator(): Iterable<Entity> {
-      for (const entity of dirtyIterator) {
-        yield entity
-      }
+    dirtyIterator(): Iterable<Entity> {
+      return Array.from(dirtyIterator)
     },
     dumpCrdtUpdates: createGetCrdtMessagesForLww(componentDeclaration.componentId, timestamps, dirtyIterator, componentDeclaration, data),
     updateFromCrdt: createUpdateLwwFromCrdt(componentDeclaration.componentId, timestamps, componentDeclaration, data),

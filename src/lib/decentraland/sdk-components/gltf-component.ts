@@ -50,11 +50,6 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
         // and attach the new one
         const instanced = newGltfContainerValue.instancedEntries = instantiateAssetContainer(assetContainer, entity)
 
-        // inform the component loaded
-        loadingStateComponent.createOrReplace(entity.entityId, {
-          currentState: LoadingState.FINISHED
-        })
-
         // setup colliders
         instanced.rootNodes.forEach(root => {
           for (const mesh of root.getChildMeshes(false)) {
@@ -68,6 +63,11 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
 
         // apply animations if needed
         applyAnimations(entity)
+
+        // inform the component loaded
+        loadingStateComponent.createOrReplace(entity.entityId, {
+          currentState: LoadingState.FINISHED
+        })
       }
     }).catch(() => {
       const isCurrentValueUpdated = newSrc === entity.appliedComponents.gltfContainer?.value.src
