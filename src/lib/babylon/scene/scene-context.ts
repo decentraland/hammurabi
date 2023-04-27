@@ -48,9 +48,10 @@ export class SceneContext implements EngineApiInterface {
   incomingMessages: ByteBuffer[] = []
   // stash of outgoing messages ready to be sent to back to the scripting scene
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
+
   // when we finish to process all the income messages of a tick, 
   // set finishedProcessingFrame to true to send the outgoing messages, then to false.
-  finishedProcessingFrame: boolean = false
+  finishedProcessingIncomingMessagesOfTick: boolean = false
 
   // the follwing set contains a list of pending raycast queries. if a query is continous,
   // it won't be removed from the set
@@ -66,6 +67,9 @@ export class SceneContext implements EngineApiInterface {
   readonly startTime = performance.now()
   // start frame for EngineInfo
   readonly startFrame = this.babylonScene.getEngine().frameId
+
+  // contents of the main.crdt file
+  mainCrdt = Uint8Array.of()
 
   components = {
     [transformComponent.componentId]: createLwwStore(transformComponent),
@@ -142,6 +146,21 @@ export class SceneContext implements EngineApiInterface {
           new Vector3((maxX! + 1) * PARCEL_SIZE_METERS, height, (maxZ! + 1) * PARCEL_SIZE_METERS)
         )
       }
+    }
+  }
+
+  async initAsyncJobs() {
+    // load the main.crdt as specified by ADR-133 and ADR-148. the tick number zero
+    // is always completed by either the contents of main.crdt or by an empty array
+    try {
+      const file = 'main.crdt'
+      if (resolveFileAbsolute(this.loadableScene, file)) {
+        const { content } = await this.readFile(file)
+        this.mainCrdt = content
+        this.incomingMessages.push(new ReadWriteByteBuffer(content))
+      }
+    } catch (err: any) {
+      this.log(err)
     }
   }
 
@@ -238,7 +257,7 @@ export class SceneContext implements EngineApiInterface {
     }
 
     // mark the frame as processed. this signals the lateUpdate to respond to the scene with updates
-    this.finishedProcessingFrame = true
+    this.finishedProcessingIncomingMessagesOfTick = true
     return true
   }
 
@@ -254,8 +273,7 @@ export class SceneContext implements EngineApiInterface {
     if (!this.nextFrameFutures.length) return
 
     // only finalize the frame once the incoming messages were cleared
-    if (!this.finishedProcessingFrame) return
-    this.finishedProcessingFrame = false
+    if (!this.finishedProcessingIncomingMessagesOfTick) return
 
     // on the first frame, as per ADR-148, the crdtSendToRenderer should only respond
     // if and only if all assets finished loading to properly process the raycasts
@@ -265,27 +283,22 @@ export class SceneContext implements EngineApiInterface {
     // next renderer frame
     if (this.currentTick === 0) {
       const loadingComponents = this.components[gltfContainerLoadingStateComponent.componentId]
+      let has = false
       for (const [_entity, component] of loadingComponents.iterator()) {
+        has = true
         if (component.currentState === LoadingState.LOADING) {
-          this.log(`Haltinf first frame because of LOADING for scene`)
+          this.log(`⌛️ Holding tick#0 processing because of LOADING for scene`)
           return
         }
       }
+      if (has) {
+        this.log(`✅ All GltfContainerLoadingState went out of LOADING state in tick#0`)
+      }
     }
+
 
     const outMessages: Uint8Array[] = []
 
-    this.physicsPhase(outMessages)
-
-    // finally resolve the future so the function "receiveBatch" is unblocked
-    // and the next scripting frame is allowed to happen
-    this.nextFrameFutures.forEach((fut) => fut.resolve({ data: outMessages }))
-
-    // finally clean the futures
-    this.nextFrameFutures.length = 0
-  }
-
-  physicsPhase(outMessages: Uint8Array[]) {
     processRaycasts(this)
 
     // TODO: Execute queries into this.outgoingMessages
@@ -293,9 +306,6 @@ export class SceneContext implements EngineApiInterface {
 
     // update the components of the static entities to be sent to the scene
     this.updateStaticEntities()
-
-    // increment the tick number, as per ADR-148
-    this.currentTick++
 
     // write all the CRDT updates in the outgoingMessagesBuffer
     for (const component of Object.values(this.components)) {
@@ -307,6 +317,16 @@ export class SceneContext implements EngineApiInterface {
       this.outgoingMessagesBuffer.incrementWriteOffset(-this.outgoingMessagesBuffer.currentWriteOffset())
       this.outgoingMessagesBuffer.incrementReadOffset(-this.outgoingMessagesBuffer.currentReadOffset())
     }
+
+    // finally resolve the future so the function "receiveBatch" is unblocked
+    // and the next scripting frame is allowed to happen
+    this.nextFrameFutures.forEach((fut) => fut.resolve({ data: outMessages }))
+    // finally clean the futures
+    this.nextFrameFutures.length = 0
+
+    // increment the tick number, as per ADR-148
+    this.currentTick++
+    this.finishedProcessingIncomingMessagesOfTick = false
   }
 
   dispose() {
@@ -359,23 +379,18 @@ export class SceneContext implements EngineApiInterface {
 
   // impl EngineApiInterface {
   async crdtGetState(): Promise<CrdtGetStateResponse> {
-    let mainCrdt = Uint8Array.of()
+    const result = await this._crdtSendToRenderer(new Uint8Array(0))
+    const hasEntities = this.mainCrdt.byteLength > 0
 
-    // load the main.crdt as specified by ADR-133 and ADR-148. the tick number zero
-    // is always completed by either the contents of main.crdt or by an empty array
-    try {
-      const file = 'main.crdt'
-      if (resolveFileAbsolute(this.loadableScene, file)) {
-        const { content } = await this.readFile(file)
-        mainCrdt = content
-      }
-    } catch (err: any) {
-      this.log(err)
+    if (hasEntities) {
+      // prepend the main.crdt to the response (if not empty). crdt messages are
+      // processed sequentially, so the main.crdt will be processed first.
+      // if the renderer has any modifications to the main.crdt, they will be
+      // applied because they will be processed after
+      result.data.unshift(this.mainCrdt)
     }
 
-    const result = await this._crdtSendToRenderer(mainCrdt)
-
-    return { hasEntities: mainCrdt.length > 0, data: result.data }
+    return { hasEntities, data: result.data }
   }
   async crdtSendToRenderer(payload: CrdtSendToRendererRequest): Promise<CrdtSendToResponse> {
     return this._crdtSendToRenderer(payload.data)

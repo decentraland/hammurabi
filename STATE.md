@@ -115,3 +115,6 @@ Babylon
 - All models from the first frame should be loaded before finishing the tick
 - When a gltfcontainer is added, the engine should add a gltfcontainerloadingstate component automatically
 - pickMeshesForMask
+
+# Pending changes to ADR
+- Enable raycast from global scenes to all other scenes
