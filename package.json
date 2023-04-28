@@ -11,6 +11,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@dcl/crypto": "^3.4.0",
     "@dcl/protocol": "^1.0.0-4810686946.commit-7c034e3",
     "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
     "@dcl/rpc": "^1.1.2",

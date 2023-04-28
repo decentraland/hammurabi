@@ -1,6 +1,6 @@
 import { Scene, UtilityLayerRenderer } from "@babylonjs/core";
 import { memoize } from "../../misc/memoize";
-import { AdvancedDynamicTexture, StackPanel, Control, Checkbox, TextBlock } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, StackPanel, Control, Checkbox, TextBlock, Button } from "@babylonjs/gui";
 
 export const advancedUiTexture = memoize((scene: Scene) => {
   return AdvancedDynamicTexture.CreateFullscreenUI("UI", undefined, scene)
@@ -44,4 +44,12 @@ export function AddToggle(toggleText: string, panel: StackPanel) {
   checkboxText.color = "white";
   toggleViewLine.addControl(checkboxText);
   return checkbox;
+};
+
+export function AddButton(buttonLabel: string, panel: StackPanel) {
+  const button = Button.CreateSimpleButton("but", buttonLabel)
+  button.width = "150px"
+  button.height = "30px"
+  panel.addControl(button);
+  return button;
 };

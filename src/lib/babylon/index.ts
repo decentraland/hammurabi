@@ -3,11 +3,11 @@ import { setupEnvironment } from './visual/ambientLights'
 import { initKeyboard } from './input'
 import { addGlowLayer } from './visual/glowLayer'
 import { initSceneCulling, initScheduler } from './scene/update-scheduler'
-import { loadedScenesByEntityId } from './scene/load'
 import { PLAYER_HEIGHT } from './scene/logic/static-entities'
 import { addCrosshair } from './visual/reticle'
-import { Vector3 } from '@dcl/protocol/out-ts/decentraland/common/vectors.gen'
 import { pickPointerEventsMesh } from './scene/logic/pointer-events'
+import { AddButton, guiPanel } from './visual/ui'
+import { loadedScenesByEntityId } from '../../explorer/state'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -54,6 +54,8 @@ export function initEngine(canvas: HTMLCanvasElement) {
   scene.getBoundingBoxRenderer().showBackLines = true
 
   initScheduler(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
+
+  // TODO: write an ADR about this cheap culling mechanism
   initSceneCulling(scene, () => loadedScenesByEntityId.values())
 
   // setup visual parts and environment
@@ -95,6 +97,17 @@ export function initEngine(canvas: HTMLCanvasElement) {
   scene.onBeforeRenderObservable.add(() => {
     pickPointerEventsMesh(scene)
   })
+
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const button = AddButton("Open inspector", guiPanel(scene))
+    button.onPointerClickObservable.add(async () => {
+      button.isEnabled = false
+      await scene.debugLayer.show({ showExplorer: true })
+    })
+  }
+
+  // this is for debugging purposes
+  Object.assign(globalThis, { scene, thirdPersonCamera, firstPersonCamera, setCamera })
 
   return { scene, thirdPersonCamera, firstPersonCamera, setCamera }
 }

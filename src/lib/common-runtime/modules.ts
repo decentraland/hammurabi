@@ -8,6 +8,7 @@ import { RpcClientPort } from '@dcl/rpc'
 import * as codegen from '@dcl/rpc/dist/codegen'
 import { coerceMaybeU8Array } from '../quick-js/convert-handles'
 import { RuntimeServiceDefinition } from '@dcl/protocol/out-ts/decentraland/kernel/apis/runtime.gen'
+import { UserIdentityServiceDefinition } from '@dcl/protocol/out-ts/decentraland/kernel/apis/user_identity.gen'
 
 export function loadModuleForPort(port: RpcClientPort, moduleName: string) {
   switch (moduleName) {
@@ -24,6 +25,8 @@ export function loadModuleForPort(port: RpcClientPort, moduleName: string) {
       }
     case '~system/Runtime':
       return codegen.loadService(port, RuntimeServiceDefinition)
+    case '~system/UserIdentity':
+      return codegen.loadService(port, UserIdentityServiceDefinition)
     case '~system/Testing':
       return codegen.loadService(port, TestingServiceDefinition)
     default:
