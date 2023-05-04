@@ -1,0 +1,67 @@
+import { Atom } from "../../misc/atom"
+import { Emitter } from "mitt"
+
+export type CommsAdapter = {
+  desiredTransports: Atom<string[]>
+  reportPosition: (position: { x: number, y: number, z: number }) => void
+  disconnect(): void
+}
+
+export type CommsTransportEvents = {
+  DISCONNECTION: TransportDisconnectedEvent
+  PEER_DISCONNECTED: PeerDisconnectedEvent
+  message: TransportMessageEvent
+  error: Error
+}
+
+// this type abstracts every transport
+export interface MinimumCommunicationsTransport {
+  /**
+   * The .send method is used to send information to all the peers
+   * connected to this transport. The hints can be used to tweak the
+   * default behavior of the transport.
+   */
+  send(data: Uint8Array, hints: SendHints): void
+  /**
+   * The .connect() method resolves when the connection with the
+   * transport was successful and it is ready to send and receive
+   * messages.
+   */
+  connect(): Promise<void>
+  /**
+   * The .disconnect() method can optionally receive an error that will
+   * be bubbled up in the DISCONNECTED event. It should be used to
+   * notify the user about possible network errors and to help with the
+   * UX of the explorer.
+   */
+  disconnect(error?: Error): Promise<void>
+
+  /**
+   * Event emitter (mitt) with all the events produced by the transport.
+   */
+  events: Emitter<CommsTransportEvents>
+}
+
+export type SendHints = { reliable: boolean }
+
+// DISCONNECTION
+export type TransportDisconnectedEvent = {
+  // Whether or no the reason of disconnection was that we logged in on
+  // a different session
+  kicked: boolean
+  // Optional error
+  error?: Error
+}
+
+// PEER_DISCONNECTED
+export type PeerDisconnectedEvent = {
+  // The ethereum address of the disconnected peer
+  address: string
+}
+
+// message
+export type TransportMessageEvent = {
+  // The ethereum address of the sender
+  address: string
+  data: Uint8Array
+}

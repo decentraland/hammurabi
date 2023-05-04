@@ -29,6 +29,11 @@ testWithEngine("static entities", {
         type: CrdtMessageType.PUT_COMPONENT
       },
       {
+        componentId: transformComponent.componentId,
+        entityId: StaticEntities.GlobalCenterOfCoordinates,
+        type: CrdtMessageType.PUT_COMPONENT
+      },
+      {
         componentId: engineInfoComponent.componentId,
         entityId: StaticEntities.RootEntity,
         type: CrdtMessageType.PUT_COMPONENT

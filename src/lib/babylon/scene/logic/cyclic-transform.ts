@@ -25,6 +25,15 @@ export function resolveCyclicParening(scene: SceneContext) {
         // cancel if the entity self references itself
         if (parentEntityId === entity.entityId) { continue }
 
+        // cancel if the parent entity was deleted
+        if (scene.deletedEntities.has(parentEntityId)) {
+          // TODO add tests for reparenting with deleted entities
+          entity.parent = scene.rootNode
+          scene.hierarchyChanged = true
+          scene.unparentedEntities.delete(entityId)
+          continue
+        }
+
         // get or create the entity that should be the parent as defined per TransformComponent
         const desiredParent = scene.getOrCreateEntity(parentEntityId)
 

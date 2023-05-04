@@ -5,21 +5,22 @@
 // buffers for each model requies us to find a reusable solution
 
 import * as BABYLON from '@babylonjs/core'
-import { resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
+import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from '@babylonjs/loaders/glTF/glTFFileLoader'
-import { SceneContext } from './scene-context'
 import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
 import { setColliderMask } from './logic/colliders'
 import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
 
+const sceneContextMap = new Map<string /*sceneId*/, WeakRef<LoadableScene>>()
+
 export class AssetManager {
   models = new Map<string, Promise<BABYLON.AssetContainer>>()
 
-  constructor(public scene: SceneContext) { }
+  constructor(public loadableScene: LoadableScene, public babylonScene: BABYLON.Scene) { }
 
   async getContainerFuture(_src: string): Promise<BABYLON.AssetContainer> {
     const normalizedSrc = _src.toLowerCase()
-    let fileHash = resolveFile(this.scene.loadableScene.entity, normalizedSrc)
+    let fileHash = resolveFile(this.loadableScene.entity, normalizedSrc)
 
     if (!fileHash) {
       return Promise.reject(`‼️ The file ${normalizedSrc} is not present in the deployed entity.`)
@@ -27,7 +28,7 @@ export class AssetManager {
 
     if (!this.models.has(fileHash)) {
       // store a WeakRef to the sceneContext to enable file resolver
-      sceneContextMap.set(this.scene.loadableScene.id, new WeakRef(this.scene))
+      sceneContextMap.set(this.loadableScene.id, new WeakRef(this.loadableScene))
 
       const extension = normalizedSrc.endsWith('.gltf') ? '.gltf' : '.glb'
 
@@ -35,21 +36,36 @@ export class AssetManager {
       const base = normalizedSrc.split('/').slice(0, -1).join('/')
 
       const ret = BABYLON.SceneLoader.LoadAssetContainerAsync(
-        this.scene.loadableScene.baseUrl,
-        fileHash + '?sceneId=' + encodeURIComponent(this.scene.loadableScene.id) + '&base=' + encodeURIComponent(base),
-        this.scene.babylonScene,
+        this.loadableScene.baseUrl,
+        fileHash + '?sceneId=' + encodeURIComponent(this.loadableScene.id) + '&base=' + encodeURIComponent(base),
+        this.babylonScene,
         null,
         extension
       )
 
       // once the assetContainer loads it needs to be processed before usage
-      ret.then(_ => processAssetContainer(_, this.scene))
+      ret.then(_ => processAssetContainer(_))
 
       // store the promise in the map, it will be reused for the whole scene
       this.models.set(fileHash, ret)
     }
 
     return this.models.get(fileHash)!
+  }
+
+  async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
+    // this method resolves a file deployed with the entity. it returns the content of the file and its hash
+    const hash = resolveFile(this.loadableScene.entity, file)
+    if (!hash) throw new Error(`File not found: ${file}`)
+
+    const absoluteLocation = resolveFileAbsolute(this.loadableScene, file)
+    if (!absoluteLocation) throw new Error(`File not found: ${file}`)
+
+    const res = await fetch(absoluteLocation)
+
+    if (!res.ok) throw new Error(`Error loading URL: ${absoluteLocation}`)
+
+    return { content: new Uint8Array(await res.arrayBuffer()), hash }
   }
 
   dispose() {
@@ -61,8 +77,6 @@ export class AssetManager {
     }
   }
 }
-
-const sceneContextMap = new Map<string /*sceneId*/, WeakRef<SceneContext>>()
 
 BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
   if (plugin instanceof GLTFFileLoader) {
@@ -89,9 +103,9 @@ BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
         const sceneId = params.get('sceneId')!
         const ctx = sceneContextMap.get(sceneId)?.deref()
         if (ctx) {
-          const relative = url.replace(ctx.loadableScene.baseUrl, base ? base + '/' : '')
+          const relative = url.replace(ctx.baseUrl, base ? base + '/' : '')
 
-          const ret = resolveFileAbsolute(ctx.loadableScene, relative)
+          const ret = resolveFileAbsolute(ctx, relative)
 
           if (ret) {
             return ret!
@@ -104,7 +118,7 @@ BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
   }
 })
 
-function processAssetContainer(assetContainer: BABYLON.AssetContainer, context: SceneContext) {
+function processAssetContainer(assetContainer: BABYLON.AssetContainer) {
   // by default, the models will be added to the scene at 0,0,0. We will remove that instance
   assetContainer.removeAllFromScene()
 

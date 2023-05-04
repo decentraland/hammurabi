@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@dcl/crypto": "^3.4.0",
-    "@dcl/protocol": "^1.0.0-4810686946.commit-7c034e3",
+    "@dcl/protocol": "https://sdk-team-cdn.decentraland.org/@dcl/protocol/branch//dcl-protocol-1.0.0-4884452723.commit-4a10b12.tgz",
     "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
     "@dcl/rpc": "^1.1.2",
     "@dcl/schemas": "^6.17.0",

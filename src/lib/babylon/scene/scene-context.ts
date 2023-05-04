@@ -24,13 +24,20 @@ import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } f
 import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-component'
 import { AssetManager } from './asset-manager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
-import { StaticEntities, updateStaticEntities } from './logic/static-entities'
+import { StaticEntities, entityIsInRange, updateStaticEntities } from './logic/static-entities'
 import { animatorComponent } from '../../decentraland/sdk-components/animator-component'
 import { engineInfoComponent } from '../../decentraland/sdk-components/engine-info'
 import { gltfContainerLoadingStateComponent } from '../../decentraland/sdk-components/gltf-loading-state'
 import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen'
 import { pointerEventsResultComponent } from '../../decentraland/sdk-components/pointer-events-result'
 import { createValueSetComponentStore } from '../../decentraland/crdt-internal/grow-only-set'
+import { VirtualSceneSubscription } from '../../decentraland/virtual-scene'
+import { MAX_ENTITY_NUMBER } from '../../decentraland/crdt-internal/generational-index-pool'
+import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-shape'
+
+const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
+
+let incrementalId = 0
 
 export class SceneContext implements EngineApiInterface {
   entities = new Map<Entity, BabylonEntity>()
@@ -45,7 +52,10 @@ export class SceneContext implements EngineApiInterface {
   nextFrameFutures: Array<IFuture<{ data: Array<Uint8Array> }>> = []
   // stash of incoming CRDT messages from the scripting scene, processed using a
   // quota each renderer frame. ByteBuffer reading is continuable using iterators.
-  incomingMessages: ByteBuffer[] = []
+  // the incoming messages also include the range of allowe entities that the origin
+  // transports had access to
+  incomingMessages: { buffer: ByteBuffer, readonly allowedEntityRange: [number, number] }[] = []
+
   // stash of outgoing messages ready to be sent to back to the scripting scene
   outgoingMessagesBuffer: ByteBuffer = new ReadWriteByteBuffer()
 
@@ -89,6 +99,7 @@ export class SceneContext implements EngineApiInterface {
     [animatorComponent.componentId]: createLwwStore(animatorComponent),
     [gltfContainerLoadingStateComponent.componentId]: createLwwStore(gltfContainerLoadingStateComponent),
     [engineInfoComponent.componentId]: createLwwStore(engineInfoComponent),
+    [avatarShapeComponent.componentId]: createLwwStore(avatarShapeComponent),
   } as const
 
   // this flag is changed every time an entity changed its parent. the change
@@ -102,11 +113,21 @@ export class SceneContext implements EngineApiInterface {
 
   // the assetmanager is used to centralize all the loading/unloading of assets
   // of this scene. 
-  assetManager = new AssetManager(this)
+  assetManager = new AssetManager(this.loadableScene, this.babylonScene)
 
   // bounding vectors to calculate the distance to the outer bounds of the scene
   // for the throttling mechanism
   boundingBox?: BABYLON.BoundingBox
+
+  // subscriptions to other scene's CRDT updates
+  subscriptions: VirtualSceneSubscription[] = []
+
+  subscriptionsBuffer = new ReadWriteByteBuffer()
+
+  // TODO: this should be the optimized data structure to keep track of deleted entities
+  // instead of a set
+  deletedEntities = new Set<Entity>()
+  id: number = incrementalId++
 
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
@@ -120,6 +141,11 @@ export class SceneContext implements EngineApiInterface {
 
       const r = createParcelOutline(babylonScene, metadata.scene.base, metadata.scene.parcels)
       r.result.parent = this.rootNode
+
+      // position the GlobalCenterOfCoordinates entity
+      const GlobalCenterOfCoordinates = this.getOrCreateEntity(StaticEntities.GlobalCenterOfCoordinates)
+      GlobalCenterOfCoordinates.position.set(-this.rootNode.position.x, 0, -this.rootNode.position.z)
+      GlobalCenterOfCoordinates.parent = this.rootNode
     }
 
     // calculate a naive bounding box for the scene to calculate the distance to the outer bounds
@@ -157,7 +183,7 @@ export class SceneContext implements EngineApiInterface {
       if (resolveFileAbsolute(this.loadableScene, file)) {
         const { content } = await this.readFile(file)
         this.mainCrdt = content
-        this.incomingMessages.push(new ReadWriteByteBuffer(content))
+        this.incomingMessages.push({ buffer: new ReadWriteByteBuffer(content), allowedEntityRange: SCENE_ENTITY_RANGE })
       }
     } catch (err: any) {
       this.log(err)
@@ -177,6 +203,7 @@ export class SceneContext implements EngineApiInterface {
   }
 
   removeEntity(entityId: Entity) {
+    this.deletedEntities.add(entityId)
     const entity = this.getEntityOrNull(entityId)
     if (entity) {
       entity.dispose()
@@ -215,28 +242,38 @@ export class SceneContext implements EngineApiInterface {
     while (this.incomingMessages.length) {
       const message = this.incomingMessages[0]
 
-      for (const crdtMessage of readAllMessages(message)) {
+      for (const crdtMessage of readAllMessages(message.buffer)) {
+        if (this.deletedEntities.has(crdtMessage.entityId)) continue
         // STUB create or delete entities based on putComponent and deleteEntity
         switch (crdtMessage.type) {
+          case CrdtMessageType.APPEND_VALUE:
           case CrdtMessageType.DELETE_COMPONENT:
           case CrdtMessageType.PUT_COMPONENT: {
+            // ignore updates of entities outside range
+            // if (!entityIsInRange(crdtMessage.entityId, message.allowedEntityRange)) continue
+
             const entity = this.getOrCreateEntity(crdtMessage.entityId)
             const component = (this.components as any)[crdtMessage.componentId] as ComponentDefinition<any> | void
 
             // if the change is accepted, then we instruct the entity to update its internal state
             // via putComponent or deleteComponent calls
             if (component && component.updateFromCrdt(crdtMessage, this.outgoingMessagesBuffer)) {
-              if (crdtMessage.type === CrdtMessageType.PUT_COMPONENT)
+              if (
+                crdtMessage.type === CrdtMessageType.PUT_COMPONENT ||
+                crdtMessage.type === CrdtMessageType.APPEND_VALUE
+              ) {
                 entity.putComponent(component)
-              else
+              } else {
                 entity.deleteComponent(component)
-
-              component.declaration.applyChanges(entity, component)
+              }
             }
 
             break
           }
           case CrdtMessageType.DELETE_ENTITY: {
+            // ignore updates of entities outside range
+            if (!entityIsInRange(crdtMessage.entityId, message.allowedEntityRange)) continue
+
             this.removeEntity(crdtMessage.entityId)
             break
           }
@@ -312,6 +349,22 @@ export class SceneContext implements EngineApiInterface {
       component.dumpCrdtUpdates(this.outgoingMessagesBuffer)
     }
 
+    // forward all messages from all subscriptions
+    for (const subscription of this.subscriptions) {
+      subscription.getUpdates(this.subscriptionsBuffer)
+
+      if (this.subscriptionsBuffer.currentWriteOffset()) {
+        const binary = this.subscriptionsBuffer.toBinary()
+        // send the messages from the subscriptions to the scenes
+        outMessages.push(binary)
+        // auto process the messages from the subscriptions
+        this.incomingMessages.push({ buffer: new ReadWriteByteBuffer(binary), allowedEntityRange: subscription.range })
+        // reset the buffer
+        this.subscriptionsBuffer.incrementWriteOffset(-this.subscriptionsBuffer.currentWriteOffset())
+        this.subscriptionsBuffer.incrementReadOffset(-this.subscriptionsBuffer.currentReadOffset())
+      }
+    }
+
     if (this.outgoingMessagesBuffer.currentWriteOffset()) {
       outMessages.push(this.outgoingMessagesBuffer.toBinary())
       this.outgoingMessagesBuffer.incrementWriteOffset(-this.outgoingMessagesBuffer.currentWriteOffset())
@@ -333,40 +386,32 @@ export class SceneContext implements EngineApiInterface {
     for (const [entityId] of this.entities) {
       this.removeEntity(entityId)
     }
+    for (const s of this.subscriptions) {
+      s.dispose()
+    }
+    this.subscriptions.length = 0
 
     this.stopped.resolve()
 
     this.assetManager.dispose()
     this.rootNode.parent = null
-    this.rootNode.dispose()
+    this.rootNode.dispose(false)
   }
 
-  // this method exists to be a wrapper of the function. so it can be mocked for tests without
-  // wizzardy
+  // this method exists to be a wrapper of the function. so it can be mocked for tests without wizzardy
   updateStaticEntities() {
     updateStaticEntities(this)
   }
 
   // impl RuntimeApi {
   async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
-    // this method resolves a file deployed with the entity. it returns the content of the file and its hash
-    const hash = resolveFile(this.loadableScene.entity, file)
-    if (!hash) throw new Error(`File not found: ${file}`)
-
-    const absoluteLocation = resolveFileAbsolute(this.loadableScene, file)
-    if (!absoluteLocation) throw new Error(`File not found: ${file}`)
-
-    const res = await fetch(absoluteLocation)
-
-    if (!res.ok) throw new Error(`Error loading URL: ${absoluteLocation}`)
-
-    return { content: new Uint8Array(await res.arrayBuffer()), hash }
+    return this.assetManager.readFile(file)
   }
   // }
 
   private async _crdtSendToRenderer(data: Uint8Array) {
     if (data.byteLength) {
-      this.incomingMessages.push(new ReadWriteByteBuffer(data))
+      this.incomingMessages.push({ buffer: new ReadWriteByteBuffer(data), allowedEntityRange: SCENE_ENTITY_RANGE })
     }
 
     // create a future to wait until all the messages are processed. even if there

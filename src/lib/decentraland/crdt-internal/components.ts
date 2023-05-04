@@ -62,8 +62,21 @@ export interface BaseComponent<T> {
   /**
    * This function writes all CRDT updates into a outBuffer. After returning, this function
    * clears the internal dirty state. Updates are produced only once.
+   * 
+   * This function updates the internal "tick" counter for the entire component.
    */
   dumpCrdtUpdates(outBuffer: ByteBuffer): void
+  
+  /**
+   * This function writes CRDT updates into a outBuffer filtering by the updates with
+   * a tick greater than the one provided. It returns the biggest tick written
+   * to the buffer.
+   * 
+   * WARNING! this function ignores the dirty state. To commit the dirty state please first call
+   * dumpCrdtUpdates. That will increase the counters for each dirty entity and will allow
+   * this function to filter by tick.
+   */
+  dumpCrdtDeltas(outBuffer: ByteBuffer, fromTick: number): number
 
   /**
    * Marks the entity as deleted and signals it cannot be used ever again. It must
