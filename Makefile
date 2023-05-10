@@ -5,7 +5,7 @@ endif
 install: node_modules testing-realm/node_modules
 
 # the URL in which the content will be served. this is necessary to build the testing-realm
-CF_PAGES_URL ?= 'http://localhost:8099'
+CF_PAGES_URL ?= http://localhost:8099
 
 node_modules: package-lock.json package.json
 	npm install
@@ -30,6 +30,7 @@ build-testing-realm: testing-realm/node_modules
 		node_modules/.bin/sdk-commands export-static \
 			--destination ../static/ipfs \
 			--realmName testing-realm \
+			--commsAdapter ws-room:ws-room-service.decentraland.org/rooms/hammurabi \
 			--baseUrl=$(CF_PAGES_URL)/ipfs
 
 sdk-watch: testing-realm/node_modules

@@ -1,3 +1,4 @@
+import { Atom } from "../../misc/atom"
 import { ByteBuffer, ReadWriteByteBuffer } from "../ByteBuffer"
 import { PutComponentOperation, DeleteComponent, PutComponentMessageBody, DeleteComponentMessageBody, CrdtMessageType, CrdtMessageBody } from "../crdt-wire-protocol"
 import { Entity } from "../types"
@@ -116,14 +117,20 @@ export function createUpdateLwwFromCrdt<T>(
 
 export function createGetCrdtMessagesForLww<T>(
   componentId: number,
+  updatedAtTick: Map<Entity, number>,
   timestamps: Map<Entity, number>,
   dirtyIterator: Set<Entity>,
   serde: SerDe<T>,
-  data: Map<Entity, T>
+  data: Map<Entity, T>,
+  currentTick: Atom<number>
 ) {
   return function (outBuffer: ByteBuffer) {
+    const tick = 1 + (currentTick.getOrNull() ?? 0)
+    currentTick.swap(tick)
+
     for (const entityId of dirtyIterator) {
       const timestamp = incrementTimestamp(entityId, timestamps)
+      updatedAtTick.set(entityId, tick)
       if (data.has(entityId)) {
         const writeBuffer = new ReadWriteByteBuffer()
         serde.serialize(data.get(entityId)!, writeBuffer)
@@ -136,10 +143,41 @@ export function createGetCrdtMessagesForLww<T>(
   }
 }
 
+// this function writes the updates for the LWW component to the outBuffer using
+// the entities that were updated after the fromTick value.
+export function createGetCrdtMessagesForLwwWithTick<T>(
+  componentId: number,
+  updatedAtTick: Map<Entity, number>,
+  timestamps: Map<Entity, number>,
+  serde: SerDe<T>,
+  data: Map<Entity, T>
+) {
+  return function (outBuffer: ByteBuffer, fromTick: number) {
+    let biggestTick = fromTick
+
+    for (const [entityId, tick] of updatedAtTick) {
+      if (tick <= fromTick) continue
+      if (biggestTick < tick) biggestTick = tick
+      const timestamp = timestamps.get(entityId) ?? 0
+      if (data.has(entityId)) {
+        const writeBuffer = new ReadWriteByteBuffer()
+        serde.serialize(data.get(entityId)!, writeBuffer)
+        PutComponentOperation.write({ entityId, componentId, timestamp, data: writeBuffer.toBinary(), }, outBuffer)
+      } else {
+        DeleteComponent.write({ entityId, componentId, timestamp }, outBuffer)
+      }
+    }
+
+    return biggestTick
+  }
+}
+
 export function createLwwStore<T, Num extends number>(componentDeclaration: ComponentDeclaration<T, Num>): LastWriteWinElementSetComponentDefinition<T> {
   const data = new Map<Entity, T>()
   const dirtyIterator = new Set<Entity>()
   const timestamps = new Map<Entity, number>()
+  const updatedAtTick = new Map<Entity, number>()
+  const currentTick = Atom<number>(0)
 
   return {
     get componentId() {
@@ -208,7 +246,8 @@ export function createLwwStore<T, Num extends number>(componentDeclaration: Comp
     dirtyIterator(): Iterable<Entity> {
       return Array.from(dirtyIterator)
     },
-    dumpCrdtUpdates: createGetCrdtMessagesForLww(componentDeclaration.componentId, timestamps, dirtyIterator, componentDeclaration, data),
+    dumpCrdtDeltas: createGetCrdtMessagesForLwwWithTick(componentDeclaration.componentId, updatedAtTick, timestamps, componentDeclaration, data),
+    dumpCrdtUpdates: createGetCrdtMessagesForLww(componentDeclaration.componentId, updatedAtTick, timestamps, dirtyIterator, componentDeclaration, data, currentTick),
     updateFromCrdt: createUpdateLwwFromCrdt(componentDeclaration.componentId, timestamps, componentDeclaration, data),
   }
 }

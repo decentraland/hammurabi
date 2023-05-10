@@ -49,7 +49,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
 
   codegen.registerService(port, UserIdentityServiceDefinition, async () => ({
     async getUserData() {
-      const identity = await userEntity
+      const identity = await userEntity.deref()
 
       return {
         data: {
@@ -80,7 +80,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
       }
     },
     async getUserPublicKey() {
-      const identity = await userEntity
+      const identity = await userEntity.deref()
       return {
         address: identity.address
       }

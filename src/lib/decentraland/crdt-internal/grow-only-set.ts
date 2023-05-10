@@ -1,9 +1,7 @@
 import { ReadWriteByteBuffer, ByteBuffer } from "../ByteBuffer";
 import { AppendValueMessageBody, CrdtMessageType, AppendValueOperation } from "../crdt-wire-protocol";
 import { Entity } from "../types";
-import { ComponentDeclaration, ComponentType, GrowOnlyValueSetComponentDefinition, SerDe } from "./components";
-
-const emptyReadonlySet = freezeSet(new Set())
+import { ComponentDeclaration, ComponentType, GrowOnlyValueSetComponentDefinition } from "./components";
 
 function frozenError() {
   throw new Error('The set is frozen')
@@ -15,6 +13,8 @@ function freezeSet<T>(set: Set<T>): ReadonlySet<T> {
 
   return set as ReadonlySet<T>
 }
+
+const emptyReadonlySet = freezeSet(new Set())
 
 function sortByTimestamp(a: { timestamp: number }, b: { timestamp: number }) {
   return a.timestamp > b.timestamp ? 1 : -1
@@ -124,10 +124,8 @@ export function createValueSetComponentStore<T, ComponentNumber extends number>(
         yield [entity, component.frozenSet]
       }
     },
-    *dirtyIterator(): Iterable<Entity> {
-      for (const entity of dirtyIterator) {
-        yield entity
-      }
+    dirtyIterator(): Iterable<Entity> {
+      return Array.from(dirtyIterator)
     },
     dumpCrdtUpdates(outBuffer: ByteBuffer) {
       dirtyIterator.clear()
@@ -135,6 +133,10 @@ export function createValueSetComponentStore<T, ComponentNumber extends number>(
         AppendValueOperation.write(command, outBuffer)
       }
       queuedCommands.length = 0
+    },
+    dumpCrdtDeltas(outBuffer, fromTimestamp) {
+      // not implemented for GOVS component
+      return 0
     },
     updateFromCrdt(body, _conflictResolutionByteBuffer: ByteBuffer) {
       if (body.type === CrdtMessageType.APPEND_VALUE) {

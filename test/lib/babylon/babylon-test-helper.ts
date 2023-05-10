@@ -1,9 +1,9 @@
 import * as BABYLON from '@babylonjs/core'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync, read, readFileSync, writeFileSync } from 'fs'
 import { SceneContext } from '../../../src/lib/babylon/scene/scene-context'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { ComponentDeclaration } from '../../../src/lib/decentraland/crdt-internal/components'
-import { DeleteComponent, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
+import { DeleteComponent, DeleteEntity, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
 import { prettyPrintCrdtMessage } from '../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint'
 import { initScheduler } from '../../../src/lib/babylon/scene/update-scheduler'
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
@@ -184,6 +184,14 @@ export function testWithEngine(
 }
 
 export class CrdtBuilder {
+  mustEqual(expected: Uint8Array) {
+    const current = this.finish()
+
+    const prettyCurrent = Array.from(readAllMessages(new ReadWriteByteBuffer(current))).map(_ => prettyPrintCrdtMessage(_))
+    const prettyExpected = Array.from(readAllMessages(new ReadWriteByteBuffer(expected))).map(_ => prettyPrintCrdtMessage(_))
+    expect(prettyCurrent).toEqual(prettyExpected)
+    expect(current).toEqual(expected)
+  }
   #buffer = new ReadWriteByteBuffer()
 
   put<T>(transformComponent: ComponentDeclaration<T, number>, entityId: Entity, timestamp: number, value: T) {
@@ -200,6 +208,11 @@ export class CrdtBuilder {
 
   delete(transformComponent: ComponentDeclaration<any, number>, entityId: Entity, timestamp: number) {
     DeleteComponent.write({ entityId, componentId: transformComponent.componentId, timestamp }, this.#buffer)
+    return this
+  }
+
+  deleteEntity(entityId: Entity) {
+    DeleteEntity.write({ entityId }, this.#buffer)
     return this
   }
 

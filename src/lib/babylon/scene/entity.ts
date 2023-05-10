@@ -36,6 +36,10 @@ export type AppliedComponents = {
     instancedEntries: BABYLON.InstantiatedEntries | null
   }
   pointerEvents: PBPointerEvents
+  avatarShape: {
+    capsule?: BABYLON.AbstractMesh
+  }
+  avatarVisible: boolean
 }
 
 /**
@@ -52,10 +56,12 @@ export class BabylonEntity extends BABYLON.TransformNode {
   }
 
   putComponent(component: ComponentDefinition<unknown>) {
+    component.declaration.applyChanges(this, component)
     this.usedComponents.set(component.componentId, component)
   }
 
   deleteComponent(component: ComponentDefinition<unknown>) {
+    component.declaration.applyChanges(this, component)
     this.usedComponents.delete(component.componentId)
   }
 
@@ -145,6 +151,9 @@ export class BabylonEntity extends BABYLON.TransformNode {
   dispose(_doNotRecurse?: boolean | undefined, _disposeMaterialAndTextures?: boolean | undefined): void {
     // first dispose all components
     for (const [_, component] of this.usedComponents) {
+      // mark the component as deleted in the component
+      component.entityDeleted(this.entityId, false)
+      // then perform the final deletion
       this.deleteComponent(component)
     }
 

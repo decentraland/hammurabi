@@ -4,14 +4,24 @@ import type { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates } from "../coordinates";
 import { Entity } from "../../../decentraland/types";
 import { engineInfoComponent } from "../../../decentraland/sdk-components/engine-info";
+import { EntityUtils } from "../../../decentraland/crdt-internal/generational-index-pool";
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
   PlayerEntity: 1 as Entity,
   CameraEntity: 2 as Entity,
+  GlobalCenterOfCoordinates: 5 as Entity,
 } as const
 
 export const PLAYER_HEIGHT = 1.6
+export const MAX_RESERVED_ENTITY = 512
+
+// this function defines if the engine should accept updates to the entity by its
+// entity number
+export function entityIsInRange(entity: Entity, range: [number, number]) {
+  const [entityNumber, _version] = EntityUtils.fromEntityId(entity)
+  return entityNumber < range[1] && entityNumber >= range[0]
+}
 
 /**
  * This function updates the static entities to be reported back to the scene once
@@ -35,6 +45,8 @@ export function updateStaticEntities(context: SceneContext) {
     Transform.create(StaticEntities.CameraEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
   if (!Transform.has(StaticEntities.PlayerEntity))
     Transform.create(StaticEntities.PlayerEntity, { position: Vector3.Zero(), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
+  if (!Transform.has(StaticEntities.GlobalCenterOfCoordinates))
+    Transform.create(StaticEntities.GlobalCenterOfCoordinates, { position: context.rootNode.position.scale(-1), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
 
   const engineCamera = context.babylonScene.activeCamera
 

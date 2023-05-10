@@ -1,13 +1,13 @@
 {
-  "name": "testing-realm",
+  "name": "avatars-scene",
+  "version": "1.0.0",
+  "description": "SDK7 Template scene",
   "scripts": {
     "start": "sdk-commands start",
     "build": "sdk-commands build",
+    "build-tests": "sdk-commands build --single=src/tests/*.test.ts",
     "upgrade-sdk": "npm install --save-dev @dcl/sdk@latest",
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
-  },
-  "devDependencies": {
-    "@dcl/sdk": "https://sdk-team-cdn.decentraland.org/@dcl/js-sdk-toolchain/branch/player-entities/dcl-sdk-7.1.10-4894289737.commit-b674c9c.tgz"
   },
   "prettier": {
     "semi": false,
@@ -17,11 +17,5 @@
   },
   "dependencies": {
     "fp-future": "^1.0.1"
-  },
-  "workspaces": [
-    "scene-0_0",
-    "scene-0_1",
-    "scene-0_2",
-    "avatars-scene"
-  ]
+  }
 }
