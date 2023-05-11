@@ -5,7 +5,7 @@ import { CrdtMessageType, readAllMessages } from "../../../src/lib/decentraland/
 import { Entity } from "../../../src/lib/decentraland/types"
 
 describe('Conflict resolution rules for GrowOnlyValueSet based components', () => {
-  const serde: ComponentDeclaration<{ text: string, timestamp: number }> = {
+  const serde: ComponentDeclaration<{ text: string, timestamp: number }, number> = {
     applyChanges() {},
     componentId: 1,
     deserialize(buffer) {
@@ -277,7 +277,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components', () =
 })
 
 describe('Conflict resolution rules for GrowOnlyValueSet based components with Extended Schema', () => {
-  const decl: ComponentDeclaration<{ parent: number }> = {
+  const decl: ComponentDeclaration<{ parent: number }, number> = {
     componentId: 1,
     applyChanges() {},
     deserialize(buffer) {
@@ -332,7 +332,7 @@ describe('Conflict resolution rules for GrowOnlyValueSet based components with E
 })
 
 describe('Conflict resolution rules for GrowOnlyValueSet based components with Schema.Int', () => {
-  const decl: ComponentDeclaration<number> = {
+  const decl: ComponentDeclaration<number, number> = {
     componentId: 1,
     applyChanges(){},
     deserialize(buffer) {

@@ -184,13 +184,13 @@ export function testWithEngine(
 }
 
 export class CrdtBuilder {
-  mustEqual(expected: Uint8Array) {
-    const current = this.finish()
+  mustEqual(given: Uint8Array) {
+    const expected = this.finish()
 
-    const prettyCurrent = Array.from(readAllMessages(new ReadWriteByteBuffer(current))).map(_ => prettyPrintCrdtMessage(_))
+    const prettyGiven = Array.from(readAllMessages(new ReadWriteByteBuffer(given))).map(_ => prettyPrintCrdtMessage(_))
     const prettyExpected = Array.from(readAllMessages(new ReadWriteByteBuffer(expected))).map(_ => prettyPrintCrdtMessage(_))
-    expect(prettyCurrent).toEqual(prettyExpected)
-    expect(current).toEqual(expected)
+    expect(prettyGiven).toEqual(prettyExpected)
+    expect(given).toEqual(expected)
   }
   #buffer = new ReadWriteByteBuffer()
 

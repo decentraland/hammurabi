@@ -8,7 +8,9 @@
         "typescript.tsdk": "node_modules/typescript/lib"
       },
       "extensions": [
-        "bierner.markdown-mermaid"
+        "bierner.markdown-mermaid",
+        "GitHub.copilot",
+        "GitHub.copilot-labs"
       ]
     }
   },

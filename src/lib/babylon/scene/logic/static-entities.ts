@@ -15,6 +15,7 @@ export const StaticEntities = {
 
 export const PLAYER_HEIGHT = 1.6
 export const MAX_RESERVED_ENTITY = 512
+export const AVATAR_ENTITY_RANGE: [number, number] = [128, MAX_RESERVED_ENTITY]
 
 // this function defines if the engine should accept updates to the entity by its
 // entity number

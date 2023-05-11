@@ -1,18 +1,13 @@
-import { CommsEvents } from "./communications/CommsTransportWrapper";
 import { ByteBuffer } from "./ByteBuffer";
-import { Emitter } from "mitt";
 
 export type VirtualScene = {
-  // the wire transport function connects the transport events to the virtual scene
-  wireTransportEvents(events: Emitter<CommsEvents>): void
-
   // [from,to] range of entity numbers. the range is [) (inclusive, exclusive)
   readonly range: [number, number]
 
   createSubscription(): VirtualSceneSubscription
 
   // this should be called every tick, before sending the updates to the rest of the scenes via subscriptions
-  runTick(): void
+  update(): void
 }
 
 export type VirtualSceneSubscription = {

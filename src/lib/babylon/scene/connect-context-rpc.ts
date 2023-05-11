@@ -9,7 +9,7 @@ import * as codegen from "@dcl/rpc/dist/codegen"
 import { EngineApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen";
 import { RuntimeServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/runtime.gen";
 import { UserIdentityServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/user_identity.gen";
-import { userEntity } from "../../../explorer/state";
+import { userIdentity } from "../../../explorer/state";
 
 export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
   codegen.registerService(port, RuntimeServiceDefinition, async () => ({
@@ -49,7 +49,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
 
   codegen.registerService(port, UserIdentityServiceDefinition, async () => ({
     async getUserData() {
-      const identity = await userEntity.deref()
+      const identity = await userIdentity.deref()
 
       return {
         data: {
@@ -80,7 +80,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
       }
     },
     async getUserPublicKey() {
-      const identity = await userEntity.deref()
+      const identity = await userIdentity.deref()
       return {
         address: identity.address
       }

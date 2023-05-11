@@ -7,8 +7,8 @@ import { PLAYER_HEIGHT } from './scene/logic/static-entities'
 import { addCrosshair } from './visual/reticle'
 import { pickPointerEventsMesh } from './scene/logic/pointer-events'
 import { AddButton, guiPanel } from './visual/ui'
-import { avatarVirtualScene, loadedScenesByEntityId } from '../../explorer/state'
-import { createAvatarRendererSystem } from '../decentraland/communications/comms-virtual-scene'
+import { loadedScenesByEntityId } from '../../explorer/state'
+import { createAvatarRendererSystem } from './avatar-rendering-system'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -56,8 +56,6 @@ export function initEngine(canvas: HTMLCanvasElement) {
 
   initScheduler(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
 
-  createAvatarRendererSystem(scene, () => loadedScenesByEntityId.values())
-
   // TODO: write an ADR about this cheap culling mechanism
   initSceneCulling(scene, () => loadedScenesByEntityId.values())
 
@@ -98,8 +96,6 @@ export function initEngine(canvas: HTMLCanvasElement) {
   })
 
   scene.onBeforeRenderObservable.add(() => {
-    avatarVirtualScene.runTick()
-
     pickPointerEventsMesh(scene)
   })
 
