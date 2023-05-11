@@ -47,12 +47,16 @@ export function createAvatarRendererSystem(scene: Scene, getScenes: () => Iterab
     for (const [_id, list] of avatars) {
       // TODO, we render everything for now picking the first one
       const [first, ...rest] = list
-      
+
       finalAvatars.set(_id, first)
-      first.appliedComponents.avatarVisible = true
+      if (first.appliedComponents.avatarRenderer) {
+        first.appliedComponents.avatarRenderer.visible = true
+      }
 
       for (const avatar of rest) {
-        avatar.appliedComponents.avatarVisible = false
+        if (avatar.appliedComponents.avatarRenderer) {
+          avatar.appliedComponents.avatarRenderer.visible = false
+        }
       }
     }
 

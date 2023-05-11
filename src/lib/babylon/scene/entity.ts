@@ -11,6 +11,7 @@ import { isValidBillboardCombination } from './logic/billboards'
 import { PBGltfContainer } from '@dcl/protocol/out-ts/decentraland/sdk/components/gltf_container.gen'
 import { PBPointerEvents } from '@dcl/protocol/out-ts/decentraland/sdk/components/pointer_events.gen'
 import { PBMeshRenderer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_renderer.gen'
+import { AvatarRenderer } from '../avatars/AvatarRenderer'
 
 // the following list of components is used to store a "staging" value to compare
 // against the previous applied value in the applyChanges function of each component
@@ -36,10 +37,7 @@ export type AppliedComponents = {
     instancedEntries: BABYLON.InstantiatedEntries | null
   }
   pointerEvents: PBPointerEvents
-  avatarShape: {
-    capsule?: BABYLON.AbstractMesh
-  }
-  avatarVisible: boolean
+  avatarRenderer: AvatarRenderer
 }
 
 /**

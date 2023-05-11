@@ -5,6 +5,8 @@ import { SceneContext } from "./scene-context"
 import { connectSceneContextUsingWebWorkerQuickJs } from './webworker-runtime'
 import { loadedScenesByEntityId } from '../../../explorer/state'
 import { VirtualScene } from '../../decentraland/virtual-scene'
+import { json } from '../../misc/json'
+import { Entity } from '@dcl/schemas'
 
 /**
  * Loads a remote scene. The baseUrl will be prepended to every request to resolve
@@ -51,8 +53,41 @@ export async function getLoadableSceneFromUrl(entityId: string, baseUrl: string)
   const entity = await result.json()
 
   return {
-    id: entityId,
+    urn: entityId,
     entity,
     baseUrl,
   }
+}
+
+/**
+  * Fetches the entities that represent the given pointers.
+  * @param pointers List of pointers
+  * @param peerUrl The url of a catalyst
+  * @returns List of active entities for given pointers
+  */
+export async function fetchEntitiesByPointers(pointers: string[], contentServerBaseUrl: string) {
+  if (pointers.length === 0) {
+    return []
+  }
+  // TODO: add here support for custom ?baseUrl query param in URN
+  const entities = await json<Entity[]>(`${contentServerBaseUrl}/entities/active`, {
+    method: 'post',
+    body: JSON.stringify({ pointers }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+  return entities
+}
+
+export async function getLoadableSceneFromPointers(pointers: string[], contentServerBaseUrl: string): Promise<LoadableScene[]> {
+  const entities = await fetchEntitiesByPointers(pointers, contentServerBaseUrl)
+
+  return entities.map($ => ({
+    urn: $.pointers[0] || $.id,
+    entity: {
+      type: $.type as any,
+      content: $.content,
+      metadata: $.metadata,
+    },
+    baseUrl: contentServerBaseUrl + '/contents/',
+  }))
 }

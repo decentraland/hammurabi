@@ -1,15 +1,39 @@
-export type ContentServerEntity = {
+import { Emote, Scene, Wearable } from "@dcl/schemas";
+
+export type WearableContentServerEntity = {
+  type: 'wearable'
   // content files of the entity
   content: Array<{ file: string; hash: string }>
   // entity metadata
-  metadata: any
+  metadata: Wearable
 }
+
+export type SceneContentServerEntity = {
+  type: 'scene'
+  // content files of the entity
+  content: Array<{ file: string; hash: string }>
+  // entity metadata
+  metadata: Scene
+}
+
+export type EmoteContentServerEntity = {
+  type: 'emote'
+  // content files of the entity
+  content: Array<{ file: string; hash: string }>
+  // entity metadata
+  metadata: Emote
+}
+
+export type ContentServerEntity =
+  | WearableContentServerEntity
+  | EmoteContentServerEntity
+  | SceneContentServerEntity
 
 export type LoadableScene = Readonly<{
   // baseUrl to download all assets
   baseUrl: string
-  // entity Id
-  id: string
+  // urn of the entity. usually the first pointer
+  urn: string
   // entity file fom the content server
   entity: ContentServerEntity
 }>

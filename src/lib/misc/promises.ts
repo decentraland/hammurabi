@@ -3,3 +3,7 @@ export function unwrapPromise(promise: Promise<any>) {
     console.error('ERROR IN PROMISE', e)
   })
 }
+
+export async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

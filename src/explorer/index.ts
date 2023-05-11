@@ -10,6 +10,14 @@ import { createAvatarVirtualSceneSystem } from "../lib/decentraland/communicatio
 import { createAvatarRendererSystem } from "../lib/babylon/avatar-rendering-system";
 import { createRealmCommunicationSystem } from "../lib/decentraland/communications/realm-communications-system";
 import { loadSceneContext, unloadScene } from "../lib/babylon/scene/load";
+import { createSceneCullingSystem } from "../lib/babylon/scene/scene-culling";
+import { createSceneTickSystem } from "../lib/babylon/scene/update-scheduler";
+
+
+// we only spend ONE millisecond per frame procesing messages from scenes,
+// it is a conservative number but we want to prioritize CPU time for rendering
+const MS_PER_FRAME_PROCESSING_SCENE_MESSAGES = 1
+
 
 // this is our entry point
 main()
@@ -25,13 +33,17 @@ function main() {
   const networkedAvatarController = createNetworkedAvatarSystem(realmCommunicationSystem.getTransports)
   const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports)
   const avatarRenderingSystem = createAvatarRendererSystem(scene, () => loadedScenesByEntityId.values())
+  const sceneCullingSystem = createSceneCullingSystem(scene, () => loadedScenesByEntityId.values())
+  const sceneTickSystem = createSceneTickSystem(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
 
   addSystems(scene,
     realmCommunicationSystem,
     positionReportSystem,
     networkedAvatarController,
     avatarVirtualScene,
-    avatarRenderingSystem
+    avatarRenderingSystem,
+    sceneCullingSystem,
+    sceneTickSystem
   )
 
   // when the realm changes, we need to destroy extra scenes and load the new ones

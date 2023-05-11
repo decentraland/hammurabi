@@ -14,7 +14,7 @@ export function runSnapshotTest(sourceFile: string, bundle: string, snapshotFile
   testWithEngine(`snapshot test for ${bundle}`, {
     baseUrl: '/',
     entity: { content: [{ file: 'game.js', hash: '123' }], metadata: { main: 'game.js' } },
-    id: '123',
+    urn: '123',
     enableStaticEntities: true,
     snapshotFile: snapshotFile ?? `${sourceFile}.snapshot.md`,
     sourceFile,

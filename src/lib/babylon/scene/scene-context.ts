@@ -22,7 +22,7 @@ import { PARCEL_SIZE_METERS, gridToWorld, parseParcelPosition } from '../../dece
 import { createParcelOutline } from '../visual/parcelOutline'
 import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen'
 import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-component'
-import { AssetManager } from './asset-manager'
+import { AssetManager } from './AssetManager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
 import { StaticEntities, entityIsInRange, updateStaticEntities } from './logic/static-entities'
 import { animatorComponent } from '../../decentraland/sdk-components/animator-component'

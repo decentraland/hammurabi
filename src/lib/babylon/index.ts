@@ -2,17 +2,10 @@ import * as BABYLON from '@babylonjs/core'
 import { setupEnvironment } from './visual/ambientLights'
 import { initKeyboard } from './input'
 import { addGlowLayer } from './visual/glowLayer'
-import { initSceneCulling, initScheduler } from './scene/update-scheduler'
 import { PLAYER_HEIGHT } from './scene/logic/static-entities'
 import { addCrosshair } from './visual/reticle'
 import { pickPointerEventsMesh } from './scene/logic/pointer-events'
 import { AddButton, guiPanel } from './visual/ui'
-import { loadedScenesByEntityId } from '../../explorer/state'
-import { createAvatarRendererSystem } from './avatar-rendering-system'
-
-// we only spend ONE millisecond per frame procesing messages from scenes,
-// it is a conservative number but we want to prioritize CPU time for rendering
-const MS_PER_FRAME_PROCESSING_SCENE_MESSAGES = 1
 
 export function initEngine(canvas: HTMLCanvasElement) {
   BABYLON.Database.IDBStorageEnabled = true
@@ -54,11 +47,6 @@ export function initEngine(canvas: HTMLCanvasElement) {
   // scene.enablePhysics(scene.gravity, new BABYLON.OimoJSPlugin(2))
   scene.getBoundingBoxRenderer().showBackLines = true
 
-  initScheduler(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
-
-  // TODO: write an ADR about this cheap culling mechanism
-  initSceneCulling(scene, () => loadedScenesByEntityId.values())
-
   // setup visual parts and environment
   addGlowLayer(scene)
   const { setCamera } = setupEnvironment(scene)
@@ -73,8 +61,9 @@ export function initEngine(canvas: HTMLCanvasElement) {
   firstPersonCamera.speed = 2
   firstPersonCamera.fov = 1
   firstPersonCamera.angularSensibility = 1000
-  firstPersonCamera.ellipsoid = new BABYLON.Vector3(0.3, 0.8, 0.3);
+  firstPersonCamera.ellipsoid = new BABYLON.Vector3(0.3, PLAYER_HEIGHT / 2, 0.3);
   firstPersonCamera.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
+  firstPersonCamera.minZ = 0.1 // near plane
 
   const thirdPersonCamera = new BABYLON.ArcRotateCamera('3rd person camera', -Math.PI / 2, Math.PI / 2.5, 15, new BABYLON.Vector3(0, 0, 0), scene)
 

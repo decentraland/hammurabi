@@ -8,7 +8,7 @@ import { testWithEngine } from './babylon-test-helper'
 testWithEngine("static entities", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123',
+  urn: '123',
   enableStaticEntities: true
 }, ($) => {
   beforeEach(() => $.startEngine())

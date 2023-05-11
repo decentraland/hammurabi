@@ -6,10 +6,10 @@ export type DecentralandSystem = {
 }
 
 export function addSystems(scene: Scene, ...systems: DecentralandSystem[]) {
-  scene.onBeforeRenderObservable.add(() => {
+  scene.onBeforeAnimationsObservable.add(() => {
     systems.forEach($ => $.update && $.update())
   })
-  scene.onAfterRenderObservable.add(() => {
+  scene.onAfterDrawPhaseObservable.add(() => {
     systems.forEach($ => $.lateUpdate && $.lateUpdate())
   })
 }

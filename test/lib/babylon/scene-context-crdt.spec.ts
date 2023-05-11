@@ -9,7 +9,7 @@ import { StaticEntities } from '../../../src/lib/babylon/scene/logic/static-enti
 testWithEngine("entities are removed on scene disposal", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  urn: '123'
 }, ($) => {
   beforeEach(() => $.startEngine())
 
@@ -56,7 +56,7 @@ testWithEngine("entities are removed on scene disposal", {
 testWithEngine("scene context implents ADR-148", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  urn: '123'
 }, ($) => {
 
   beforeEach(() => $.startEngine())
@@ -113,7 +113,7 @@ testWithEngine("scene context implents ADR-148", {
 testWithEngine("outgoingMessages are delivered on crdtSendToRenderer result", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123',
+  urn: '123',
   enableStaticEntities: false
 }, ($) => {
   beforeEach(() => $.startEngine())

@@ -15,7 +15,7 @@ const TRANSFORM_COMPONENT_ID = transformComponent.componentId
 testWithEngine("transform component compliance tests", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  urn: '123'
 }, ($) => {
   const entity = 600 as Entity
   let timestamp = 0
@@ -128,7 +128,7 @@ testWithEngine("transform component compliance tests", {
 testWithEngine("reparenting compliance tests, remove one node from the middle of the chain", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  urn: '123'
 }, ($) => {
   const entityA = 0xA as Entity
   const entityB = 0xB as Entity
@@ -207,7 +207,7 @@ testWithEngine("reparenting compliance tests, remove one node from the middle of
 testWithEngine("reparenting compliance tests, parent to an unexistent entity uses the root transform", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  urn: '123'
 }, ($) => {
   const entityA = 0xA as Entity
   const entityB = 0xB as Entity
@@ -281,7 +281,7 @@ testWithEngine("reparenting compliance tests, parent to an unexistent entity use
 testWithEngine("reparenting compliance tests, remove one node from the middle of the chain", {
   baseUrl: '/',
   entity: { content: [], metadata: {} },
-  id: '123'
+  urn: '123'
 }, ($) => {
   const entityA = 0xA as Entity
   const entityB = 0xB as Entity
@@ -426,7 +426,7 @@ for (const test of sequences) {
   testWithEngine("test final result, single CRDT message with all messages " + seqid++, {
     baseUrl: '/',
     entity: { content: [], metadata: {} },
-    id: '123'
+    urn: '123'
   }, ($) => {
     beforeEach(() => $.startEngine())
 
@@ -461,7 +461,7 @@ describe('cyclic recovery with permutations', () => {
     testWithEngine("test final result, single CRDT message with all messages " + seqid++, {
       baseUrl: '/',
       entity: { content: [], metadata: {} },
-      id: '123'
+      urn: '123'
     }, ($) => {
       beforeEach(() => $.startEngine())
       test(`do the test in order ${permutation.cases}`, async () => {
@@ -496,7 +496,7 @@ describe('cyclic recovery with permutations', () => {
     testWithEngine('cyclic recovery with permutations', {
       baseUrl: '/',
       entity: { content: [], metadata: {} },
-      id: '123'
+      urn: '123'
     }, ($) => {
       beforeEach(() => $.startEngine())
       test(`do the test in order ${permutation.cases}`, async () => {
