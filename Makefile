@@ -39,6 +39,9 @@ sdk-watch: testing-realm/node_modules
 build: node_modules build-testing-realm
 	@echo "~ Running build..."
 	@node ./build.js --production
+	@echo "~ Typechecking tests..."
+	@node_modules/.bin/tsc --project test/tsconfig.json
+	@echo "Build finished"
 
 start: build-testing-realm
 	node ./build.js --watch

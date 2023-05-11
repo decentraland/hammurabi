@@ -1,5 +1,3 @@
-import { EngineApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen"
-import { EnvironmentApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/environment_api.gen"
 import { createRpcServer } from "@dcl/rpc"
 import { LoadableScene } from "../../decentraland/scene/content-server-entity"
 import { SceneContext } from "./scene-context"

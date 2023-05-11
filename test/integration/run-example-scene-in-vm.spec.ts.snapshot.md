@@ -347,7 +347,6 @@ sequenceDiagram
   loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
-  Note right of scene: "creating new entity 626"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
   end
   scene->>renderer: crdtSendToRenderer()
@@ -415,7 +414,6 @@ sequenceDiagram
   loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
-  Note right of scene: "creating new entity 627"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
   end
   scene->>renderer: crdtSendToRenderer()
@@ -484,7 +482,6 @@ sequenceDiagram
   loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
-  Note right of scene: "creating new entity 628"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
   end
   scene->>renderer: crdtSendToRenderer()
@@ -554,7 +551,6 @@ sequenceDiagram
   loop Frame
   loop Run Systems
   scene-->>scene: engine.update()
-  Note right of scene: "creating new entity 629"
   Note right of scene: "CameraTransform: {\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"scale\":{\"x\":1,\"y\":1,\"z\":1},\"parent\":0}"
   end
   scene->>renderer: crdtSendToRenderer()

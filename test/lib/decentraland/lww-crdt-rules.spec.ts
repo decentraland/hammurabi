@@ -313,7 +313,7 @@ describe('Conflict resolution rules for LWW-ElementSet based components', () => 
 })
 
 describe('integration lww', () => {
-  const decl: ComponentDeclaration<{ u8: number }> = {
+  const decl: ComponentDeclaration<{ u8: number }, number> = {
     componentId: 1,
     applyChanges() { },
     serialize(value, builder: ByteBuffer) {

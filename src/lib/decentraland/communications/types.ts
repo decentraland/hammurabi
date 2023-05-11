@@ -1,5 +1,6 @@
 import { Atom } from "../../misc/atom"
 import { Emitter } from "mitt"
+import { createLogger } from "../../misc/logger"
 
 export type CommsAdapter = {
   desiredTransports: Atom<string[]>
@@ -65,3 +66,5 @@ export type TransportMessageEvent = {
   address: string
   data: Uint8Array
 }
+
+export const commsLogger = createLogger('📡 Comms')

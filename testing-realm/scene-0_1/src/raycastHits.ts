@@ -21,7 +21,6 @@ export function registerRaycastHit(position: Vector3, seconds = 2) {
     [entity] = releasedEntities
   } else {
     entity = engine.addEntity()
-    console.log('creating new entity ' + entity)
   }
 
   MeshRenderer.setSphere(entity)

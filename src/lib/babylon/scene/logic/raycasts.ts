@@ -102,16 +102,19 @@ function computeRayDirection(scene: SceneContext, raycast: PBRaycast, ray: Ray, 
   );
 
   // and then calculate the global direction, relative to the
-  if (!raycast.direction || raycast.direction?.$case === 'localDirection') {
+  if (!raycast.direction) {
+    // the default value if direction is missing is a local-space forward vector
+    Vector3.TransformNormalToRef(Vector3.Forward(), entity.getWorldMatrix(), ray.direction);
+  } else if (raycast.direction?.$case === 'localDirection') {
     // then localDirection, is used to detect collisions in a path
     // i.e. Vector3.Forward(), it takes into consideration the rotation of
     // the entity to perform the raycast in local coordinates
 
     Vector3.TransformNormalToRef(
       new Vector3(
-        raycast.direction?.localDirection.x ?? 0,
-        raycast.direction?.localDirection.y ?? 0,
-        raycast.direction?.localDirection.z ?? 1
+        raycast.direction.localDirection.x ?? 0,
+        raycast.direction.localDirection.y ?? 0,
+        raycast.direction.localDirection.z ?? 1
       ),
       entity.getWorldMatrix(),
       ray.direction

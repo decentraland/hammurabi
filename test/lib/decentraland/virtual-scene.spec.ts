@@ -1,18 +1,19 @@
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
-import { CommsEvents } from '../../../src/lib/decentraland/communications/CommsTransportWrapper'
-import { createAvatarVirtualScene } from '../../../src/lib/decentraland/communications/comms-virtual-scene'
+import { CommsEvents, CommsTransportWrapper } from '../../../src/lib/decentraland/communications/CommsTransportWrapper'
+import { createAvatarVirtualSceneSystem } from '../../../src/lib/decentraland/communications/comms-virtual-scene-system'
 import mitt from 'mitt'
 import { CrdtBuilder } from '../babylon/babylon-test-helper'
 import { transformComponent } from '../../../src/lib/decentraland/sdk-components/transform-component'
 import { Quaternion, Vector3 } from '@babylonjs/core'
-import { playerIdentityDataComponent } from '../../../src/lib/decentraland/sdk-components/engine-info copy'
-import { readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
-import { prettyPrintCrdtMessage } from '../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint'
+import { playerIdentityDataComponent } from '../../../src/lib/decentraland/sdk-components/player-identity-data'
 
 describe('virtual scene tests', () => {
-  const scene = createAvatarVirtualScene()
   const events = mitt<CommsEvents>()
-  scene.wireTransportEvents(events)
+  const transport = { events } as CommsTransportWrapper
+  const scene = createAvatarVirtualSceneSystem(() => [transport])
+
+  // run one tick to register the transport
+  scene.update()
 
   const sub1 = scene.createSubscription()
   const sub2 = scene.createSubscription()
@@ -34,7 +35,7 @@ describe('virtual scene tests', () => {
         index: 1
       }
     })
-    scene.runTick()
+    scene.update()
 
     // write partial updates to buf1
     sub1.getUpdates(buf1)
@@ -52,7 +53,7 @@ describe('virtual scene tests', () => {
         index: 2
       }
     })
-    scene.runTick()
+    scene.update()
 
     // write partial updates to buf1
     sub1.getUpdates(buf1)
@@ -95,7 +96,7 @@ describe('virtual scene tests', () => {
       .mustEqual(buf2.toBinary())
 
     // finally if no updates are received, no updates are written
-    scene.runTick()
+    scene.update()
     const buf3 = new ReadWriteByteBuffer()
     sub2.getUpdates(buf3)
     expect(buf3.currentWriteOffset()).toEqual(0)
@@ -103,7 +104,7 @@ describe('virtual scene tests', () => {
 
   test('deleting an entity produces an entity deleted crdt message', () => {
     events.emit('PEER_DISCONNECTED', { address: '0x123' })
-    scene.runTick()
+    scene.update()
 
     const buf1 = new ReadWriteByteBuffer()
     sub1.getUpdates(buf1)

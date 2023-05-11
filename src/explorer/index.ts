@@ -1,21 +1,78 @@
 import "@babylonjs/inspector"
 import { initEngine } from "../lib/babylon";
-import { loadRealm } from "../lib/decentraland/realm";
 import { loginAsGuest } from "../lib/decentraland/identity/login";
-import { activeTransports, refreshTransports, setCurrentIdentity } from "./state";
-import { createPositionReporter } from "../lib/decentraland/communications/wire-transport";
-import { Quaternion, Vector3 } from "@babylonjs/core";
-import { PLAYER_HEIGHT } from "../lib/babylon/scene/logic/static-entities";
+import { loadedScenesByEntityId, setCurrentIdentity, userIdentity } from "./state";
+import { createCommunicationsPositionReportSystem } from "../lib/decentraland/communications/position-report-system";
+import { createNetworkedAvatarSystem } from "../lib/decentraland/communications/networked-avatar-system";
+import { generateRandomAvatar } from "../lib/decentraland/identity/avatar";
+import { addSystems } from "../lib/decentraland/system";
+import { createAvatarVirtualSceneSystem } from "../lib/decentraland/communications/comms-virtual-scene-system";
+import { createAvatarRendererSystem } from "../lib/babylon/avatar-rendering-system";
+import { createRealmCommunicationSystem } from "../lib/decentraland/communications/realm-communications-system";
+import { loadSceneContext, unloadScene } from "../lib/babylon/scene/load";
 
 // this is our entry point
 main()
 
 function main() {
+  // <WIRING>
   const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement // Get the canvas element
-  const realmInput = document.getElementById('realm-input') as HTMLInputElement
 
   const { scene, firstPersonCamera } = initEngine(canvas)
 
+  const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity)
+  const positionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, firstPersonCamera)
+  const networkedAvatarController = createNetworkedAvatarSystem(realmCommunicationSystem.getTransports)
+  const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports)
+  const avatarRenderingSystem = createAvatarRendererSystem(scene, () => loadedScenesByEntityId.values())
+
+  addSystems(scene,
+    realmCommunicationSystem,
+    positionReportSystem,
+    networkedAvatarController,
+    avatarVirtualScene,
+    avatarRenderingSystem
+  )
+
+  // when the realm changes, we need to destroy extra scenes and load the new ones
+  realmCommunicationSystem.currentRealm.observable.add(async realm => {
+    // destroy all scenes, copy the loadedScenesByEntityId into an array to avoid
+    // errors caused by mutations of the loadedScenesByEntityId
+    for (const entityId of Array.from(loadedScenesByEntityId.keys())) {
+      unloadScene(entityId)
+    }
+
+    // now that all scenes are destroyed, load the new realm
+    if (realm.configurations?.scenesUrn) {
+      for (const urn of realm.configurations?.scenesUrn) {
+        await loadSceneContext(scene, urn, avatarVirtualScene)
+
+        // teleport the camera to the first scene
+        if (loadedScenesByEntityId.size == 1) {
+          const [first] = loadedScenesByEntityId
+          scene.activeCamera!.position.copyFrom(first[1].rootNode.position)
+          scene.activeCamera!.position.y = 2
+        }
+      }
+    }
+  })
+
+  // generate a random avatar based on our identity
+  userIdentity.observable.add(async identity => {
+    networkedAvatarController.setAvatar(await generateRandomAvatar(identity.address))
+  })
+
+
+  configureRealmSelectionUi(realmCommunicationSystem.connectRealm)
+  // </WIRING>
+
+  // TODO: memoize the result of the loginAsGuest in localStorage, right now it generates
+  // a new identity each time we reload the page
+  loginAsGuest().then(identity => setCurrentIdentity(identity))
+}
+
+function configureRealmSelectionUi(changeRealm: (connectionString: string) => Promise<any>) {
+  const realmInput = document.getElementById('realm-input') as HTMLInputElement
   const url = new URLSearchParams(location.search)
   if (url.has('realm')) {
     realmInput.value = url.get('realm')!
@@ -25,7 +82,7 @@ function main() {
   async function uiChangeRealm() {
     realmInput.setAttribute('disabled', 'true')
     try {
-      const url = await loadRealm(realmInput.value, scene)
+      const url = await changeRealm(realmInput.value)
       realmInput.value = url
     } finally {
       realmInput.removeAttribute('disabled')
@@ -38,21 +95,5 @@ function main() {
     }
   })
 
-  uiChangeRealm()
-
-  // TODO: memoize the result of the loginAsGuest in localStorage, right now it generates
-  // a new identity each time we reload the page
-  loginAsGuest().then(identity => setCurrentIdentity(identity))
-
-  const reportPosition = createPositionReporter(() => activeTransports.values())
-
-  if (!firstPersonCamera.rotationQuaternion) firstPersonCamera.rotationQuaternion = Quaternion.Identity()
-
-  scene.onAfterRenderObservable.add(() => {
-    // refresh all the transport connections
-    refreshTransports()
-
-    // report the position of the first person camera to all transports
-    reportPosition(firstPersonCamera.globalPosition.subtract(new Vector3(0, PLAYER_HEIGHT, 0)), firstPersonCamera.rotationQuaternion, false)
-  })
+  setTimeout(uiChangeRealm, 0)
 }
