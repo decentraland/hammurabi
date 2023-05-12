@@ -10,7 +10,7 @@ import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from '@babylonjs/loaders
 import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
 import { setColliderMask } from './logic/colliders'
 import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
-import { BabylonEntity } from './entity'
+import { BabylonEntity } from './BabylonEntity'
 
 const sceneContextMap = new Map<string /*sceneId*/, WeakRef<LoadableScene>>()
 

@@ -2,7 +2,7 @@ import * as BABYLON from '@babylonjs/core'
 import { PBGltfContainer } from "@dcl/protocol/out-ts/decentraland/sdk/components/gltf_container.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { ComponentType } from '../crdt-internal/components';
-import { BabylonEntity } from '../../babylon/scene/entity';
+import { BabylonEntity } from '../../babylon/scene/BabylonEntity';
 import { applyAnimations } from '../../babylon/scene/logic/apply-animations';
 import { gltfContainerLoadingStateComponent } from './gltf-loading-state';
 import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen';

@@ -14,7 +14,7 @@ sequenceDiagram
     babylon-->>renderer: lateUpdate()
   deactivate babylon
     renderer-->>scene: PUT c=1 e=0x2 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
-    renderer-->>scene: PUT c=1 e=0x1 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x5 t=1 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=1 #v={"frameNumber":0,"totalRuntime":1,"tickNumber":0}
   deactivate renderer
@@ -32,7 +32,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=2 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=2 #v={"frameNumber":1,"totalRuntime":1,"tickNumber":1}
   deactivate renderer
@@ -55,7 +55,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=3 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=3 #v={"frameNumber":2,"totalRuntime":1,"tickNumber":2}
     renderer-->>scene: PUT c=1068 e=0x200 t=1 #v={"timestamp":3,"globalOrigin":{"x":1,"y":1,"z":1},"direction":{"x":-0.10976426303386688,"y":0.9878783226013184,"z":-0.10976426303386688},"hits":[],"tickNumber":2}
@@ -77,7 +77,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=4 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=4 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=4 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=4 #v={"frameNumber":3,"totalRuntime":1,"tickNumber":3}
   deactivate renderer
@@ -100,7 +100,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=5 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=5 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=5 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=5 #v={"frameNumber":4,"totalRuntime":1,"tickNumber":4}
     renderer-->>scene: PUT c=1068 e=0x201 t=1 #v={"timestamp":4,"globalOrigin":{"x":0,"y":10,"z":0},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":4}
@@ -122,7 +122,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=6 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=6 #v={"frameNumber":5,"totalRuntime":1,"tickNumber":5}
   deactivate renderer
@@ -146,7 +146,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=7 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=7 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=7 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=7 #v={"frameNumber":6,"totalRuntime":1,"tickNumber":6}
     renderer-->>scene: PUT c=1068 e=0x202 t=1 #v={"timestamp":5,"globalOrigin":{"x":0,"y":10,"z":0},"direction":{"x":0,"y":0,"z":1},"hits":[],"tickNumber":6}
@@ -168,7 +168,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=8 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=8 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=8 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=8 #v={"frameNumber":7,"totalRuntime":1,"tickNumber":7}
   deactivate renderer
@@ -191,7 +191,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=9 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=9 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=9 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=9 #v={"frameNumber":8,"totalRuntime":1,"tickNumber":8}
     renderer-->>scene: PUT c=1068 e=0x204 t=1 #v={"timestamp":6,"globalOrigin":{"x":0,"y":10,"z":0},"direction":{"x":0,"y":-1,"z":0},"hits":[],"tickNumber":8}
@@ -213,7 +213,7 @@ sequenceDiagram
     babylon-->>renderer: update()
     babylon-->>renderer: lateUpdate()
   deactivate babylon
-    renderer-->>scene: PUT c=1 e=0x1 t=10 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.600000023841858,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
+    renderer-->>scene: PUT c=1 e=0x1 t=10 #v={"position":{"_isDirty":true,"_x":0,"_y":-1.7000000476837158,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1 e=0x2 t=10 #v={"position":{"_isDirty":true,"_x":0,"_y":0,"_z":0},"rotation":{"_isDirty":true,"_x":0,"_y":0,"_z":0,"_w":1},"scale":{"_isDirty":true,"_x":1,"_y":1,"_z":1},"parent":0}
     renderer-->>scene: PUT c=1048 e=0x0 t=10 #v={"frameNumber":9,"totalRuntime":1,"tickNumber":9}
   deactivate renderer

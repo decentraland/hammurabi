@@ -1,3 +1,4 @@
+import { Scene } from '@dcl/schemas'
 import { StaticEntities } from '../../../src/lib/babylon/scene/logic/static-entities'
 import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { CrdtMessageType, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
@@ -7,7 +8,7 @@ import { testWithEngine } from './babylon-test-helper'
 
 testWithEngine("static entities", {
   baseUrl: '/',
-  entity: { content: [], metadata: {} },
+  entity: { content: [], metadata: {} as Scene, type: 'scene' },
   urn: '123',
   enableStaticEntities: true
 }, ($) => {

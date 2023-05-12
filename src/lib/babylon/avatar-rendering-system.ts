@@ -1,6 +1,6 @@
 import { Scene } from "@babylonjs/core"
 import { avatarShapeComponent } from "../decentraland/sdk-components/avatar-shape"
-import { BabylonEntity } from "./scene/entity"
+import { BabylonEntity } from "./scene/BabylonEntity"
 import { SceneContext } from "./scene/scene-context"
 import { AVATAR_ENTITY_RANGE, entityIsInRange } from "./scene/logic/static-entities"
 import { EntityUtils } from "../decentraland/crdt-internal/generational-index-pool"

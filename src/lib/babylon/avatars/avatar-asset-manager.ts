@@ -5,7 +5,7 @@ import { Scene } from "@babylonjs/core";
 
 const assetManagers = new Map<string, AssetManager>()
 
-function getAssetManager<T>(loadableScene: LoadableScene, scene: Scene): AssetManager {
+export function getAssetManager(loadableScene: LoadableScene, scene: Scene): AssetManager {
   const current = assetManagers.get(loadableScene.urn)
   if (current) {
     return current

@@ -1,8 +1,7 @@
 import { Emote, Scene, Wearable, WearableCategory } from '@dcl/schemas'
-import { hasWearableRepresentation } from '../representation'
-import { LoadableAvatarConfig } from './types'
+import { hasWearableRepresentation } from './representation'
+import { AvatarShapeWithAssetManagers } from './types'
 import { AssetManager } from '../../scene/AssetManager'
-import { EmoteADR74 } from '@dcl/schemas/dist/platform/item/emote/emote'
 
 const categoriesHiddenBySkin = [
   WearableCategory.HELMET,
@@ -15,11 +14,10 @@ const categoriesHiddenBySkin = [
   WearableCategory.LOWER_BODY,
   WearableCategory.FEET,
 ]
-export function assertWearableMetadata(any: Scene | Wearable | Emote): Wearable {
-  return any as Wearable
-}
 
-export function getSlots(config: LoadableAvatarConfig) {
+// the getVisibleSlots function iterates over the wearables data and returns all
+// the slots that are not hidden by other wearables
+export function getVisibleSlots(config: AvatarShapeWithAssetManagers) {
   const slots = new Map<WearableCategory, AssetManager>()
 
   let wearableLoaders: AssetManager[] = [...config.loadedWearables]
@@ -32,6 +30,7 @@ export function getSlots(config: LoadableAvatarConfig) {
       slots.set(slot, loader)
     }
   }
+
   let hasSkin = false
   // grab only the wearables that ended up in the map, and process in reverse order (last wearables can hide/replace the first ones)
   wearableLoaders = wearableLoaders.filter((loader) => slots.get(loader.wearableEntity.metadata.data.category) === loader).reverse()
@@ -55,6 +54,7 @@ export function getSlots(config: LoadableAvatarConfig) {
       hasSkin = true
     }
   }
+
   // skins hide all the following slots
   if (hasSkin) {
     for (const category of categoriesHiddenBySkin) {

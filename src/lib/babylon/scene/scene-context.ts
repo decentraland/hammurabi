@@ -6,7 +6,7 @@ import { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
 import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
-import { BabylonEntity } from './entity'
+import { BabylonEntity } from './BabylonEntity'
 import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
@@ -129,7 +129,7 @@ export class SceneContext implements EngineApiInterface {
   deletedEntities = new Set<Entity>()
   id: number = incrementalId++
 
-  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
+  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean) {
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
 
     // the rootNode must be positioned according to the value of the "scenes.base" of the scene metadata (scene.json)

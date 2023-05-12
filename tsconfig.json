@@ -11,6 +11,7 @@
       "DOM"
     ],
     "strict": true,
+    "resolveJsonModule": true,
     "noEmit": true,
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,

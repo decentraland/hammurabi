@@ -9,11 +9,12 @@ import { MemoryTransport } from "@dcl/rpc/dist/transports/Memory"
 import { startQuickJsSceneRuntime } from "../../../src/lib/quick-js/rpc-scene-runtime"
 import { connectContextToRpcServer } from "../../../src/lib/babylon/scene/connect-context-rpc"
 import { SceneContext } from "../../../src/lib/babylon/scene/scene-context"
+import { Scene } from "@dcl/schemas"
 
 export function runSnapshotTest(sourceFile: string, bundle: string, snapshotFile?: string) {
   testWithEngine(`snapshot test for ${bundle}`, {
     baseUrl: '/',
-    entity: { content: [{ file: 'game.js', hash: '123' }], metadata: { main: 'game.js' } },
+    entity: { content: [{ file: 'game.js', hash: '123' }], metadata: { main: 'game.js' } as Scene, type: 'scene' },
     urn: '123',
     enableStaticEntities: true,
     snapshotFile: snapshotFile ?? `${sourceFile}.snapshot.md`,

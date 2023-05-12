@@ -6,7 +6,7 @@ import { PBRaycastResult } from "@dcl/protocol/out-ts/decentraland/sdk/component
 import { raycastComponent, raycastResultComponent } from "../../../decentraland/sdk-components/raycast-component";
 import { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from "../coordinates";
-import { BabylonEntity } from "../entity";
+import { BabylonEntity } from "../BabylonEntity";
 import { pickMeshesForMask } from "./colliders";
 import { ColliderLayer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
 

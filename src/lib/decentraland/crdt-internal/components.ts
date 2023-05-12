@@ -4,7 +4,7 @@
  *   GrowOnly-Set
  */
 
-import { BabylonEntity } from "../../babylon/scene/entity"
+import { BabylonEntity } from "../../babylon/scene/BabylonEntity"
 import { ByteBuffer } from "../ByteBuffer"
 import { CrdtMessageBody, DeleteComponentMessageBody, PutComponentMessageBody } from "../crdt-wire-protocol"
 import { Entity } from "../types"

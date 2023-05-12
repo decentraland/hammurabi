@@ -12,8 +12,8 @@ import { Entity } from '@dcl/schemas'
  * Loads a remote scene. The baseUrl will be prepended to every request to resolve
  * the scene assets as per https://docs.decentraland.org/contributor/content/filesystem/
  */
-export async function loadSceneContext(engineScene: BABYLON.Scene, urn: string, virtualScene?: VirtualScene) {
-  const parsed = parseEntityUrn(urn)
+export async function loadSceneContext(engineScene: BABYLON.Scene, options: { urn: string, isGlobal: boolean }, virtualScene?: VirtualScene) {
+  const parsed = parseEntityUrn(options.urn)
 
   if (!parsed.baseUrl) throw new Error('Only URNs with baseUrl are supported at this time.')
 
@@ -22,7 +22,7 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, urn: string, 
 
   const loadableScene = await getLoadableSceneFromUrl(parsed.entityId, parsed.baseUrl)
 
-  const ctx = new SceneContext(engineScene, loadableScene)
+  const ctx = new SceneContext(engineScene, loadableScene, options.isGlobal)
 
   if (virtualScene) {
     ctx.subscriptions.push(virtualScene.createSubscription())
