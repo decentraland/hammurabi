@@ -19,11 +19,11 @@ export async function loadEmoteForBodyShape(assetManager: AssetManager, bodyShap
   return { container, emote }
 }
 
-export async function loadWearableForBodyShape(assetManager: AssetManager, bodyShape: string): Promise<WearableWithContainer> {
+export async function loadWearableForBodyShape(assetManager: AssetManager, bodyShape: string): Promise<WearableWithContainer | void> {
   const wearable = assetManager.loadableScene.entity.metadata as Wearable
   const representation = getWearableRepresentation(wearable, bodyShape)
   if (isTexture(representation)) {
-    throw new Error(`The wearable="${wearable.id}" is a texture`)
+    return
   }
 
   const container = await assetManager.getContainerFuture(representation.mainFile)

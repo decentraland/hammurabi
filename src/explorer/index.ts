@@ -14,22 +14,41 @@ import { createSceneCullingSystem } from "../lib/babylon/scene/scene-culling";
 import { createSceneTickSystem } from "../lib/babylon/scene/update-scheduler";
 import { scenesUrn as avatarSceneRealmSceneUrns } from "./avatar-scene.json";
 import { PLAYER_HEIGHT } from "../lib/babylon/scene/logic/static-entities";
+import { Atom } from "../lib/misc/atom";
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
 const MS_PER_FRAME_PROCESSING_SCENE_MESSAGES = 1
-
+export const microphone = Atom<MediaStream>()
 
 // this is our entry point
-main()
 
-function main() {
+const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement // Get the canvas element
+const startButton = document.getElementById('start-button') as HTMLButtonElement
+
+startButton.onclick = (e) => {
+  startButton.disabled = true
+  startButton.innerText = 'Loading...'
+
+  const button = e.target as HTMLElement
+
+  main().then(() => {
+    // TODO: memoize the result of the loginAsGuest in localStorage, right now it generates
+    // a new identity each time we reload the page
+    loginAsGuest().then(identity => {
+      setCurrentIdentity(identity)
+      canvas.style.visibility = 'visible'
+      button.remove()
+    })
+  })
+}
+
+async function main() {
   // <WIRING>
-  const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement // Get the canvas element
 
-  const { scene, firstPersonCamera } = initEngine(canvas)
+  const { scene, firstPersonCamera, audioContext } = await initEngine(canvas)
 
-  const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity)
+  const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, scene, microphone, audioContext)
   const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, firstPersonCamera)
   const networkedProfileSystem = createNetworkedProfileSystem(realmCommunicationSystem.getTransports)
   const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports)
@@ -63,7 +82,6 @@ function main() {
     // the sceneCullingSystem uses the base parcels of the scene to cull the 
     // RootEntity and all its descendants
     sceneCullingSystem,
-
   )
 
   // when the realm changes, we need to destroy extra scenes and load the new ones
@@ -103,13 +121,8 @@ function main() {
     networkedProfileSystem.setAvatar(await generateRandomAvatar(identity.address))
   })
 
-
   configureRealmSelectionUi(realmCommunicationSystem.connectRealm)
   // </WIRING>
-
-  // TODO: memoize the result of the loginAsGuest in localStorage, right now it generates
-  // a new identity each time we reload the page
-  loginAsGuest().then(identity => setCurrentIdentity(identity))
 }
 
 function configureRealmSelectionUi(changeRealm: (connectionString: string) => Promise<any>) {
@@ -137,4 +150,46 @@ function configureRealmSelectionUi(changeRealm: (connectionString: string) => Pr
   })
 
   setTimeout(uiChangeRealm, 0)
+  setTimeout(configureMicrophoneSelector, 0)
+}
+
+function configureMicrophoneSelector() {
+  const selector = document.getElementById('microphone')
+  // List cameras and microphones.
+  navigator.mediaDevices.enumerateDevices().then((devices) => {
+    selector!.innerHTML =
+      `<option selected disabled>- Select your microphone -</option>` +
+      devices
+        .filter((device) => device.kind === 'audioinput')
+        .map((device) => {
+          const isSelected = device.deviceId
+          return `<option value="${device.deviceId}" ${isSelected}>${device.label || 'Generic microphone'}</option>`
+        }).join('')
+  })
+
+  selector!.onchange = (a) => {
+    const deviceId = (a.target as HTMLSelectElement).value
+
+    selector!.setAttribute('disabled', 'disabled')
+
+    navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId,
+        channelCount: 1,
+        sampleRate: 24000,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        advanced: [{ echoCancellation: true }, { autoGainControl: true }, { noiseSuppression: true }] as any
+      },
+      video: false
+    }).then($ => {
+      microphone.swap($)
+      selector!.setAttribute('disabled', 'disabled')
+    }).catch($ => {
+      console.error($)
+      selector!.removeAttribute('disabled')
+    })
+
+  }
 }
