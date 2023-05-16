@@ -5,8 +5,9 @@ import { ReadWriteByteBuffer } from '../../../src/lib/decentraland/ByteBuffer'
 import { ComponentDeclaration } from '../../../src/lib/decentraland/crdt-internal/components'
 import { DeleteComponent, DeleteEntity, PutComponentOperation, readAllMessages } from '../../../src/lib/decentraland/crdt-wire-protocol'
 import { prettyPrintCrdtMessage } from '../../../src/lib/decentraland/crdt-wire-protocol/prettyPrint'
-import { initScheduler } from '../../../src/lib/babylon/scene/update-scheduler'
+import { createSceneTickSystem } from '../../../src/lib/babylon/scene/update-scheduler'
 import { LoadableScene } from '../../../src/lib/decentraland/scene/content-server-entity'
+import { addSystems } from '../../../src/lib/decentraland/system'
 import { Entity } from '../../../src/lib/decentraland/types'
 import { coerceMaybeU8Array } from '../../../src/lib/quick-js/convert-handles'
 
@@ -68,7 +69,7 @@ export function testWithEngine(
       camera = new BABYLON.FreeCamera('camera', BABYLON.Vector3.Zero(), scene)
       scene.activeCamera = camera
 
-      ctx = new SceneContext(scene, params)
+      ctx = new SceneContext(scene, params, false)
       ctx.log = message => messages.push(`  # SceneContext.log(${message})`)
 
       if (!params.enableStaticEntities) {
@@ -149,7 +150,8 @@ export function testWithEngine(
       startEngine() {
         if (!engineStarted) {
           engineStarted = true
-          initScheduler(scene, () => [ctx], 1000000)
+          const tickSystem = createSceneTickSystem(scene, () => [ctx], 1000000)
+          addSystems(scene, tickSystem)
           engine.onBeginFrameObservable.add(() => messages.push((`  activate babylon`)))
           engine.onEndFrameObservable.add(() => messages.push((`  deactivate babylon`)))
           engine.runRenderLoop(() => {

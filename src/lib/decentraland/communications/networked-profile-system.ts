@@ -3,8 +3,8 @@ import { Avatar } from "@dcl/schemas"
 import { commsLogger } from "./types"
 import { CommsTransportWrapper, RoomConnectionStatus } from "./CommsTransportWrapper"
 
-// this function creates a controller for avatar synchronization and announcement.
-export function createNetworkedAvatarSystem(getTransports: () => Iterable<CommsTransportWrapper>) {
+// this function creates a controller for profile synchronization and announcement.
+export function createNetworkedProfileSystem(getTransports: () => Iterable<CommsTransportWrapper>) {
   const currentAvatar = Atom<Avatar>()
   const wiredTransports = new WeakSet<CommsTransportWrapper>()
   let lastReport = performance.now()
@@ -67,9 +67,17 @@ export function createNetworkedAvatarSystem(getTransports: () => Iterable<CommsT
   // TODO: debounce this response
   function sendLocalProfile(transport: CommsTransportWrapper, avatar: Avatar) {
     commsLogger.log('Responding to profile request')
+
+    const avatarClone: Avatar = structuredClone(avatar)
+
+    // the address is sent to the network in lower case this is for some reason required for
+    // the unity renderer to work
+    avatarClone.userId = avatarClone.userId.toLowerCase()
+    avatarClone.ethAddress = avatarClone.ethAddress.toLowerCase()
+
     transport.sendProfileResponse({
       baseUrl: "https://peer.decentraland.org/content/contents/",
-      serializedProfile: JSON.stringify(avatar)
+      serializedProfile: JSON.stringify(avatarClone)
     })
   }
 

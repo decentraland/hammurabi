@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core'
-import { BabylonEntity } from "../entity";
+import { BabylonEntity } from "../BabylonEntity";
 import { animatorComponent } from "../../../decentraland/sdk-components/animator-component";
 
 // This function applies the specified animations to the gltf animation group

@@ -1,6 +1,6 @@
 import { Scene } from "@babylonjs/core"
 import { avatarShapeComponent } from "../decentraland/sdk-components/avatar-shape"
-import { BabylonEntity } from "./scene/entity"
+import { BabylonEntity } from "./scene/BabylonEntity"
 import { SceneContext } from "./scene/scene-context"
 import { AVATAR_ENTITY_RANGE, entityIsInRange } from "./scene/logic/static-entities"
 import { EntityUtils } from "../decentraland/crdt-internal/generational-index-pool"
@@ -47,12 +47,16 @@ export function createAvatarRendererSystem(scene: Scene, getScenes: () => Iterab
     for (const [_id, list] of avatars) {
       // TODO, we render everything for now picking the first one
       const [first, ...rest] = list
-      
+
       finalAvatars.set(_id, first)
-      first.appliedComponents.avatarVisible = true
+      if (first.appliedComponents.avatarRenderer) {
+        first.appliedComponents.avatarRenderer.visible = true
+      }
 
       for (const avatar of rest) {
-        avatar.appliedComponents.avatarVisible = false
+        if (avatar.appliedComponents.avatarRenderer) {
+          avatar.appliedComponents.avatarRenderer.visible = false
+        }
       }
     }
 

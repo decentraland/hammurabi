@@ -2,12 +2,13 @@ import * as BABYLON from '@babylonjs/core'
 import { PBGltfContainer } from "@dcl/protocol/out-ts/decentraland/sdk/components/gltf_container.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { ComponentType } from '../crdt-internal/components';
-import { BabylonEntity } from '../../babylon/scene/entity';
+import { BabylonEntity } from '../../babylon/scene/BabylonEntity';
 import { applyAnimations } from '../../babylon/scene/logic/apply-animations';
 import { gltfContainerLoadingStateComponent } from './gltf-loading-state';
 import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen';
 import { setColliderMask } from '../../babylon/scene/logic/colliders';
 import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen';
+import { instantiateAssetContainer } from '../../babylon/scene/AssetManager';
 
 const DEFAULT_VISIBLE_COLLIDER_LAYERS = 0
 const DEFAULT_INVISIBLE_COLLIDER_LAYERS = ColliderLayer.CL_PHYSICS | ColliderLayer.CL_POINTER
@@ -48,7 +49,7 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
         removeCurrentGltf(entity)
 
         // and attach the new one
-        const instanced = newGltfContainerValue.instancedEntries = instantiateAssetContainer(assetContainer, entity)
+        const instanced = newGltfContainerValue.instancedEntries = instantiateAssetContainer(assetContainer, entity, entity)
 
         // setup colliders
         instanced.rootNodes.forEach(root => {
@@ -117,72 +118,4 @@ function removeCurrentGltf(entity: BabylonEntity) {
     entity.appliedComponents.gltfContainer.gltfContainer.dispose(true, true)
     entity.appliedComponents.gltfContainer.gltfContainer = null
   }
-}
-
-const tmpVector = new BABYLON.Vector3()
-
-export function instantiateAssetContainer(assetContainer: BABYLON.AssetContainer, entity: BabylonEntity): BABYLON.InstantiatedEntries {
-  const instances = assetContainer.instantiateModelsToScene(name => name, false)
-
-  for (let node of instances.rootNodes) {
-    // reparent the root node inside the entity
-    node.parent = entity
-
-    node.getChildMeshes(false).forEach(mesh => {
-      // this override makes all meshes not renderable if the rootNode is not enabled.
-      // it cascades the effect of the culling of the rootNode down to each mesh to lighten the CPU work
-      // of calculating every bounding box
-      Object.defineProperty(mesh, 'isBlocked', {
-        enumerable: true,
-        configurable: true,
-        get() {
-          return !entity.context.deref()?.rootNode.isEnabled || (mesh._masterMesh !== null && mesh._masterMesh !== undefined)
-        },
-      })
-
-      const originalF = mesh.isInFrustum
-
-      /**
-       * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
-       * A mesh is in the frustum if its bounding box intersects the frustum
-       * @param frustumPlanes defines the frustum to test
-       * @returns true if the mesh is in the frustum planes
-       * 
-       * In this case, we are monkey patching the isInFrustum method to cull out meshes that are too far away
-       * or are too small based on the distance to the camera.
-       */
-      mesh.isInFrustum = function (this: BABYLON.AbstractMesh, frustumPlanes: BABYLON.Plane[]): boolean {
-        if (this.absolutePosition) {
-          const distanceToObject = tmpVector.copyFrom(this.absolutePosition).subtract(this.getScene().activeCamera!.position).length()
-
-          // cull out elements farther than 300meters
-          if (distanceToObject > 300)
-            return false
-
-          if (this._boundingInfo) {
-            if (this._boundingInfo.diagonalLength < 0.50 && distanceToObject > 30)
-              return false
-            // cull elements smaller than 20cm at 40meters
-            if (this._boundingInfo.diagonalLength < 0.20 && distanceToObject > 20)
-              return false
-            // cull elements smaller than 10cm at 20meters
-            if (this._boundingInfo.diagonalLength < 0.10 && distanceToObject > 15)
-              return false
-          }
-        }
-
-        return originalF.call(this, frustumPlanes)
-      }
-    })
-  }
-
-  // by default animations will be configured with weight 0
-  for (let animationGroup of instances.animationGroups) {
-    animationGroup.stop()
-    for (let animatable of animationGroup.animatables) {
-      animatable.weight = 0
-    }
-  }
-
-  return instances
 }

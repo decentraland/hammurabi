@@ -13,7 +13,7 @@ export const StaticEntities = {
   GlobalCenterOfCoordinates: 5 as Entity,
 } as const
 
-export const PLAYER_HEIGHT = 1.6
+export const PLAYER_HEIGHT = 1.7
 export const MAX_RESERVED_ENTITY = 512
 export const AVATAR_ENTITY_RANGE: [number, number] = [128, MAX_RESERVED_ENTITY]
 

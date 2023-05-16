@@ -19,18 +19,18 @@ rpcServer.setHandler(async function handler(port) {
   // and a testing service
   codegen.registerService(port, TestingServiceDefinition, async () => ({
     async logTestResult(result, ctx) {
-      console.log(`🧪 logTestResult(${ctx.loadableScene.id}) ${JSON.stringify(result)}`)
-      if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.logTestResult(result, ctx.loadableScene.id)
+      console.log(`🧪 logTestResult(${ctx.loadableScene.urn}) ${JSON.stringify(result)}`)
+      if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.logTestResult(result, ctx.loadableScene.urn)
       return {}
     },
     async plan(plan, ctx) {
-      console.log(`🧪 plan(${ctx.loadableScene.id}) ${JSON.stringify(plan)}`)
-      if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.plan(plan, ctx.loadableScene.id)
+      console.log(`🧪 plan(${ctx.loadableScene.urn}) ${JSON.stringify(plan)}`)
+      if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.plan(plan, ctx.loadableScene.urn)
       return {}
     },
     async setCameraTransform(transform, ctx) {
-      console.log(`🧪 setCameraTransform(${ctx.loadableScene.id}) ${JSON.stringify(transform)}`)
-      if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.setCameraTransform(transform, ctx.loadableScene.id)
+      console.log(`🧪 setCameraTransform(${ctx.loadableScene.urn}) ${JSON.stringify(transform)}`)
+      if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.setCameraTransform(transform, ctx.loadableScene.urn)
       return {}
     }
   }))

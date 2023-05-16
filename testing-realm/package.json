@@ -19,6 +19,7 @@
     "fp-future": "^1.0.1"
   },
   "workspaces": [
+    "scene--1_-1",
     "scene-0_0",
     "scene-0_1",
     "scene-0_2",

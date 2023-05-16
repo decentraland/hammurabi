@@ -1,6 +1,6 @@
 import { Matrix, Node, PickingInfo, PointerEventTypes, Ray, Scene, Vector3 } from '@babylonjs/core'
 import * as GUI from '@babylonjs/gui'
-import { BabylonEntity } from '../entity'
+import { BabylonEntity } from '../BabylonEntity'
 import { getColliderLayers } from './colliders'
 import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
 import { memoize } from '../../../misc/memoize'

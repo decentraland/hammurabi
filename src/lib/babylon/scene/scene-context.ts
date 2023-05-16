@@ -6,7 +6,7 @@ import { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
 import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
-import { BabylonEntity } from './entity'
+import { BabylonEntity } from './BabylonEntity'
 import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
@@ -22,7 +22,7 @@ import { PARCEL_SIZE_METERS, gridToWorld, parseParcelPosition } from '../../dece
 import { createParcelOutline } from '../visual/parcelOutline'
 import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen'
 import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-component'
-import { AssetManager } from './asset-manager'
+import { AssetManager } from './AssetManager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
 import { StaticEntities, entityIsInRange, updateStaticEntities } from './logic/static-entities'
 import { animatorComponent } from '../../decentraland/sdk-components/animator-component'
@@ -129,7 +129,7 @@ export class SceneContext implements EngineApiInterface {
   deletedEntities = new Set<Entity>()
   id: number = incrementalId++
 
-  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene) {
+  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean) {
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
 
     // the rootNode must be positioned according to the value of the "scenes.base" of the scene metadata (scene.json)

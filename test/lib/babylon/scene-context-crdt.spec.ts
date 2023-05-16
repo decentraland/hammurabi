@@ -5,11 +5,12 @@ import { transformComponent } from '../../../src/lib/decentraland/sdk-components
 import { Entity } from '../../../src/lib/decentraland/types'
 import { testWithEngine } from './babylon-test-helper'
 import { StaticEntities } from '../../../src/lib/babylon/scene/logic/static-entities'
+import { Scene } from '@dcl/schemas'
 
 testWithEngine("entities are removed on scene disposal", {
   baseUrl: '/',
-  entity: { content: [], metadata: {} },
-  id: '123'
+  entity: { content: [], metadata: {}  as Scene, type: 'scene' },
+  urn: '123'
 }, ($) => {
   beforeEach(() => $.startEngine())
 
@@ -55,8 +56,8 @@ testWithEngine("entities are removed on scene disposal", {
 
 testWithEngine("scene context implents ADR-148", {
   baseUrl: '/',
-  entity: { content: [], metadata: {} },
-  id: '123'
+  entity: { content: [], metadata: {} as Scene, type: 'scene' },
+  urn: '123'
 }, ($) => {
 
   beforeEach(() => $.startEngine())
@@ -112,8 +113,8 @@ testWithEngine("scene context implents ADR-148", {
 
 testWithEngine("outgoingMessages are delivered on crdtSendToRenderer result", {
   baseUrl: '/',
-  entity: { content: [], metadata: {} },
-  id: '123',
+  entity: { content: [], metadata: {} as Scene, type: 'scene' },
+  urn: '123',
   enableStaticEntities: false
 }, ($) => {
   beforeEach(() => $.startEngine())

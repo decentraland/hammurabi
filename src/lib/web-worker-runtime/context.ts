@@ -91,6 +91,8 @@ export function createModuleRuntime(
           await module.exports.onStart()
         } catch (err: any) {
           console.error(err)
+          console.error('⚠️⚠️⚠️⚠️ THE SCENE HAS SUFFERED AN ERROR AND WILL NOW BE TERMINATED ⚠️⚠️⚠️⚠️')
+          throw err
         }
       }
       await runSetImmediate()
@@ -99,8 +101,10 @@ export function createModuleRuntime(
       if (module.exports.onUpdate) {
         try {
           await module.exports.onUpdate(deltaTime)
-        } catch (err: any) {
+        } catch (err) {
           console.error(err)
+          console.error('⚠️⚠️⚠️⚠️ THE SCENE HAS SUFFERED AN ERROR AND WILL NOW BE TERMINATED ⚠️⚠️⚠️⚠️')
+          throw err
         }
       }
       await runSetImmediate()

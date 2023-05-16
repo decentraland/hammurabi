@@ -24,13 +24,24 @@ test-watch:
 	@echo "~ Running tests in watchmode..."
 	node_modules/.bin/jest --detectOpenHandles --colors --runInBand --watch $(TESTARGS)
 
-build-testing-realm: testing-realm/node_modules
+build-testing-realm: testing-realm/node_modules avatars-scene
 	cd testing-realm; npm run build
 	cd testing-realm; \
 		node_modules/.bin/sdk-commands export-static \
 			--destination ../static/ipfs \
 			--realmName testing-realm \
+			--timestamp 1683892881318 \
 			--commsAdapter ws-room:ws-room-service.decentraland.org/rooms/hammurabi \
+			--baseUrl=$(CF_PAGES_URL)/ipfs
+
+avatars-scene: testing-realm/node_modules
+	cd testing-realm/avatars-scene; \
+		npm run build
+	cd testing-realm/avatars-scene; \
+		../node_modules/.bin/sdk-commands export-static \
+			--destination ../../static/ipfs \
+			--timestamp 1683892881318 \
+			--json > ../../src/explorer/avatar-scene.json \
 			--baseUrl=$(CF_PAGES_URL)/ipfs
 
 sdk-watch: testing-realm/node_modules

@@ -2,7 +2,7 @@ import { AbstractMesh, Scene } from '@babylonjs/core'
 import { GridMaterial } from '@babylonjs/materials'
 import { memoize } from '../../../misc/memoize'
 import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
-import { BabylonEntity } from '../entity'
+import { BabylonEntity } from '../BabylonEntity'
 import { bitIntersectsAndContainsAny } from '../../../misc/bit-operations'
 import { AddToggle, guiPanel } from '../../visual/ui'
 

@@ -18,7 +18,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
         baseUrl: context.loadableScene.baseUrl!,
         content: context.loadableScene.entity.content,
         metadataJson: JSON.stringify(context.loadableScene.entity.metadata),
-        urn: context.loadableScene.id
+        urn: context.loadableScene.urn
       }
     },
     async getRealm() {
