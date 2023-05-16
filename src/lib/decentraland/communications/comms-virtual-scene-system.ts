@@ -8,7 +8,7 @@ import { transformComponent } from "../sdk-components/transform-component"
 import { Entity } from "../types"
 import { VirtualScene } from "../virtual-scene"
 import { CommsTransportWrapper } from "./CommsTransportWrapper"
-import { AVATAR_ENTITY_RANGE } from "../../babylon/scene/logic/static-entities"
+import { AVATAR_ENTITY_RANGE, StaticEntities } from "../../babylon/scene/logic/static-entities"
 import { Avatar } from "@dcl/schemas"
 import { unwrapPromise } from "../../misc/promises"
 import { avatarCustomizationsComponent, avatarEquippedDataComponent } from "../sdk-components/avatar-customizations"
@@ -46,7 +46,7 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
           position: new Vector3(event.data.positionX, event.data.positionY, event.data.positionZ),
           scale: Vector3.One(),
           rotation: new Quaternion(event.data.rotationX, event.data.rotationY, event.data.rotationZ, event.data.rotationW),
-          parent: 5 // the entity 5 is an entity transformed to the global coordinate system. always having the 0,0,0 at the real 0,0,0
+          parent: StaticEntities.GlobalCenterOfCoordinates // the entity 5 is an entity transformed to the global coordinate system. always having the 0,0,0 at the real 0,0,0
         })
       }
     })
@@ -115,9 +115,10 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
   return {
     range: AVATAR_ENTITY_RANGE,
     update() {
-      for (const transport of getTransports()) {
-        if (!connectedTransports.has(transport))
-          wireTransportEvents(transport)
+      const transports = getTransports()
+      for (const t of transports) {
+        if (!connectedTransports.has(t))
+          wireTransportEvents(t)
       }
 
       const updates = new ReadWriteByteBuffer()

@@ -43,6 +43,7 @@ export function AddToggle(toggleText: string, panel: StackPanel) {
   checkboxText.resizeToFit = true;
   checkboxText.color = "white";
   toggleViewLine.addControl(checkboxText);
+  checkbox.onDisposeObservable.addOnce(() => toggleViewLine.dispose());
   return checkbox;
 };
 

@@ -6,9 +6,23 @@ import { PLAYER_HEIGHT } from './scene/logic/static-entities'
 import { addCrosshair } from './visual/reticle'
 import { pickPointerEventsMesh } from './scene/logic/pointer-events'
 import { AddButton, guiPanel } from './visual/ui'
+import '../misc/audio-debugger'
 
-export function initEngine(canvas: HTMLCanvasElement) {
+export function isChrome() {
+  return window.navigator.userAgent.includes('Chrome')
+}
+
+export async function initEngine(canvas: HTMLCanvasElement) {
   BABYLON.Database.IDBStorageEnabled = true
+
+  const parentElement = document.getElementById('voice-chat-audio') as HTMLAudioElement
+
+  const audioContext = new AudioContext()
+  const audioDestination = audioContext.createMediaStreamDestination()
+  const destinationStream = isChrome() ? await startLoopback(audioDestination.stream) : audioDestination.stream
+  parentElement.srcObject = destinationStream
+
+  await parentElement.play()
 
   const babylon = new BABYLON.Engine(canvas, true, {
     audioEngine: true,
@@ -20,7 +34,12 @@ export function initEngine(canvas: HTMLCanvasElement) {
     alpha: false,
     antialias: false,
     stencil: true,
+    audioEngineOptions: {
+      audioContext,
+      audioDestination
+    }
   })
+
   babylon.disableManifestCheck = true
   babylon.enableOfflineSupport = true
 
@@ -46,6 +65,15 @@ export function initEngine(canvas: HTMLCanvasElement) {
   // scene.gravity = new BABYLON.Vector3(0, playerConfigurations.gravity, 0)
   // scene.enablePhysics(scene.gravity, new BABYLON.OimoJSPlugin(2))
   scene.getBoundingBoxRenderer().showBackLines = true
+
+  scene.audioEnabled = true
+  scene.headphone = true
+
+  if (document.location.search.includes('AUDIO_DEBUG')) {
+    const myAnalyser = new BABYLON.Analyser(scene);
+    BABYLON.Engine.audioEngine!.connectToAnalyser(myAnalyser);
+    myAnalyser.drawDebugCanvas();
+  }
 
   // setup visual parts and environment
   addGlowLayer(scene)
@@ -99,5 +127,42 @@ export function initEngine(canvas: HTMLCanvasElement) {
   // this is for debugging purposes
   Object.assign(globalThis, { scene, thirdPersonCamera, firstPersonCamera, setCamera })
 
-  return { scene, thirdPersonCamera, firstPersonCamera, setCamera }
+  return { scene, thirdPersonCamera, firstPersonCamera, setCamera, audioContext: BABYLON.Engine.audioEngine!.audioContext! }
+}
+
+
+
+const offerOptions = {
+  offerVideo: false,
+  offerAudio: true,
+  offerToReceiveAudio: false,
+  offerToReceiveVideo: false
+}
+
+export async function startLoopback(stream: MediaStream) {
+  const loopbackStream = new MediaStream()
+  const rtcConnection = new RTCPeerConnection()
+  const rtcLoopbackConnection = new RTCPeerConnection()
+
+  rtcConnection.onicecandidate = (e) =>
+    e.candidate && rtcLoopbackConnection.addIceCandidate(new RTCIceCandidate(e.candidate))
+
+  rtcLoopbackConnection.onicecandidate = (e) =>
+    e.candidate && rtcConnection.addIceCandidate(new RTCIceCandidate(e.candidate))
+
+  rtcLoopbackConnection.ontrack = (e) => e.streams[0].getTracks().forEach((track) => loopbackStream.addTrack(track))
+
+  // setup the loopback
+  stream.getTracks().forEach((track) => rtcConnection.addTrack(track, stream))
+
+  const offer = await rtcConnection.createOffer(offerOptions)
+  await rtcConnection.setLocalDescription(offer)
+
+  await rtcLoopbackConnection.setRemoteDescription(offer)
+  const answer = await rtcLoopbackConnection.createAnswer()
+  await rtcLoopbackConnection.setLocalDescription(answer)
+
+  await rtcConnection.setRemoteDescription(answer)
+
+  return loopbackStream
 }

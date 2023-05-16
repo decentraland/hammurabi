@@ -6,11 +6,12 @@ import { connectTransport } from "./connect-transport"
 import { CommsAdapter } from "./types"
 import { CommsTransportWrapper } from "./CommsTransportWrapper"
 import { resolveRealmBaseUrl } from "../realm/resolution"
+import { Scene } from "@babylonjs/core"
 
 /**
  * This system is in charge to handle realm connections and connect/disconnect transports accordingly.
  */
-export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdentity>) {
+export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdentity>, scene: Scene, microphone: Atom<MediaStream>, audioContext: AudioContext) {
   const currentAdapter = Atom<CommsAdapter>()
   const currentRealm = Atom<AboutResponse>()
   const activeTransports = new Map<string, CommsTransportWrapper>()
@@ -50,7 +51,7 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
       if (!activeTransports.has(connectionString)) {
         const identity = await userIdentity.deref()
 
-        const transport = connectTransport(connectionString, identity)
+        const transport = connectTransport(connectionString, identity, scene, microphone, audioContext)
 
         // store the handle of the active transport
         activeTransports.set(connectionString, transport)
@@ -68,6 +69,13 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
         })
       }
     }
+  }
+
+  let applicationRunning = true
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => {
+      applicationRunning = false
+    })
   }
 
   return {
@@ -96,8 +104,10 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
     },
     lateUpdate() {
       // connects and disconnect the transports based on the desired list
-      const desiredTransports = getDesiredTransports()
-      updateAdapters(desiredTransports)
+      if (applicationRunning) {
+        const desiredTransports = getDesiredTransports()
+        updateAdapters(desiredTransports)
+      }
     }
   }
 }

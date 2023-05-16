@@ -1,6 +1,7 @@
 import { Atom } from "../../misc/atom"
 import { Emitter } from "mitt"
 import { createLogger } from "../../misc/logger"
+import { Position } from "@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen"
 
 export type CommsAdapter = {
   desiredTransports: Atom<string[]>
@@ -36,6 +37,11 @@ export interface MinimumCommunicationsTransport {
    * UX of the explorer.
    */
   disconnect(error?: Error): Promise<void>
+
+  /**
+   * Inform the voice handler (owned by the transport) about the position of a peer.
+   */
+  setVoicePosition(address: string, position: Position): void
 
   /**
    * Event emitter (mitt) with all the events produced by the transport.

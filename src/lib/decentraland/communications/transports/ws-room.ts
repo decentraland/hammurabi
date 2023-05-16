@@ -7,6 +7,7 @@ import mitt from 'mitt'
 import { wsAsAsyncChannel } from '../ws-async-channel'
 import { ExplorerIdentity } from '../../identity/types'
 import { CommsTransportEvents, MinimumCommunicationsTransport, SendHints } from '../types'
+import { Position } from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
 
 // shared writer to leverage pools
 const writer = new Writer()
@@ -31,6 +32,9 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
   private ws: WebSocket | null = null
 
   constructor(public url: string, private identity: ExplorerIdentity) {}
+  
+  setVoicePosition(_address: string, _position: Position): void {
+  }
 
   async connect(): Promise<void> {
     if (this.ws) throw new Error('Cannot call connect twice per IBrokerTransport')

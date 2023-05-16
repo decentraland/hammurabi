@@ -1,6 +1,7 @@
 import * as proto from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
 import mitt from 'mitt'
 import { CommsTransportEvents, MinimumCommunicationsTransport, TransportMessageEvent } from './types'
+import { Vector3 } from '@babylonjs/core'
 
 export enum RoomConnectionStatus {
   NONE,
@@ -95,6 +96,7 @@ export class CommsTransportWrapper {
 
     switch (message.$case) {
       case 'position': {
+        this.transport.setVoicePosition(address, message.position)
         this.events.emit('position', { address, data: message.position })
         break
       }

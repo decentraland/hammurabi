@@ -8,6 +8,7 @@
     height: 100%;
     margin: 0;
     padding: 0;
+    background: radial-gradient(ellipse at top, #303443, #181a21);
   }
 
   nav {
@@ -34,17 +35,52 @@
     touch-action: none;
     outline: none;
   }
+
+  select {
+    background: #181a21;
+    border: 1px solid #000;
+    margin: 6px 11px;
+    border-radius: 4px;
+    color: #fff;
+  }
+
+  #start-button {
+    position: absolute;
+    top: 50vh;
+    left: calc(50vw - 100px);
+    z-index: 1000;
+    background: #5f83ff;
+    border: 1px solid #00569a;
+    margin: 6px 11px;
+    border-radius: 4px;
+    color: #fff;
+    box-sizing: border-box;
+    width: 200px;
+    height: 46px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 9px;
+    box-shadow: 0 5px #00569a;
+  }
 </style>
+<audio autoplay id="voice-chat-audio"></audio>
 
 <nav>
-  <input id="realm-input" type="text" placeholder="Realm URL" value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main" list="programmingLanguages"/>
+  <input id="realm-input" type="text" placeholder="Realm URL"
+    value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main" list="programmingLanguages" />
   <datalist id="programmingLanguages">
     <option value="/ipfs/testing-realm">/ipfs/testing-realm</option>
-    <option value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main">https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main</option>
+    <option value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main">
+      https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main</option>
     <option value="menduz.dcl.eth">menduz.dcl.eth</option>
   </datalist>
+  <select id="microphone" aria-placeholder="Select a microphone">
+    <option disabled>Select a microphone</option>
+  </select>
 </nav>
 
-<canvas id="renderCanvas" touch-action="none"></canvas>
+<canvas id="renderCanvas" touch-action="none" style="visibility: hidden;"></canvas>
+
+<button id="start-button">Login as guest</button>
 
 <script src="js/bundle.js"></script>
