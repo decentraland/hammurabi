@@ -1,4 +1,4 @@
-import { BodyShape, EmoteCategory, Locale, PreviewEmote, Rarity, Wearable, } from '@dcl/schemas'
+import { BodyShape, EmoteCategory, Locale, Rarity, Wearable, } from '@dcl/schemas'
 import { hasWearableRepresentation } from './adr-65/representation'
 import { AvatarShapeWithAssetManagers } from './adr-65/types'
 import { PBAvatarShape } from '@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen'

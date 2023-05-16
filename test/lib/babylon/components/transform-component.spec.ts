@@ -40,10 +40,14 @@ testWithEngine("transform component compliance tests", {
     expect(data).toEqual([])
     // the entity now exists
     const babylonEntity = $.ctx.entities.get(entity)
+    babylonEntity.computeWorldMatrix(true)
     expect(babylonEntity).toBeTruthy()
     // and it has a transform component
     expect(babylonEntity.usedComponents.has(TRANSFORM_COMPONENT_ID)).toBeTruthy()
     // assert that the provided values are now reflected on the entity
+    transform.position._isDirty = false
+    transform.scale._isDirty = false
+    transform.rotation._isDirty = false
     expect(babylonEntity.position).toEqual(transform.position)
     expect(babylonEntity.scaling).toEqual(transform.scale)
     expect(babylonEntity.rotationQuaternion).toEqual(transform.rotation)
@@ -67,7 +71,11 @@ testWithEngine("transform component compliance tests", {
     // the entity now exists
     const babylonEntity = $.ctx.entities.get(entity)
     expect(babylonEntity).toBeTruthy()
+    babylonEntity.computeWorldMatrix(true)
     // assert that the provided values are now reflected on the entity
+    transform.position._isDirty = false
+    transform.scale._isDirty = false
+    transform.rotation._isDirty = false
     expect(babylonEntity.position).toEqual(transform.position)
     expect(babylonEntity.scaling).toEqual(transform.scale)
     expect(babylonEntity.rotationQuaternion).toEqual(transform.rotation)
@@ -118,7 +126,11 @@ testWithEngine("transform component compliance tests", {
     // the entity now exists
     const babylonEntity = $.ctx.entities.get(entity)
     expect(babylonEntity).toBeTruthy()
+    babylonEntity.computeWorldMatrix(true)
     // assert that the provided values are now reflected on the entity
+    identityTransform.position._isDirty = false
+    identityTransform.scale._isDirty = false
+    identityTransform.rotation._isDirty = false
     expect(babylonEntity.position).toEqual(identityTransform.position)
     expect(babylonEntity.scaling).toEqual(identityTransform.scale)
     expect(babylonEntity.rotationQuaternion).toEqual(identityTransform.rotation)
