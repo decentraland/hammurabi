@@ -42,8 +42,30 @@ export const transformComponent: ComponentDeclaration<Transform, 1> = {
     if (entity.entityId === 0) return
 
     const newValue = componentStorage.getOrNull(entity.entityId) as Transform | null
-    const currentValue = entity.appliedComponents.transform
-    entity.appliedComponents.transform = newValue || undefined
+    const commands = entity.appliedComponents.transform?.commands || []
+    const currentValue = commands.length ? commands[commands.length - 1] : null
+
+    if (newValue) {
+      const isDifferentParent = currentValue?.value.parent !== newValue.parent
+
+      // no interpolation in reparenting scenarios
+      if (isDifferentParent) {
+        commands.length = 0
+      }
+
+      commands.push({ value: newValue, time: performance.now() })
+      entity.appliedComponents.transform = {
+        commands,
+        parent: newValue.parent
+      }
+
+      // always keep only 10 commands in the array
+      while (commands.length > 10) {
+        commands.shift()
+      }
+    } else {
+      entity.appliedComponents.transform = undefined
+    }
 
     let needsReparenting = false
 
@@ -52,28 +74,16 @@ export const transformComponent: ComponentDeclaration<Transform, 1> = {
     const isRemovingValue = Boolean(currentValue && !newValue)
 
     if (isAddingNewValue || isReplacingValue) {
-      needsReparenting ||= currentValue?.parent !== newValue!.parent
+      needsReparenting ||= currentValue?.value.parent !== newValue!.parent
 
-      entity.position.copyFrom(newValue!.position)
-      entity.scaling.copyFrom(newValue!.scale)
-
-      if (!entity.rotationQuaternion) {
-        entity.rotationQuaternion = newValue!.rotation
-      } else {
-        entity.rotationQuaternion.copyFrom(newValue!.rotation)
-      }
+      entity.markAsDirty()
     } else if (isRemovingValue) {
-      // set default values for position, scale and rotation
-      entity.position.setAll(0)
-      if (!entity.rotationQuaternion) {
-        entity.rotationQuaternion = Quaternion.Identity()
-      } else {
-        entity.rotationQuaternion.set(0, 0, 0, 1)
-      }
-      entity.scaling.setAll(1)
+      entity.markAsDirty()
+      needsReparenting = true
+
     }
 
-    if (needsReparenting || isRemovingValue) {
+    if (needsReparenting) {
       const context = entity.context.deref()
 
       if (context) {
