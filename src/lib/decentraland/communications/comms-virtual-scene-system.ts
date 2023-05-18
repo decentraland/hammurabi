@@ -5,7 +5,7 @@ import { createGenerationalIndexPool } from "../crdt-internal/generational-index
 import { createLwwStore } from "../crdt-internal/last-write-win-element-set"
 import { playerIdentityDataComponent } from "../sdk-components/player-identity-data"
 import { transformComponent } from "../sdk-components/transform-component"
-import { Entity } from "../types"
+import { Entity, MessageLoggerFunction } from "../types"
 import { VirtualScene } from "../virtual-scene"
 import { CommsTransportWrapper } from "./CommsTransportWrapper"
 import { AVATAR_ENTITY_RANGE, StaticEntities } from "../../babylon/scene/logic/static-entities"
@@ -13,7 +13,7 @@ import { Avatar } from "@dcl/schemas"
 import { unwrapPromise } from "../../misc/promises"
 import { avatarCustomizationsComponent, avatarEquippedDataComponent } from "../sdk-components/avatar-customizations"
 
-export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<CommsTransportWrapper>): VirtualScene {
+export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<CommsTransportWrapper>, userConsoleFn: MessageLoggerFunction): VirtualScene {
   // reserve entity numbers from 128 to 512 for avatars
   const entityPool = createGenerationalIndexPool(AVATAR_ENTITY_RANGE[0], AVATAR_ENTITY_RANGE[1])
 
@@ -59,28 +59,50 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
         unwrapPromise(transport.sendProfileRequest({ address: event.address, profileVersion: event.data.profileVersion }))
       }
     })
+    transport.events.on('chatMessage', (event) => {
+      const address = normalizeAddress(event.address)
+      const localAvatar = localAvatars.get(address)
+
+      if (localAvatar) {
+        userConsoleFn({
+          isCommand: false,
+          message: `${localAvatar.name}: ${event.data.message}`
+        })
+      }
+    })
     transport.events.on('profileResponse', (event) => {
       const address = normalizeAddress(event.address)
       const localAvatar = localAvatars.get(address)
       const serialized: Avatar = JSON.parse(event.data.serializedProfile)
+      serialized.userId = serialized.ethAddress = address
       if (!Avatar.validate(serialized)) {
         console.error('Invalid avatar info received', serialized, Avatar.validate.errors)
       }
+
+      if (!localAvatar) {
+        userConsoleFn({
+          isCommand: false,
+          message: `🦹 ${serialized.name} joined the realm!`
+        })
+      }
+
       const shouldUpdateAvatarData = !localAvatar || localAvatar!.version < serialized.version
 
       if (shouldUpdateAvatarData) {
         localAvatars.set(address, serialized)
         const entity = findPlayerEntityByAddress(event.address, true)
         if (entity) {
+          PlayerIdentityData.getMutable(entity).name = serialized.name
+          PlayerIdentityData.getMutable(entity).isGuest = !serialized.hasConnectedWeb3
           AvatarCustomizations.createOrReplace(entity, {
             bodyShapeUrn: serialized.avatar.bodyShape,
             eyesColor: serialized.avatar.eyes.color,
             hairColor: serialized.avatar.hair.color,
-            skinColor: serialized.avatar.skin.color
+            skinColor: serialized.avatar.skin.color,
           })
           AvatarEquippedData.createOrReplace(entity, {
-            emotes: (serialized.avatar.emotes ?? []).map($ => $.urn),
-            urns: serialized.avatar.wearables ?? []
+            emotesUrns: (serialized.avatar.emotes ?? []).map($ => $.urn),
+            wearableUrns: serialized.avatar.wearables ?? []
           })
         }
       }
@@ -108,7 +130,7 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
     if (!entityPool.hasFreeEntities()) return null
 
     const entity = entityPool.getFreeEntity()
-    PlayerIdentityData.createOrReplace(entity, { address })
+    PlayerIdentityData.createOrReplace(entity, { address, isGuest: true, name: address })
     return entity
   }
 

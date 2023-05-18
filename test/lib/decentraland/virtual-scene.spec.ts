@@ -10,7 +10,7 @@ import { playerIdentityDataComponent } from '../../../src/lib/decentraland/sdk-c
 describe('virtual scene tests', () => {
   const events = mitt<CommsEvents>()
   const transport = { events } as CommsTransportWrapper
-  const scene = createAvatarVirtualSceneSystem(() => [transport])
+  const scene = createAvatarVirtualSceneSystem(() => [transport], () => {})
 
   // run one tick to register the transport
   scene.update()
@@ -32,7 +32,8 @@ describe('virtual scene tests', () => {
         rotationY: 5,
         rotationZ: 6,
         rotationW: 7,
-        index: 1
+        index: 1,
+        timestamp: 0
       }
     })
     scene.update()
@@ -50,7 +51,8 @@ describe('virtual scene tests', () => {
         rotationY: 9,
         rotationZ: 9,
         rotationW: 9,
-        index: 2
+        index: 2,
+        timestamp: 1
       }
     })
     scene.update()
@@ -66,7 +68,9 @@ describe('virtual scene tests', () => {
     // buf1 received two updates for the same component because getUpdates was called twice in between updates
     new CrdtBuilder()
       .put(playerIdentityDataComponent, 511, 1, {
-        address: '0x123'
+        address: '0x123',
+        isGuest: true,
+        name: '0x123'
       })
       .put(transformComponent, 511, 1, {
         parent: 5,
@@ -85,7 +89,9 @@ describe('virtual scene tests', () => {
     // buf2 instead only has the final state
     new CrdtBuilder()
       .put(playerIdentityDataComponent, 511, 1, {
-        address: '0x123'
+        address: '0x123',
+        isGuest: true,
+        name: '0x123'
       })
       .put(transformComponent, 511, 2, {
         parent: 5,

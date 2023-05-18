@@ -13,12 +13,17 @@ import { PBPointerEvents } from '@dcl/protocol/out-ts/decentraland/sdk/component
 import { PBMeshRenderer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_renderer.gen'
 import { AvatarRenderer } from '../avatars/AvatarRenderer'
 import { StaticEntities } from './logic/static-entities'
+import { PBDelayedInterpolation } from '@dcl/protocol/out-ts/decentraland/sdk/components/delayed_interpolation.gen'
+import { applyDelayedInterpolation } from './logic/delayed-interpolation'
+import { PBTween } from '@dcl/protocol/out-ts/decentraland/sdk/components/tween.gen'
+
+export type TransformCommand = { value: Transform, time: number }
 
 // the following list of components is used to store a "staging" value to compare
 // against the previous applied value in the applyChanges function of each component
 export type AppliedComponents = {
   transform: {
-    commands: Array<{ value: Transform, time: number }>
+    commands: Array<TransformCommand>
     parent: Entity
   }
   billboard: PBBillboard
@@ -42,12 +47,9 @@ export type AppliedComponents = {
   }
   pointerEvents: PBPointerEvents
   avatarRenderer: AvatarRenderer
+  delayedInterpolation: PBDelayedInterpolation
+  tween: PBTween
 }
-
-const tmpVector = Vector3.Zero()
-const tmpVector2 = Vector3.Zero()
-const tmpQuat = Quaternion.Identity()
-const tmpQuat2 = Quaternion.Identity()
 
 /**
  * This class wraps a BabylonEntity and extends it with all the component-related
@@ -72,72 +74,43 @@ export class BabylonEntity extends BABYLON.TransformNode {
     this.usedComponents.delete(component.componentId)
   }
 
-  computeWorldMatrix(force: boolean | undefined, camera?: BABYLON.Nullable<BABYLON.Camera>) {
+  // this function chooses which value is going to be used to calculate the world
+  // transform of this entity. the order of precedence is:
+  // 1. if there are no user defined Transform, use an identity transform
+  // 2. if the PBDelayedInterpolation component is present, interpolate a value using the time-traveling commands
+  // 3. if the PBTween component is present, interpolate a value using the tweening commands
+  // 4. if the PBTransform component is present, use the latest value (command)
+  _setTransformParametersBeforeMatrixCalculation() {
     if (!this.rotationQuaternion) this.rotationQuaternion = Quaternion.Identity()
-
-    if (this.entityId === StaticEntities.RootEntity) {
-      return super.computeWorldMatrix(force, camera)
-    }
 
     // perform interpolation if needed
     const commands = this.appliedComponents.transform?.commands
-    const shouldInterpolate = this.appliedComponents.avatarRenderer
-    const timeInThePast = performance.now() - 100 // ms
-
 
     if (!commands || commands.length === 0) {
       this.position.setAll(0)
       this.scaling.setAll(1)
       this.rotationQuaternion.set(0, 0, 0, 1)
+      return
+    }
+
+    if (this.appliedComponents.delayedInterpolation) {
+      applyDelayedInterpolation(this, this.appliedComponents.delayedInterpolation, commands, performance.now())
+    } else /* if(BPTween) {
+      applyTween(this, this.appliedComponents.tween!, commands, performance.now())
+    } else */ {
+      const latestCommand = commands[commands.length - 1]
+      this.position.set(latestCommand.value.position.x, latestCommand.value.position.y, latestCommand.value.position.z)
+      this.scaling.set(latestCommand.value.scale.x, latestCommand.value.scale.y, latestCommand.value.scale.z)
+      this.rotationQuaternion.set(latestCommand.value.rotation.x, latestCommand.value.rotation.y, latestCommand.value.rotation.z, latestCommand.value.rotation.w)
+    }
+  }
+
+  computeWorldMatrix(force: boolean | undefined, camera?: BABYLON.Nullable<BABYLON.Camera>) {
+    if (this.entityId === StaticEntities.RootEntity) {
       return super.computeWorldMatrix(force, camera)
     }
 
-    const latestState = commands[commands.length - 1]
-
-    if (!shouldInterpolate) {
-      this.position.set(latestState.value.position.x, latestState.value.position.y, latestState.value.position.z)
-      this.scaling.set(latestState.value.scale.x, latestState.value.scale.y, latestState.value.scale.z)
-      this.rotationQuaternion.set(latestState.value.rotation.x, latestState.value.rotation.y, latestState.value.rotation.z, latestState.value.rotation.w)
-      return super.computeWorldMatrix(force, camera)
-    }
-
-    let firstStateIndex = -1
-    let secondStateIndex = -1
-
-    for (let i = 0; i < commands.length; i++) {
-      const state = commands[i];
-      if (state.time > timeInThePast) {
-        firstStateIndex = i - 1
-        secondStateIndex = i
-        break;
-      }
-    }
-
-    const firstStateCandidate = commands[firstStateIndex];
-    const secondStateCandidate = commands[secondStateIndex];
-
-    if (!firstStateCandidate || !secondStateCandidate) {
-      this.position.set(latestState.value.position.x, latestState.value.position.y, latestState.value.position.z)
-      this.scaling.set(latestState.value.scale.x, latestState.value.scale.y, latestState.value.scale.z)
-      this.rotationQuaternion.set(latestState.value.rotation.x, latestState.value.rotation.y, latestState.value.rotation.z, latestState.value.rotation.w)
-      return super.computeWorldMatrix(force, camera)
-    }
-
-    const firstState = firstStateCandidate.value
-    const secondState = secondStateCandidate.value
-
-    const alpha = (timeInThePast - firstStateCandidate.time) / (secondStateCandidate.time - firstStateCandidate.time)
-    tmpVector.set(firstState.position.x, firstState.position.y, firstState.position.z)
-    tmpVector2.set(secondState.position.x, secondState.position.y, secondState.position.z)
-    BABYLON.Vector3.LerpToRef(tmpVector, tmpVector2, alpha, this.position)
-
-    tmpVector.set(firstState.scale.x, firstState.scale.y, firstState.scale.z)
-    tmpVector2.set(secondState.scale.x, secondState.scale.y, secondState.scale.z)
-    BABYLON.Vector3.LerpToRef(tmpVector, tmpVector2, alpha, this.scaling)
-
-    tmpQuat.set(firstState.rotation.x, firstState.rotation.y, firstState.rotation.z, firstState.rotation.w)
-    tmpQuat2.set(secondState.rotation.x, secondState.rotation.y, secondState.rotation.z, secondState.rotation.w)
-    BABYLON.Quaternion.SlerpToRef(tmpQuat, tmpQuat2, alpha, this.rotationQuaternion)
+    this._setTransformParametersBeforeMatrixCalculation()
 
     return super.computeWorldMatrix(force, camera)
   }

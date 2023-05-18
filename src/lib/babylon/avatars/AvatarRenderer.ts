@@ -1,4 +1,4 @@
-import { InstantiatedEntries, Matrix, TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, TransformNode, Vector3 } from "@babylonjs/core";
 import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
 import { BabylonEntity } from "../scene/BabylonEntity";
 import { createLoadableAvatarConfig } from "./loader";
@@ -12,11 +12,14 @@ import { getBodyShapeAndHideBodyParts } from "./adr-65/body";
 import { instantiateAssetContainer } from "../scene/AssetManager";
 import { createLogger } from "../../misc/logger";
 import { BabylonEmote, createEmote } from "./adr-65/emote";
+import { AdvancedDynamicTexture, TextBlock } from "@babylonjs/gui";
+import { PLAYER_HEIGHT } from "../scene/logic/static-entities";
 
 const avatarRendererLogger = createLogger('AvatarRenderer')
 
 const WALK_SPEED_METERS_PER_SECOND = 3
 const MILLISECOND_DAMPENING_WINDOW = 300
+const tmpVector = new Vector3()
 
 function deriveCurrentAnimationState(userDefinedAnimation: string | void, speed: number, distanceToTheFloor: number) {
   // if (distanceToTheFloor > 0.01)
@@ -50,9 +53,52 @@ export class AvatarRenderer extends TransformNode {
   previousAbsolutePosition = Vector3.Zero()
   headingAngle = 0
   lastPositionCommands: PositionRecord[] = []
+  labelPlane: Mesh;
+  texture: AdvancedDynamicTexture;
+  textBlock: TextBlock;
 
   constructor(private entity: BabylonEntity) {
     super('AvatarRenderer', entity.getScene())
+
+    this.labelPlane = MeshBuilder.CreatePlane(
+      'text-plane',
+      { width: 2, height: 0.125 },
+      entity.getScene()
+    )
+
+    this.texture = AdvancedDynamicTexture.CreateForMesh(
+      this.labelPlane,
+      512,
+      32,
+      false
+    )
+
+    this.textBlock = new TextBlock()
+
+    this.labelPlane.position.y = PLAYER_HEIGHT + 0.125 * 3
+    this.labelPlane.parent = this
+    this.labelPlane.billboardMode = 7
+
+    this.textBlock.fontWeight = '700'
+    this.textBlock.outlineColor = '#6ef759'
+    this.textBlock.outlineWidth = 1
+    this.textBlock.color = '#572a21'
+
+    const originalF = this.labelPlane.isInFrustum
+
+    this.labelPlane.isInFrustum = function (this: AbstractMesh, frustumPlanes: Plane[]): boolean {
+      if (this.absolutePosition) {
+        const distanceToObject = tmpVector.copyFrom(this.absolutePosition).subtract(this.getScene().activeCamera!.position).length()
+
+        // cull out labels farther than 30meters
+        if (distanceToObject > 5)
+          return false
+      }
+
+      return originalF.call(this, frustumPlanes)
+    }
+
+    this.texture.addControl(this.textBlock)
   }
 
   // This function is called after Babylon calculates the world matrix of the entity
@@ -160,6 +206,8 @@ export class AvatarRenderer extends TransformNode {
     // TODO: this information is present in the realm definition (AboutResponse#content.publicUrl)
     const contentServerBaseUrl = 'https://peer.decentraland.org/content'
 
+    this.textBlock.text = shape.name || ''
+
     createLoadableAvatarConfig(shape, contentServerBaseUrl, this.getScene())
       .then(config => {
         this.loadModelsFromConfig(config)
@@ -168,7 +216,6 @@ export class AvatarRenderer extends TransformNode {
   }
 
   async loadModelsFromConfig(config: AvatarShapeWithAssetManagers) {
-
     const bodyShape = config.bodyShape ?? BodyShape.FEMALE
 
     // get slots

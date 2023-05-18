@@ -1,4 +1,5 @@
 import { Avatar } from "@dcl/schemas";
+import { fetchEntitiesByPointers } from "../../babylon/scene/load";
 
 export async function generateRandomAvatar(address: string): Promise<Avatar> {
   return {
@@ -43,4 +44,12 @@ export async function generateRandomAvatar(address: string): Promise<Avatar> {
     tutorialStep: 0,
     hasClaimedName: false
   }
+}
+
+export async function downloadAvatar(address: string): Promise<Avatar> {
+  const entities = await fetchEntitiesByPointers([address], 'https://peer.decentraland.org/content')
+
+  if (!entities.length) return generateRandomAvatar(address)
+
+  return entities[0].metadata.avatars[0]
 }

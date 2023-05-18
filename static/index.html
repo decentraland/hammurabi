@@ -46,7 +46,26 @@
 
   #start-button {
     position: absolute;
-    top: 50vh;
+    top: calc(50vh + 30px);
+    left: calc(50vw - 100px);
+    z-index: 1000;
+    background: #2a3a71;
+    border: 1px solid #002542;
+    margin: 6px 11px;
+    border-radius: 4px;
+    color: #fff;
+    box-sizing: border-box;
+    width: 200px;
+    height: 46px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 9px;
+    box-shadow: 0 5px #002542;
+  }
+
+  #start-button-user {
+    position: absolute;
+    top: calc(50vh - 60px);
     left: calc(50vw - 100px);
     z-index: 1000;
     background: #5f83ff;
@@ -61,6 +80,225 @@
     font-weight: bold;
     border-radius: 9px;
     box-shadow: 0 5px #00569a;
+  }
+
+
+  .console {
+    position: absolute;
+    left: 0;
+    width: 800px;
+    bottom: 0;
+    z-index: 999999;
+    pointer-events: none;
+  }
+
+  .console>.xterm {
+    box-sizing: border-box;
+    bottom: 74px;
+    pointer-events: none;
+    margin: 0px 16px;
+  }
+
+  .chatHistory {
+    padding: 10px;
+  }
+
+  .chatHistory>div {
+    font-family: "arial";
+    white-space: pre;
+    font-weight: bold;
+    color: #cccccc;
+    text-rendering: geometricPrecision;
+    font-size: 16px;
+    text-shadow: 1px 1px 0px black;
+  }
+
+  .chatHistory .name {
+    text-decoration: underline;
+  }
+
+  .chatInput {
+    width: 766px;
+    position: absolute;
+    left: 0;
+    z-index: 999999;
+    display: block;
+    font-family: arial;
+    font-weight: bold;
+    font-size: 16px;
+    color: #cccccc;
+    border-width: 0;
+    background: rgba(0, 0, 0, 0.10);
+    outline: none !important;
+    box-shadow: none !important;
+    bottom: 0;
+    margin: 16px;
+    box-sizing: border-box;
+    padding: 11px 17px;
+    border-radius: 34px;
+  }
+
+  .chatInput:valid {
+    pointer-events: all;
+    background: rgba(0, 0, 0, 0.1);
+    text-shadow: 1px 1px 0px black;
+  }
+
+  .chatInput:focus {
+    pointer-events: all;
+    background: rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 0px black;
+  }
+
+  /**
+        *  Default styles for xterm.js
+        */
+
+  .xterm {
+    font-feature-settings: "liga" 0;
+    position: relative;
+    user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .xterm.focus,
+  .xterm:focus {
+    outline: none;
+  }
+
+  .xterm .xterm-helpers {
+    position: absolute;
+    top: 0;
+    /**
+      * The z-index of the helpers must be higher than the canvases in order for
+      * IMEs to appear on top.
+      */
+    z-index: 10;
+  }
+
+  .xterm .xterm-helper-textarea {
+    /*
+          * HACK: to fix IE's blinking cursor
+          * Move textarea out of the screen to the far left, so that the cursor is not visible.
+          */
+    position: absolute;
+    opacity: 0;
+    left: -9999em;
+    top: 0;
+    width: 0;
+    height: 0;
+    z-index: -10;
+    /** Prevent wrapping so the IME appears against the textarea at the correct position */
+    white-space: nowrap;
+    overflow: hidden;
+    resize: none;
+  }
+
+  .xterm .composition-view {
+    /* TODO: Composition position got messed up somewhere */
+    /* background: #000; */
+    color: #fff;
+    display: none;
+    position: absolute;
+    white-space: nowrap;
+    z-index: 1;
+  }
+
+  .xterm .composition-view.active {
+    display: block;
+  }
+
+  .xterm .xterm-viewport {
+    /* On OS X this is required in order for the scroll bar to appear fully opaque */
+    /* background-color: #000; */
+    overflow-y: scroll;
+    cursor: default;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+  }
+
+  .xterm .xterm-screen {
+    position: relative;
+  }
+
+  .xterm .xterm-screen canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  .xterm .xterm-scroll-area {
+    visibility: hidden;
+  }
+
+  .xterm-char-measure-element {
+    display: inline-block;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: -9999em;
+    line-height: normal;
+  }
+
+  .xterm {
+    cursor: text;
+  }
+
+  .xterm.enable-mouse-events {
+    /* When mouse events are enabled (eg. tmux), revert to the standard pointer cursor */
+    cursor: default;
+  }
+
+  .xterm.xterm-cursor-pointer {
+    cursor: pointer;
+  }
+
+  .xterm.column-select.focus {
+    /* Column selection mode */
+    cursor: crosshair;
+  }
+
+  .xterm .xterm-accessibility,
+  .xterm .xterm-message {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 100;
+    color: transparent;
+  }
+
+  .xterm .live-region {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .xterm-dim {
+    opacity: 0.5;
+  }
+
+  .xterm-underline {
+    text-decoration: underline;
+  }
+
+  #loading-placeholder {
+    background: url(cdn/ui/adz.png) no-repeat center center;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999999999;
   }
 </style>
 <audio autoplay id="voice-chat-audio"></audio>
@@ -81,6 +319,9 @@
 
 <canvas id="renderCanvas" touch-action="none" style="visibility: hidden;"></canvas>
 
-<button id="start-button">Login as guest</button>
+<div id="ui">
+  <button id="start-button-user">Login with Ethereum</button>
+  <button id="start-button">Login as guest</button>
+</div>
 
 <script src="js/bundle.js"></script>

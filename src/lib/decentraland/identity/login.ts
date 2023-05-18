@@ -16,7 +16,7 @@ export async function loginAsGuest(): Promise<ExplorerIdentity> {
     return Authenticator.createSignature(account, message)
   }
 
-  return identityFromSigner(account.address, signer)
+  return identityFromSigner(account.address, signer, true)
 }
 
 // this function creates a Decentraland AuthChain using a private key
@@ -36,7 +36,7 @@ export async function loginUsingPrivateKey(privateKeyHexString: string): Promise
     return Authenticator.createSignature(account, message)
   }
 
-  return identityFromSigner(account.address, signer)
+  return identityFromSigner(account.address, signer, false)
 }
 
 // this function creates a Decentraland AuthChain using a provider (like metamask)
@@ -55,7 +55,7 @@ export async function loginUsingEthereumProvider(provider: any): Promise<Explore
     }
   }
 
-  return identityFromSigner(address, signer)
+  return identityFromSigner(address, signer, false)
 }
 
 // this function creates a Decentraland AuthChain using a signer function.
@@ -63,7 +63,7 @@ export async function loginUsingEthereumProvider(provider: any): Promise<Explore
 // the ephemeral private key is used to sign the rest of the authChain and subsequent
 // messages. this is a good way to not over-expose the real user accounts to excessive
 // signing requests.
-export async function identityFromSigner(address: string, signer: (message: string) => Promise<string>): Promise<ExplorerIdentity> {
+export async function identityFromSigner(address: string, signer: (message: string) => Promise<string>, isGuest: boolean): Promise<ExplorerIdentity> {
   const ephemeral = createUnsafeIdentity()
 
   const authChain = await Authenticator.initializeAuthChain(address, ephemeral, ephemeralLifespanMinutes, signer)
@@ -72,7 +72,7 @@ export async function identityFromSigner(address: string, signer: (message: stri
     address,
     signer,
     authChain,
-    isGuest: true
+    isGuest
   }
 }
 
