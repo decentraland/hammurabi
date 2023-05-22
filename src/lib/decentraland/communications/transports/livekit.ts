@@ -17,10 +17,11 @@ import {
 } from 'livekit-client'
 import mitt from 'mitt'
 import { CommsTransportEvents, MinimumCommunicationsTransport, SendHints, commsLogger } from '../types'
-import { Vector3, Quaternion, Engine, Scene, Analyser } from '@babylonjs/core'
+import { Vector3, Quaternion, Engine, Scene } from '@babylonjs/core'
 import { AddToggle, guiPanel } from '../../../babylon/visual/ui'
 import { Checkbox } from '@babylonjs/gui'
 import { Atom } from '../../../misc/atom'
+import { updateVideoTexture } from './livekit-video-texture'
 
 export type LivekitConfig = {
   url: string
@@ -50,7 +51,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
 
     Object.assign(globalThis, { Engine, livekit: this })
 
-    const voiceHandler = this.voiceHandler = createLiveKitVoiceHandler(this.room)
+    const voiceHandler = this.voiceHandler = createLiveKitVoiceHandler(this.room, config.scene)
 
     if (typeof OffscreenCanvas !== 'undefined') {
       this.muteCheck = AddToggle('Mute microphone (Livekit)', guiPanel(config.scene))
@@ -97,7 +98,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
           liveKitRoomSid: this.room.sid
         })
         const kicked = reason === DisconnectReason.DUPLICATE_IDENTITY
-        this.do_disconnect(kicked).catch((err) => {
+        this.doDisconnect(kicked).catch((err) => {
           commsLogger.error(`error during disconnection ${err.toString()}`)
         })
       })
@@ -140,10 +141,10 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
   }
 
   async disconnect() {
-    return this.do_disconnect(false)
+    return this.doDisconnect(false)
   }
 
-  async do_disconnect(kicked: boolean) {
+  async doDisconnect(kicked: boolean) {
     if (this.disposed) {
       return
     }
@@ -199,7 +200,7 @@ export type VoiceHandler = {
 }
 
 
-export function createLiveKitVoiceHandler(room: Room): VoiceHandler {
+export function createLiveKitVoiceHandler(room: Room, scene: Scene): VoiceHandler {
   let recordingListener: ((state: boolean) => void) | undefined
   let errorListener: ((message: string) => void) | undefined
 
@@ -242,7 +243,10 @@ export function createLiveKitVoiceHandler(room: Room): VoiceHandler {
 
     panNode.panningModel = 'equalpower'
     panNode.distanceModel = 'inverse'
-    panNode.refDistance = 5
+
+    // use refDistance == maxDistance to disable distance attenuation
+    // this variable gets updated when the user moves to enable positional falloff
+    panNode.refDistance = 10000
     panNode.maxDistance = 10000
     panNode.coneOuterAngle = 360
     panNode.coneInnerAngle = 180
@@ -261,14 +265,17 @@ export function createLiveKitVoiceHandler(room: Room): VoiceHandler {
     _publication: RemoteTrackPublication,
     participant: RemoteParticipant
   ) {
-    if (track.kind !== Track.Kind.Audio) {
-      return
-    }
-
     const info = getParticipantInfo(participant)
     const trackId = track.sid
     if (trackId && !info.tracks.has(trackId) && track.kind === Track.Kind.Audio && track.mediaStream) {
       info.tracks.set(trackId, setupAudioTrackForRemoteTrack(track as RemoteAudioTrack))
+    } else if (trackId && !info.tracks.has(trackId) && track.kind === Track.Kind.Video && track.mediaStream) {
+      try {
+        updateVideoTexture(scene, track, participant)
+      } catch (err) {
+        commsLogger.error(err)
+        debugger
+      }
     }
   }
 
@@ -342,6 +349,9 @@ export function createLiveKitVoiceHandler(room: Room): VoiceHandler {
 
       if (participantInfo) {
         for (const [_, { panNode }] of participantInfo.tracks) {
+          // set a reasonable refDistance to enable positional falloff
+          // by default refDistance is 10000 which disables distance attenuation
+          panNode.refDistance = 5
           if (panNode.positionX) {
             panNode.positionX.setValueAtTime(position.positionX, audioContext.currentTime)
             panNode.positionY.setValueAtTime(position.positionY, audioContext.currentTime)

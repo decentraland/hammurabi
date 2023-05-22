@@ -34,6 +34,8 @@ import { createValueSetComponentStore } from '../../decentraland/crdt-internal/g
 import { VirtualSceneSubscription } from '../../decentraland/virtual-scene'
 import { MAX_ENTITY_NUMBER } from '../../decentraland/crdt-internal/generational-index-pool'
 import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-shape'
+import { delayedInterpolationComponent } from '../../decentraland/sdk-components/delayed-interpolation'
+import { tweenComponent } from '../../decentraland/sdk-components/tween'
 
 const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
 
@@ -100,6 +102,8 @@ export class SceneContext implements EngineApiInterface {
     [gltfContainerLoadingStateComponent.componentId]: createLwwStore(gltfContainerLoadingStateComponent),
     [engineInfoComponent.componentId]: createLwwStore(engineInfoComponent),
     [avatarShapeComponent.componentId]: createLwwStore(avatarShapeComponent),
+    [tweenComponent.componentId]: createLwwStore(tweenComponent),
+    [delayedInterpolationComponent.componentId]: createLwwStore(delayedInterpolationComponent),
   } as const
 
   // this flag is changed every time an entity changed its parent. the change

@@ -1,11 +1,11 @@
 // export all the functions required to make the scene work
 export * from '@dcl/sdk'
-import { engine, PlayerIdentityData, AvatarShape, LastWriteWinElementSetComponentDefinition, Entity, AvatarEquippedData, AvatarCustomization } from '@dcl/sdk/ecs'
+import { engine, PlayerIdentityData, AvatarShape, LastWriteWinElementSetComponentDefinition, Entity, AvatarEquippedData, AvatarCustomization, DelayedInterpolation } from '@dcl/sdk/ecs'
 
 // print all the transforms of the avatars range
 engine.addSystem(function rotateCube(dt) {
   // first ensure that all PlayerIdentity components have a children entity
-  for (const [playerEntity, { address }] of engine.getEntitiesWith(PlayerIdentityData)) {
+  for (const [playerEntity, { address, name, isGuest }] of engine.getEntitiesWith(PlayerIdentityData)) {
 
     if (!AvatarShape.has(playerEntity)) {
       console.log(`Creating entity ${playerEntity.toString(16)} (${address})`)
@@ -14,16 +14,20 @@ engine.addSystem(function rotateCube(dt) {
     const equipData = AvatarEquippedData.getMutableOrNull(playerEntity)
     const customizations = AvatarCustomization.getMutableOrNull(playerEntity)
 
+    const postfix = isGuest ? ' (guest)' : ''
+
     replaceComponentValueIfChanged(AvatarShape, playerEntity, {
-      emotes: equipData?.emotes ?? [],
+      emotes: equipData?.emotesUrns ?? [],
       id: address,
-      wearables: equipData?.urns ?? [],
+      wearables: equipData?.wearableUrns ?? [],
       bodyShape: customizations?.bodyShapeUrn,
       eyeColor: customizations?.eyesColor,
       skinColor: customizations?.skinColor,
       hairColor: customizations?.hairColor,
-      name: address
+      name: (name ?? address) + postfix
     })
+
+    DelayedInterpolation.createOrReplace(playerEntity, { timeTravelDuration: 100 })
   }
 
   // finally ensure that all all referenced avatars have a valid playerEntity

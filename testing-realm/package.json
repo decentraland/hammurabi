@@ -7,7 +7,7 @@
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
   },
   "devDependencies": {
-    "@dcl/sdk": "https://sdk-team-cdn.decentraland.org/@dcl/js-sdk-toolchain/branch/player-entities/dcl-sdk-7.1.11-4949314085.commit-87846d6.tgz"
+    "@dcl/sdk": "https://sdk-team-cdn.decentraland.org/@dcl/js-sdk-toolchain/branch/player-entities/dcl-sdk-7.1.16-5048450225.commit-1f58d21.tgz"
   },
   "prettier": {
     "semi": false,

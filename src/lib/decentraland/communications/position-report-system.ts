@@ -40,6 +40,7 @@ export function createCommunicationsPositionReportSystem(transports: () => Itera
       rotationY: rotation.y,
       rotationZ: rotation.z,
       rotationW: rotation.w,
+      timestamp: performance.now()
     }
 
     for (const it of transports()) {

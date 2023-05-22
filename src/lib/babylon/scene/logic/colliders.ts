@@ -12,6 +12,8 @@ export const colliderMaterial = memoize((scene: Scene) => {
   const m = new GridMaterial('collider-material', scene)
   m.opacity = 0
   m.sideOrientation = 0
+  m.disableColorWrite = true
+  m.disableDepthWrite = true
   m.mainColor.set(0, 0, 0)
   m.lineColor.set(0, 1, 0)
   m.zOffset = -1
@@ -24,8 +26,12 @@ export const colliderMaterial = memoize((scene: Scene) => {
     AddToggle('Show Colliders', guiPanel(scene)).onIsCheckedChangedObservable.add((v) => {
       if (v) {
         m.opacity = 1
+        m.disableColorWrite = false
+        m.disableDepthWrite = false
       } else {
         m.opacity = 0
+        m.disableColorWrite = true
+        m.disableDepthWrite = true
       }
     })
   }
@@ -39,7 +45,6 @@ export function setColliderMask(mesh: AbstractMesh, layers: number) {
 
   if (mesh.name.endsWith('_collider')) {
     mesh.material = colliderMaterial(mesh.getScene())
-    // mesh.visibility =  0
   }
 
   mesh.checkCollisions = (layers & ColliderLayer.CL_PHYSICS) != 0

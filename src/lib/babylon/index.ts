@@ -87,7 +87,7 @@ export async function initEngine(canvas: HTMLCanvasElement) {
   firstPersonCamera.applyGravity = true
   firstPersonCamera.inertia = 0.6
   firstPersonCamera.speed = 0.7
-  firstPersonCamera.fov = 1
+  firstPersonCamera.fov = Math.PI / 2
   firstPersonCamera.angularSensibility = 1000
   firstPersonCamera.ellipsoid = new BABYLON.Vector3(0.3, PLAYER_HEIGHT / 2, 0.3);
   firstPersonCamera.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);

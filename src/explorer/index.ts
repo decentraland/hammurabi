@@ -1,10 +1,10 @@
 import "@babylonjs/inspector"
 import { initEngine } from "../lib/babylon";
-import { loginAsGuest } from "../lib/decentraland/identity/login";
+import { loginAsGuest, loginUsingEthereumProvider } from "../lib/decentraland/identity/login";
 import { loadedScenesByEntityId, setCurrentIdentity, userIdentity } from "./state";
 import { createCommunicationsPositionReportSystem } from "../lib/decentraland/communications/position-report-system";
 import { createNetworkedProfileSystem } from "../lib/decentraland/communications/networked-profile-system";
-import { generateRandomAvatar } from "../lib/decentraland/identity/avatar";
+import { downloadAvatar, generateRandomAvatar } from "../lib/decentraland/identity/avatar";
 import { addSystems } from "../lib/decentraland/system";
 import { createAvatarVirtualSceneSystem } from "../lib/decentraland/communications/comms-virtual-scene-system";
 import { createAvatarRendererSystem } from "../lib/babylon/avatar-rendering-system";
@@ -15,6 +15,9 @@ import { createSceneTickSystem } from "../lib/babylon/scene/update-scheduler";
 import { scenesUrn as avatarSceneRealmSceneUrns } from "./avatar-scene.json";
 import { PLAYER_HEIGHT } from "../lib/babylon/scene/logic/static-entities";
 import { Atom } from "../lib/misc/atom";
+import { pickWorldSpawnpoint } from "../lib/decentraland/scene/spawn-points";
+import { Scene } from "@dcl/schemas";
+import { addChat } from "./console";
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -23,14 +26,35 @@ export const microphone = Atom<MediaStream>()
 
 // this is our entry point
 
+declare var ethereum: any
+
 const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement // Get the canvas element
 const startButton = document.getElementById('start-button') as HTMLButtonElement
+const startButtonMetamask = document.getElementById('start-button-user') as HTMLButtonElement
+const uiContainer = document.getElementById('ui') as HTMLDivElement
+
+startButtonMetamask.onclick = (e) => {
+  startButtonMetamask.disabled = true
+  startButton.disabled = true
+  startButtonMetamask.innerText = 'Sign the message...'
+
+  ethereum.enable().then(() => {
+    main().then(() => {
+      // TODO: memoize the result of the loginAsGuest in localStorage, right now it generates
+      // a new identity each time we reload the page
+      loginUsingEthereumProvider(ethereum).then(identity => {
+        setCurrentIdentity(identity)
+        canvas.style.visibility = 'visible'
+        uiContainer.remove()
+      })
+    })
+  })
+}
 
 startButton.onclick = (e) => {
+  startButtonMetamask.disabled = true
   startButton.disabled = true
   startButton.innerText = 'Loading...'
-
-  const button = e.target as HTMLElement
 
   main().then(() => {
     // TODO: memoize the result of the loginAsGuest in localStorage, right now it generates
@@ -38,23 +62,35 @@ startButton.onclick = (e) => {
     loginAsGuest().then(identity => {
       setCurrentIdentity(identity)
       canvas.style.visibility = 'visible'
-      button.remove()
+      uiContainer.remove()
     })
   })
 }
 
 async function main() {
   // <WIRING>
-
   const { scene, firstPersonCamera, audioContext } = await initEngine(canvas)
+  const gameConsole = addChat(canvas)
 
   const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, scene, microphone, audioContext)
   const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, firstPersonCamera)
   const networkedProfileSystem = createNetworkedProfileSystem(realmCommunicationSystem.getTransports)
-  const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports)
+  const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports, gameConsole.addConsoleMessage)
   const avatarRenderingSystem = createAvatarRendererSystem(scene, () => loadedScenesByEntityId.values())
   const sceneCullingSystem = createSceneCullingSystem(scene, () => loadedScenesByEntityId.values())
   const sceneTickSystem = createSceneTickSystem(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
+
+  gameConsole.onChatMessage.add(message => {
+    const transports = Array.from(realmCommunicationSystem.getTransports())
+    for (const t of transports) {
+      t.sendChatMessage({ timestamp: Date.now(), message })
+      gameConsole.addConsoleMessage({ message: `You: ${message}`, isCommand: false, color: 0x00cece })
+    }
+  })
+
+  realmCommunicationSystem.currentRealm.observable.add(realm => {
+    gameConsole.addConsoleMessage({ message: `🌐 Connected to realm ${realm.configurations?.realmName}`, isCommand: false })
+  })
 
   addSystems(scene,
     // the realmCommunicationSystem is in charge to handle realm connections and connect/disconnect transports accordingly.
@@ -109,8 +145,12 @@ async function main() {
     // finally teleport to a location in the new realm. pick the first non-global scene
     for (const [_, loadedScene] of loadedScenesByEntityId) {
       if (!loadedScene.isGlobalScene) {
-        scene.activeCamera!.position.copyFrom(loadedScene.rootNode.position)
-        scene.activeCamera!.position.y = PLAYER_HEIGHT
+        loadedScene.crdtSendToRenderer({ data: Uint8Array.of() }).then(() => {
+          const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
+
+          scene.activeCamera!.position.copyFrom(position)
+          scene.activeCamera!.position.y += PLAYER_HEIGHT
+        })
         break
       }
     }
@@ -118,7 +158,10 @@ async function main() {
 
   // generate a random avatar based on our identity
   userIdentity.observable.add(async identity => {
-    networkedProfileSystem.setAvatar(await generateRandomAvatar(identity.address))
+    if (identity.isGuest)
+      networkedProfileSystem.setAvatar(await generateRandomAvatar(identity.address))
+    else
+      networkedProfileSystem.setAvatar(await downloadAvatar(identity.address))
   })
 
   configureRealmSelectionUi(realmCommunicationSystem.connectRealm)

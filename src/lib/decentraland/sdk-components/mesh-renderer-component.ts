@@ -22,6 +22,19 @@ const baseBox = memoize((scene: BABYLON.Scene) => {
   return ret
 })
 
+export const planeMaterial = memoize((scene: BABYLON.Scene) => {
+  const material = new BABYLON.StandardMaterial(
+    'plane-material',
+    scene
+  )
+  material.specularColor.set(0, 0, 0)
+  material.specularPower = 0
+
+  material.diffuseTexture = new BABYLON.Texture('images/UV_checker_Map_byValle.jpg')
+
+  return material
+})
+
 // TODO: this component is a stub that will be replaced by the real implementation later in a dedicated PR
 export const meshRendererComponent = declareComponentUsingProtobufJs(PBMeshRenderer, 1018, (entity, component) => {
   // this function is called when we receive the component and a change needs to be applied to the entity
@@ -29,16 +42,50 @@ export const meshRendererComponent = declareComponentUsingProtobufJs(PBMeshRende
 
   // create a box and attach it to an entity
 
-  if (entity.appliedComponents.meshRenderer) {
-    entity.appliedComponents.meshRenderer.mesh?.dispose()
+  if (entity.appliedComponents.meshRenderer?.mesh) {
+    entity.appliedComponents.meshRenderer.mesh.parent = null
+    entity.appliedComponents.meshRenderer.mesh.dispose()
   }
 
   const info = component.get(entity.entityId)
 
   if (info) {
-    const mesh = baseBox(entity.getScene()).createInstance("instance")
-    mesh.parent = entity
-    mesh.setEnabled(true)
+    let mesh: BABYLON.AbstractMesh | null = null
+
+    if (info.mesh?.$case === 'box') {
+      mesh = baseBox(entity.getScene()).createInstance("instance")
+      mesh.parent = entity
+      mesh.setEnabled(true)
+    } else if (info.mesh?.$case === 'plane') {
+      mesh = BABYLON.MeshBuilder.CreatePlane(
+        'plane-shape',
+        {
+          width: 1,
+          height: 1,
+          sideOrientation: 2,
+          updatable: true
+        },
+        entity.getScene()
+      )
+      mesh.parent = entity
+      mesh.setEnabled(true)
+
+      const uvs = info.mesh.plane.uvs
+      if (uvs && uvs.length) {
+        mesh.updateVerticesData(BABYLON.VertexBuffer.UVKind, uvs)
+      } else {
+        mesh.updateVerticesData(BABYLON.VertexBuffer.UVKind, [
+          // backside
+          0, 0, 1, 0,
+          1, 1, 0, 1,
+          // front side
+          0, 0, 1, 0,
+          1, 1, 0, 1,
+        ])
+      }
+
+      mesh.material = planeMaterial(entity.getScene())
+    }
 
     entity.appliedComponents.meshRenderer = {
       mesh,

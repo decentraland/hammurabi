@@ -45,6 +45,7 @@ export class CommsTransportWrapper {
   }
 
   async connect(): Promise<void> {
+    if (this.state !== RoomConnectionStatus.NONE) return
     try {
       this.state = RoomConnectionStatus.CONNECTING
       await this.transport.connect()
