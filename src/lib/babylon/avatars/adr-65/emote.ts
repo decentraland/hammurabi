@@ -7,9 +7,9 @@ export interface BabylonEmote {
   emote: EmoteADR74
 }
 
-export function createEmote(loadedEmote: EmoteWithContainer, wearablesInstances: Iterable<InstantiatedEntries>): BabylonEmote | void {
+export function createEmote(prefix: string, loadedEmote: EmoteWithContainer, wearablesInstances: Iterable<InstantiatedEntries>): BabylonEmote | void {
   const emoteAnimationGroup = new AnimationGroup(
-    loadedEmote.emote.id,
+    prefix + loadedEmote.emote.id,
     loadedEmote.container.scene
   )
 
@@ -22,19 +22,18 @@ export function createEmote(loadedEmote: EmoteWithContainer, wearablesInstances:
       // if a wearable has multiple representations, so for each id we keep an array of nodes
       const nodes = new Map<string, TransformNode[]>()
       instance.rootNodes
-        .flatMap($ => $.getChildTransformNodes())
+        .flatMap($ => $.getChildren($ => $ instanceof TransformNode, false) as TransformNode[])
         .forEach((node) => {
-          const id = node.id.startsWith('Clone of ') ? node.id.slice(9) : node.id
-          const list = nodes.get(id) || []
+          const list = nodes.get(node.name) || []
           list.push(node)
-          return nodes.set(id, list)
+          return nodes.set(node.name, list)
         })
 
       // apply each targeted animation from the emote asset container to the transform nodes of all the wearables
       if (loadedEmote.container.animationGroups.length > 0) {
         for (const targetedAnimation of loadedEmote.container.animationGroups[0].targetedAnimations) {
           const target = targetedAnimation.target as TransformNode
-          const newTargets = nodes.get(target.id)
+          const newTargets = nodes.get(target.name)
 
           if (newTargets && newTargets.length > 0) {
             const animation = targetedAnimation.animation

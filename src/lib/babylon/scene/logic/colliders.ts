@@ -6,6 +6,8 @@ import { BabylonEntity } from '../BabylonEntity'
 import { bitIntersectsAndContainsAny } from '../../../misc/bit-operations'
 import { AddToggle, guiPanel } from '../../visual/ui'
 
+export const floorMeshes: AbstractMesh[] = []
+
 const colliderSymbol = Symbol('isCollider')
 
 export const colliderMaterial = memoize((scene: Scene) => {
@@ -45,10 +47,25 @@ export function setColliderMask(mesh: AbstractMesh, layers: number) {
 
   if (mesh.name.endsWith('_collider')) {
     mesh.material = colliderMaterial(mesh.getScene())
+    addFloorMesh(mesh)
   }
 
   mesh.checkCollisions = (layers & ColliderLayer.CL_PHYSICS) != 0
   mesh.isPickable = (layers & ColliderLayer.CL_POINTER) != 0
+
+  mesh.onDisposeObservable.addOnce(() => {
+    const ix = floorMeshes.indexOf(mesh)
+    if (ix != -1) {
+      floorMeshes.splice(ix, 1)
+    }
+  })
+}
+
+function addFloorMesh(mesh: AbstractMesh) {
+  const ix = floorMeshes.indexOf(mesh)
+  if (ix !== -1) {
+    floorMeshes.push(mesh)
+  }
 }
 
 export function getColliderLayers(mesh: AbstractMesh): number {

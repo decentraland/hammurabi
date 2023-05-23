@@ -11,6 +11,7 @@
       "DOM"
     ],
     "strict": true,
+    "jsx": "react",
     "resolveJsonModule": true,
     "noEmit": true,
     "allowSyntheticDefaultImports": true,
