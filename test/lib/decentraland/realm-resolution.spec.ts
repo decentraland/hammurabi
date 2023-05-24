@@ -1,4 +1,4 @@
-import * as r from '../../../src/lib/decentraland/realm-resolution'
+import * as r from '../../../src/lib/decentraland/realm/resolution'
 
 describe('realm resolution', () => {
   test('worlds using .dcl.ens', async () => {
