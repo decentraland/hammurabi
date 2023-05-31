@@ -1,6 +1,6 @@
 import * as proto from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
 import mitt from 'mitt'
-import { CommsTransportEvents, MinimumCommunicationsTransport, TransportMessageEvent } from './types'
+import { CommsTransportEvents, MinimumCommunicationsTransport, TransportMessageEvent, commsLogger } from './types'
 import { Vector3 } from '@babylonjs/core'
 
 export enum RoomConnectionStatus {
@@ -48,7 +48,10 @@ export class CommsTransportWrapper {
     if (this.state !== RoomConnectionStatus.NONE) return
     try {
       this.state = RoomConnectionStatus.CONNECTING
-      await this.transport.connect()
+      const peers = await this.transport.connect()
+      for (const address in peers) {
+        this.sendProfileRequest({ address, profileVersion: 0 })
+      }
       this.state = RoomConnectionStatus.CONNECTED
     } catch (e: any) {
       this.state = RoomConnectionStatus.DISCONNECTED

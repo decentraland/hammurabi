@@ -10,6 +10,7 @@
   :root {
     --nav-height: 46px;
   }
+
   html,
   body {
     overflow: hidden;
@@ -106,7 +107,7 @@
 
   #loading>progress {
     width: 90vw;
-    height:32px;
+    height: 32px;
   }
 
   .errors {
@@ -115,7 +116,7 @@
     right: 0;
     pointer-events: none;
   }
-  
+
   .errors .error {
     margin: 8px 16px;
     border: 1px solid red;
@@ -174,6 +175,17 @@
     height: calc(100vh - var(--nav-height))
   }
 
+  .xterm-viewport::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .xterm-viewport {
+    -ms-overflow-style: none !important;
+    /* IE and Edge */
+    scrollbar-width: none !important;
+    /* Firefox */
+  }
+
   #mainContent>* {
     position: absolute;
     top: var(--nav-height);
@@ -193,33 +205,35 @@
   }
 
   .canvasContainer {
-    padding: 0!important;
-    flex-direction: inherit!important;
-    align-items: inherit!important;
-    justify-content: inherit!important;
+    padding: 0 !important;
+    flex-direction: inherit !important;
+    align-items: inherit !important;
+    justify-content: inherit !important;
   }
 
-  .canvasContainer > div {
+  .canvasContainer>div {
     position: relative;
   }
 
   .voicechat {
     display: flex;
   }
-  .voicechat > select {
+
+  .voicechat>select {
     background: #181a21;
     border: 1px solid #000;
     margin: 6px 11px;
     border-radius: 4px;
     color: #fff;
   }
-  .voicechat > button {
+
+  .voicechat>button {
     height: 29px;
   }
 
   #loading {
     background: #16141a no-repeat center center url(images/teleport.gif);
-    justify-content: end!important;
+    justify-content: end !important;
     z-index: 888888;
   }
 
@@ -254,7 +268,7 @@
   }
 
   .console {
-    position: absolute!important;
+    position: absolute !important;
     left: 0;
     width: 800px;
     bottom: 0;

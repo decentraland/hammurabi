@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import { SkyMaterial, GridMaterial } from '@babylonjs/materials'
-import { floorMeshes } from '../scene/logic/colliders'
+import { floorMeshes, setColliderMask } from '../scene/logic/colliders'
+import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
 
 const PARCEL_SIZE = 16
 
@@ -54,6 +55,7 @@ export async function setupEnvironment(scene: BABYLON.Scene) {
     await scene.createDefaultXRExperienceAsync({ floorMeshes })
   }
 
+  setColliderMask(envHelper.ground!, ColliderLayer.CL_PHYSICS)
   floorMeshes.push(envHelper.ground!);
 
   skybox.material = skyMaterial
@@ -61,12 +63,6 @@ export async function setupEnvironment(scene: BABYLON.Scene) {
   hemiLight.diffuse = BABYLON.Color3.White()
   hemiLight.groundColor = groundColor.clone()
   hemiLight.specular = sunColor.clone()
-
-  function setCamera(camera: BABYLON.Camera) {
-    scene.activeCamera?.detachControl()
-    camera.attachControl(scene.getEngine().getRenderingCanvas(), true)
-    scene.activeCamera = camera
-  }
 
   scene.onBeforeRenderObservable.add(repositionCamera)
 
@@ -97,7 +93,6 @@ export async function setupEnvironment(scene: BABYLON.Scene) {
   Object.assign(globalThis, { gridGroundMaterial, skyMaterial, hemiLight, skybox, envHelper })
 
   return {
-    setCamera,
     repositionCamera,
     reflectionProbe
   }

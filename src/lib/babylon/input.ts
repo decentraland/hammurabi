@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import { interactWithScene } from './scene/logic/pointer-events'
 import { InputAction, PointerEventType } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/input_action.gen'
+import { CharacterController } from './avatars/CharacterController'
 
 enum Keys {
   KEY_W = 87,
@@ -26,11 +27,12 @@ enum Keys {
 
 export { Keys }
 
-export function registerUpDownActionKeys(scene: BABYLON.Scene, key: string, action: InputAction) {
+export function registerUpDownActionKeys(scene: BABYLON.Scene, key: string, action: InputAction, changer?: (pressed: boolean) => void) {
   scene.actionManager.registerAction(
     new BABYLON.ExecuteCodeAction({
       trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: key
     }, () => {
+      changer && changer(true)
       interactWithScene(PointerEventType.PET_DOWN, action)
     })
   )
@@ -38,18 +40,14 @@ export function registerUpDownActionKeys(scene: BABYLON.Scene, key: string, acti
     new BABYLON.ExecuteCodeAction({
       trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: key
     }, () => {
+      changer && changer(false)
       interactWithScene(PointerEventType.PET_UP, action)
     })
   )
 }
 
-export function initKeyboard(scene: BABYLON.Scene, firstPersonCamera: BABYLON.FreeCamera) {
+export function initKeyboard(scene: BABYLON.Scene, characterController: CharacterController) {
   enableMouseLockBehaviorAndPointerEvents(scene)
-
-  firstPersonCamera.keysUp = [Keys.KEY_W, Keys.KEY_UP] // W
-  firstPersonCamera.keysDown = [Keys.KEY_S, Keys.KEY_DOWN] // S
-  firstPersonCamera.keysLeft = [Keys.KEY_A, Keys.KEY_LEFT] // A
-  firstPersonCamera.keysRight = [Keys.KEY_D, Keys.KEY_RIGHT] // D
 
   registerUpDownActionKeys(scene, 'e', InputAction.IA_PRIMARY)
   registerUpDownActionKeys(scene, 'f', InputAction.IA_SECONDARY)
@@ -57,16 +55,26 @@ export function initKeyboard(scene: BABYLON.Scene, firstPersonCamera: BABYLON.Fr
   registerUpDownActionKeys(scene, '2', InputAction.IA_ACTION_4)
   registerUpDownActionKeys(scene, '3', InputAction.IA_ACTION_5)
   registerUpDownActionKeys(scene, '4', InputAction.IA_ACTION_6)
-  registerUpDownActionKeys(scene, 'space', InputAction.IA_JUMP)
+  registerUpDownActionKeys(scene, ' ', InputAction.IA_JUMP, (active) => {
+    if (active) characterController.jump()
+  })
   registerUpDownActionKeys(scene, 'w', InputAction.IA_FORWARD)
   registerUpDownActionKeys(scene, 'a', InputAction.IA_LEFT)
   registerUpDownActionKeys(scene, 'd', InputAction.IA_RIGHT)
   registerUpDownActionKeys(scene, 's', InputAction.IA_BACKWARD)
 
-  registerUpDownActionKeys(scene, 'w', InputAction.IA_WALK)
-  registerUpDownActionKeys(scene, 'a', InputAction.IA_WALK)
-  registerUpDownActionKeys(scene, 'd', InputAction.IA_WALK)
-  registerUpDownActionKeys(scene, 's', InputAction.IA_WALK)
+  registerUpDownActionKeys(scene, 'w', InputAction.IA_WALK, (active) => characterController.walk(active))
+  registerUpDownActionKeys(scene, 'a', InputAction.IA_WALK, (active) => characterController.strafeLeft(active))
+  registerUpDownActionKeys(scene, 'd', InputAction.IA_WALK, (active) => characterController.strafeRight(active))
+  registerUpDownActionKeys(scene, 's', InputAction.IA_WALK, (active) => characterController.walkBack(active))
+
+  scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
+    characterController.act.speedMod = evt.sourceEvent.shiftKey
+  }));
+
+  scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+    characterController.act.speedMod = evt.sourceEvent.shiftKey
+  }));
 
   /**
    * This is a map of keys (see enum Keys): boolean

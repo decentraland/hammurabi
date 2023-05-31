@@ -95,30 +95,9 @@ export async function initEngine(canvas: HTMLCanvasElement) {
 
   // setup visual parts and environment
   addGlowLayer(scene)
-  const { setCamera } = await setupEnvironment(scene)
+  await setupEnvironment(scene)
 
   scene.gravity.set(0, -0.2, 0)
-
-  // init the cameras
-  const firstPersonCamera = new BABYLON.FreeCamera('1st person camera', new BABYLON.Vector3(5, PLAYER_HEIGHT, 5), scene)
-  firstPersonCamera.checkCollisions = true;
-  firstPersonCamera.applyGravity = true
-  firstPersonCamera.inertia = 0.6
-  firstPersonCamera.speed = 0.7
-  firstPersonCamera.fov = Math.PI / 2
-  firstPersonCamera.angularSensibility = 1000
-  firstPersonCamera.ellipsoid = new BABYLON.Vector3(0.3, PLAYER_HEIGHT / 2, 0.3);
-  firstPersonCamera.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
-  firstPersonCamera.minZ = 0.1 // near plane
-
-  const thirdPersonCamera = new BABYLON.ArcRotateCamera('3rd person camera', -Math.PI / 2, Math.PI / 2.5, 15, new BABYLON.Vector3(0, 0, 0), scene)
-
-  setCamera(firstPersonCamera)
-
-  addCrosshair(scene, firstPersonCamera)
-
-  // init our rendering systems
-  initKeyboard(scene, firstPersonCamera)
 
   // Register a render loop to repeatedly render the scene
   babylon.runRenderLoop(function () {
@@ -139,9 +118,9 @@ export async function initEngine(canvas: HTMLCanvasElement) {
   }
 
   // this is for debugging purposes
-  Object.assign(globalThis, { scene, thirdPersonCamera, firstPersonCamera, setCamera })
+  Object.assign(globalThis, { scene })
 
-  return { scene, thirdPersonCamera, firstPersonCamera, setCamera, audioContext: BABYLON.Engine.audioEngine!.audioContext! }
+  return { scene, audioContext: BABYLON.Engine.audioEngine!.audioContext! }
 }
 
 

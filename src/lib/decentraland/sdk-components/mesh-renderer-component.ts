@@ -3,6 +3,8 @@ import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { PBMeshRenderer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_renderer.gen";
 import { ComponentType } from "../crdt-internal/components";
 import { memoize } from "../../misc/memoize";
+import { baseMaterial } from '../../babylon/scene/BabylonEntity';
+import { setMeshRendererMaterial } from './material-component';
 
 const baseBox = memoize((scene: BABYLON.Scene) => {
   const ret = BABYLON.MeshBuilder.CreateBox(
@@ -12,12 +14,20 @@ const baseBox = memoize((scene: BABYLON.Scene) => {
     },
     scene
   )
-  const material = new BABYLON.StandardMaterial(
-    'base-box',
+  ret.material = baseMaterial(scene)
+  ret.setEnabled(false)
+  return ret
+})
+
+const baseSphere = memoize((scene: BABYLON.Scene) => {
+  const ret = BABYLON.MeshBuilder.CreateSphere(
+    'base-sphere',
+    {
+      updatable: false
+    },
     scene
   )
-  material.diffuseTexture = new BABYLON.Texture('images/UV_checker_Map_byValle.jpg')
-  ret.material = material
+  ret.material = baseMaterial(scene)
   ret.setEnabled(false)
   return ret
 })
@@ -53,7 +63,11 @@ export const meshRendererComponent = declareComponentUsingProtobufJs(PBMeshRende
     let mesh: BABYLON.AbstractMesh | null = null
 
     if (info.mesh?.$case === 'box') {
-      mesh = baseBox(entity.getScene()).createInstance("instance")
+      mesh = baseBox(entity.getScene()).clone()
+      mesh.parent = entity
+      mesh.setEnabled(true)
+    } else if (info.mesh?.$case === 'sphere') {
+      mesh = baseSphere(entity.getScene()).clone()
       mesh.parent = entity
       mesh.setEnabled(true)
     } else if (info.mesh?.$case === 'plane') {
@@ -91,5 +105,7 @@ export const meshRendererComponent = declareComponentUsingProtobufJs(PBMeshRende
       mesh,
       info
     }
+
+    setMeshRendererMaterial(entity)
   }
 })

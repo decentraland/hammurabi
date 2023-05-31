@@ -40,7 +40,7 @@ const App: React.FC = () => {
           <NavBar />
           <div id="mainContent" style={{ display: identity ? 'block' : 'none' }} >
             {sceneLoadingState?.pending ? <LoadingScreen {...sceneLoadingState} /> : null}
-            {didInteract && <Renderer visible={!!identity} />}
+            {didInteract ? <Renderer visible={!!identity} /> : null}
             {!realm ? <EmptyState /> : null}
           </div >
         </>

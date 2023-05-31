@@ -9,7 +9,8 @@ import { playerIdentityDataComponent } from '../../../src/lib/decentraland/sdk-c
 
 describe('virtual scene tests', () => {
   const events = mitt<CommsEvents>()
-  const transport = { events } as CommsTransportWrapper
+  const sendProfileRequest = jest.fn().mockResolvedValue(undefined)
+  const transport = { events, sendProfileRequest: sendProfileRequest as any } as CommsTransportWrapper
   const scene = createAvatarVirtualSceneSystem(() => [transport], () => {})
 
   // run one tick to register the transport

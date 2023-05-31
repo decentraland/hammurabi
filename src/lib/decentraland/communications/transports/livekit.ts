@@ -60,7 +60,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
       this.muteCheck.isChecked = mutedMicrophone.getOrNull() ?? true
 
       // enable checkbox only when we have a microphone available
-      config.microphone.observable.add((microphone) => {
+      config.microphone.pipe((microphone) => {
         if (this.muteCheck) {
           this.muteCheck.isEnabled = true
         }
@@ -70,18 +70,18 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
         voiceHandler.setRecording(!v)
       })
 
-      mutedMicrophone.observable.add((muted) => {
+      mutedMicrophone.pipe((muted) => {
         if (this.muteCheck) {
           this.muteCheck.isChecked = muted
         }
       })
     }
 
-    config.microphone.observable.add((microphone) => {
+    config.microphone.pipe((microphone) => {
       voiceHandler.setInputStream(microphone)
     })
 
-    mutedMicrophone.observable.add((muted) => {
+    mutedMicrophone.pipe((muted) => {
       voiceHandler.setRecording(!muted)
     })
 
@@ -129,10 +129,11 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
       })
   }
 
-  async connect(): Promise<void> {
+  async connect(): Promise<Set<string>> {
     await this.room.connect(this.config.url, this.config.token, { autoSubscribe: true })
     await this.room.engine.waitForPCInitialConnection()
     commsLogger.log(this.room.name, `Connected to livekit room ${this.room.name}`)
+    return new Set(this.room.participants.keys())
   }
 
   async send(data: Uint8Array, { reliable }: SendHints): Promise<void> {

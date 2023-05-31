@@ -1,4 +1,4 @@
-import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, ThinTexture, TransformNode, Vector3 } from "@babylonjs/core";
 import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
 import { BabylonEntity } from "../scene/BabylonEntity";
 import { createLoadableAvatarConfig } from "./loader";
@@ -202,15 +202,22 @@ export class AvatarRenderer extends TransformNode {
     }
   }
 
+  currentShape: PBAvatarShape | null = null
+
   setAvatarShape(shape: PBAvatarShape) {
+    if (this.currentShape == shape) return
+
     // TODO: this information is present in the realm definition (AboutResponse#content.publicUrl)
     const contentServerBaseUrl = 'https://peer.decentraland.org/content'
 
     this.textBlock.text = shape.name || ''
+    this.currentShape = shape
 
     createLoadableAvatarConfig(shape, contentServerBaseUrl, this.getScene())
       .then(config => {
-        this.loadModelsFromConfig(config)
+        if (shape === this.currentShape) {
+          return this.loadModelsFromConfig(config)
+        }
       })
       .catch(avatarRendererLogger.error)
   }

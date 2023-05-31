@@ -1,6 +1,7 @@
 import { Quaternion, Vector3 } from "@babylonjs/core";
 import { ComponentDeclaration, ComponentType } from "../crdt-internal/components";
 import { Entity } from "../types";
+import { BabylonEntity } from "../../babylon/scene/BabylonEntity";
 
 export type Transform = {
   position: Vector3
@@ -42,55 +43,59 @@ export const transformComponent: ComponentDeclaration<Transform, 1> = {
     if (entity.entityId === 0) return
 
     const newValue = componentStorage.getOrNull(entity.entityId) as Transform | null
-    const commands = entity.appliedComponents.transform?.commands || []
-    const currentValue = commands.length ? commands[commands.length - 1] : null
+    applyNewTransform(entity, newValue)
+  }
+}
 
-    if (newValue) {
-      const isDifferentParent = currentValue?.value.parent !== newValue.parent
+export function applyNewTransform(entity: BabylonEntity, transform: Transform | null) {
+  const commands = entity.appliedComponents.transform?.commands || []
+  const currentValue = commands.length ? commands[commands.length - 1] : null
 
-      // no interpolation in reparenting scenarios
-      if (isDifferentParent) {
-        commands.length = 0
-      }
+  if (transform) {
+    const isDifferentParent = currentValue?.value.parent !== transform.parent
 
-      commands.push({ value: newValue, time: performance.now() })
-      entity.appliedComponents.transform = {
-        commands,
-        parent: newValue.parent
-      }
-
-      // always keep only 10 commands in the array
-      while (commands.length > 10) {
-        commands.shift()
-      }
-    } else {
-      entity.appliedComponents.transform = undefined
+    // no interpolation in reparenting scenarios
+    if (isDifferentParent) {
+      commands.length = 0
     }
 
-    let needsReparenting = false
-
-    const isAddingNewValue = Boolean(!currentValue && newValue)
-    const isReplacingValue = Boolean(currentValue && newValue)
-    const isRemovingValue = Boolean(currentValue && !newValue)
-
-    if (isAddingNewValue || isReplacingValue) {
-      needsReparenting ||= currentValue?.value.parent !== newValue!.parent
-
-      entity.markAsDirty()
-    } else if (isRemovingValue) {
-      entity.markAsDirty()
-      needsReparenting = true
-
+    commands.push({ value: transform, time: performance.now() })
+    entity.appliedComponents.transform = {
+      commands,
+      parent: transform.parent
     }
 
-    if (needsReparenting) {
-      const context = entity.context.deref()
+    // always keep only 10 commands in the array
+    while (commands.length > 10) {
+      commands.shift()
+    }
+  } else {
+    entity.appliedComponents.transform = undefined
+  }
 
-      if (context) {
-        context.hierarchyChanged = true
-        // schedule the parenting of the entity
-        context.unparentedEntities.add(entity.entityId)
-      }
+  let needsReparenting = false
+
+  const isAddingNewValue = Boolean(!currentValue && transform)
+  const isReplacingValue = Boolean(currentValue && transform)
+  const isRemovingValue = Boolean(currentValue && !transform)
+
+  if (isAddingNewValue || isReplacingValue) {
+    needsReparenting ||= currentValue?.value.parent !== transform!.parent
+
+    entity.markAsDirty()
+  } else if (isRemovingValue) {
+    entity.markAsDirty()
+    needsReparenting = true
+
+  }
+
+  if (needsReparenting) {
+    const context = entity.context.deref()
+
+    if (context) {
+      context.hierarchyChanged = true
+      // schedule the parenting of the entity
+      context.unparentedEntities.add(entity.entityId)
     }
   }
 }

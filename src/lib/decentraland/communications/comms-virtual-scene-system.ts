@@ -34,13 +34,13 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
   function wireTransportEvents(transport: CommsTransportWrapper) {
     connectedTransports.add(transport)
     transport.events.on('PEER_DISCONNECTED', (event) => {
-      const entity = findPlayerEntityByAddress(event.address, false)
+      const entity = findPlayerEntityByAddress(event.address, false, transport)
       if (entity) {
         removePlayerEntity(entity)
       }
     })
     transport.events.on('position', (event) => {
-      const entity = findPlayerEntityByAddress(event.address, true)
+      const entity = findPlayerEntityByAddress(event.address, true, transport)
       if (entity) {
         Transform.createOrReplace(entity, {
           position: new Vector3(event.data.positionX, event.data.positionY, event.data.positionZ),
@@ -62,6 +62,7 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
     transport.events.on('chatMessage', (event) => {
       const address = normalizeAddress(event.address)
       const localAvatar = localAvatars.get(address)
+      findPlayerEntityByAddress(event.address, true, transport)
 
       if (localAvatar) {
         userConsoleFn({
@@ -90,7 +91,7 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
 
       if (shouldUpdateAvatarData) {
         localAvatars.set(address, serialized)
-        const entity = findPlayerEntityByAddress(event.address, true)
+        const entity = findPlayerEntityByAddress(event.address, true, transport)
         if (entity) {
           PlayerIdentityData.getMutable(entity).name = serialized.name
           PlayerIdentityData.getMutable(entity).isGuest = !serialized.hasConnectedWeb3
@@ -118,7 +119,7 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
 
   // this is the worst performing way of creating this mapping, but it's the 
   // easiest and cleanest to implement without making wrong assumptions right now
-  function findPlayerEntityByAddress(address: string, createIfMissing: boolean): Entity | null {
+  function findPlayerEntityByAddress(address: string, createIfMissing: boolean, transport: CommsTransportWrapper): Entity | null {
     for (const [entity, value] of PlayerIdentityData.iterator()) {
       if (value.address === address) {
         return entity
@@ -131,6 +132,9 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
 
     const entity = entityPool.getFreeEntity()
     PlayerIdentityData.createOrReplace(entity, { address, isGuest: true, name: address })
+
+    unwrapPromise(transport.sendProfileRequest({ address, profileVersion: 0 }))
+
     return entity
   }
 

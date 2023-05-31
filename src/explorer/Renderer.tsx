@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { initEngine } from '../lib/babylon'
 import { createAvatarRendererSystem } from '../lib/babylon/avatar-rendering-system'
 import { unloadScene, loadSceneContext } from '../lib/babylon/scene/load'
-import { PLAYER_HEIGHT } from '../lib/babylon/scene/logic/static-entities'
+import { PLAYER_HEIGHT, StaticEntities } from '../lib/babylon/scene/logic/static-entities'
 import { createSceneCullingSystem } from '../lib/babylon/scene/scene-culling'
 import { createSceneTickSystem } from '../lib/babylon/scene/update-scheduler'
 import { createAvatarVirtualSceneSystem } from '../lib/decentraland/communications/comms-virtual-scene-system'
@@ -14,9 +14,13 @@ import { pickWorldSpawnpoint } from '../lib/decentraland/scene/spawn-points'
 import { addSystems } from '../lib/decentraland/system'
 import { addChat } from './console'
 import { scenesUrn as avatarSceneRealmSceneUrns } from "./avatar-scene.json";
-import { userIdentity, loadedScenesByEntityId, currentRealm, realmErrors, loadingState, selectedInputVoiceDevice } from './state'
+import { userIdentity, loadedScenesByEntityId, currentRealm, realmErrors, loadingState, selectedInputVoiceDevice, playerEntityAtom } from './state'
 import * as BABYLON from '@babylonjs/core'
 import { Scene } from '@dcl/schemas'
+import { createCharacterControllerSystem } from '../lib/babylon/avatars/CharacterController'
+import { createCameraFollowsPlayerSystem } from '../lib/babylon/scene/logic/camera-follows-player'
+import { createCameraObstructionSystem } from '../lib/babylon/scene/logic/hide-camera-obstuction-system'
+import { createLocalAvatarSceneSystem } from '../lib/babylon/scene/logic/local-avatar-scene'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -54,7 +58,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
   }
 
   initialized = true
-  const { scene, firstPersonCamera, audioContext } = await initEngine(canvas)
+  const { scene, audioContext } = await initEngine(canvas)
   const gameConsole = addChat(canvas)
 
   // Watch for browser/canvas resize events
@@ -62,13 +66,23 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     scene.getEngine().resize()
   })
 
+  // init the character controller and input system
+
+  const characterControllerSystem = await createCharacterControllerSystem(scene)
+
+  // then init all the rendering systems
   const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, currentRealm, scene, selectedInputVoiceDevice, audioContext)
-  const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, firstPersonCamera)
+  const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, characterControllerSystem.capsule)
   const networkedProfileSystem = createNetworkedProfileSystem(realmCommunicationSystem.getTransports)
   const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports, gameConsole.addConsoleMessage)
   const avatarRenderingSystem = createAvatarRendererSystem(scene, () => loadedScenesByEntityId.values())
   const sceneCullingSystem = createSceneCullingSystem(scene, () => loadedScenesByEntityId.values())
   const sceneTickSystem = createSceneTickSystem(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
+  const localAvatarSceneSystem = await createLocalAvatarSceneSystem(scene, networkedProfileSystem.currentAvatar)
+  const cameraFollowsPlayerSystem = createCameraFollowsPlayerSystem(characterControllerSystem.camera, localAvatarSceneSystem.playerEntity, characterControllerSystem)
+  const cameraObstructionSystem = createCameraObstructionSystem(scene, characterControllerSystem.camera)
+
+  playerEntityAtom.swap(characterControllerSystem.capsule)
 
   gameConsole.onChatMessage.add(message => {
     const transports = Array.from(realmCommunicationSystem.getTransports())
@@ -78,7 +92,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     }
   })
 
-  realmCommunicationSystem.currentRealm.observable.add(realm => {
+  realmCommunicationSystem.currentRealm.pipe(realm => {
     gameConsole.addConsoleMessage({ message: `🌐 Connected to realm ${realm.aboutResponse.configurations?.realmName}`, isCommand: false })
   })
 
@@ -108,10 +122,24 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     // the sceneCullingSystem uses the base parcels of the scene to cull the 
     // RootEntity and all its descendants
     sceneCullingSystem,
+
+    // character controller to react to user inputs. this system also handles the
+    // moving platform mechanics
+    characterControllerSystem,
+
+    // the LocalAvatarSceneSystem places the playerEntity on its final 3D place
+    localAvatarSceneSystem,
+
+    // update the camera position based on the updated player
+    cameraFollowsPlayerSystem,
+
+    // finally adjust the camera position based on obstructions or hide some elements
+    // based on the same conditions
+    cameraObstructionSystem
   )
 
   // when the realm changes, we need to destroy extra scenes and load the new ones
-  realmCommunicationSystem.currentRealm.observable.add(async realm => {
+  realmCommunicationSystem.currentRealm.pipe(async realm => {
     const errors: string[] = []
 
     // create an empty set of desired running scenes
@@ -140,6 +168,16 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     // now that all unwanted scenes are destroyed, load the new realm
     for (const [urn, { isGlobal }] of desiredRunningScenes) {
       try {
+        if (!loadedScenesByEntityId.has(urn)) {
+          setTimeout(() => {
+            if (pendingSet.has(urn)) {
+              console.error(`Scene ${urn} timed out loading`)
+              pendingSet.delete(urn)
+              updatePending()
+            }
+          }, 60000)
+        }
+
         const ctx = await loadSceneContext(scene, { urn, isGlobal }, avatarVirtualScene)
         ctx.nextTick().finally(() => {
           pendingSet.delete(urn)
@@ -147,6 +185,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
         })
       } catch (err) {
         pendingSet.delete(urn)
+        updatePending()
         errors.push(`${err}`)
       }
     }
@@ -157,15 +196,15 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
         // activate loading screen
         const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
 
-        scene.activeCamera!.position.copyFrom(position)
-        scene.activeCamera!.position.y += PLAYER_HEIGHT
+        characterControllerSystem.teleport(position)
+        characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
 
         loadedScene.nextTick().then(() => {
           // deactivate loading screen
           const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
 
-          scene.activeCamera!.position.copyFrom(position)
-          scene.activeCamera!.position.y += PLAYER_HEIGHT
+          characterControllerSystem.teleport(position)
+          characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
         })
         break
       }
@@ -175,7 +214,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
   })
 
   // generate a random avatar based on our identity
-  userIdentity.observable.add(async identity => {
+  userIdentity.pipe(async identity => {
     if (identity.isGuest)
       networkedProfileSystem.setAvatar(await generateRandomAvatar(identity.address))
     else

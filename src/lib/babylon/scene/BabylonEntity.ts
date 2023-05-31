@@ -16,6 +16,8 @@ import { StaticEntities } from './logic/static-entities'
 import { PBDelayedInterpolation } from '@dcl/protocol/out-ts/decentraland/sdk/components/delayed_interpolation.gen'
 import { applyDelayedInterpolation } from './logic/delayed-interpolation'
 import { PBTween } from '@dcl/protocol/out-ts/decentraland/sdk/components/tween.gen'
+import { PBMaterial } from '@dcl/protocol/out-ts/decentraland/sdk/components/material.gen'
+import { memoize } from '../../misc/memoize'
 
 export type TransformCommand = { value: Transform, time: number }
 
@@ -49,7 +51,21 @@ export type AppliedComponents = {
   avatarRenderer: AvatarRenderer
   delayedInterpolation: PBDelayedInterpolation
   tween: PBTween
+  material: {
+    value: PBMaterial
+    material: BABYLON.Material
+  }
 }
+
+
+export const baseMaterial = memoize((scene: BABYLON.Scene) => {
+  const material = new BABYLON.StandardMaterial(
+    'base-box',
+    scene
+  )
+  material.diffuseTexture = new BABYLON.Texture('images/UV_checker_Map_byValle.jpg')
+  return material
+})
 
 /**
  * This class wraps a BabylonEntity and extends it with all the component-related

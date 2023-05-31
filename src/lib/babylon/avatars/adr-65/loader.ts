@@ -1,7 +1,7 @@
-import { Color3, InstantiatedEntries, PBRMaterial, Texture } from '@babylonjs/core'
+import { Texture } from '@babylonjs/core'
 import { Wearable } from '@dcl/schemas'
 import { getEmoteRepresentation, getWearableRepresentation, isTexture } from './representation'
-import { AvatarShapeWithAssetManagers, EmoteWithContainer, WearableWithContainer } from './types'
+import { EmoteWithContainer, WearableWithContainer } from './types'
 import { AssetManager } from '../../scene/AssetManager'
 import { EmoteADR74 } from '@dcl/schemas/dist/platform/item/emote/emote'
 

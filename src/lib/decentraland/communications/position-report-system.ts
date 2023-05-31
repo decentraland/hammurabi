@@ -1,6 +1,6 @@
 import { Position } from "@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen"
 import { CommsTransportWrapper, RoomConnectionStatus } from "./CommsTransportWrapper"
-import { FreeCamera, Quaternion, Vector3 } from "@babylonjs/core"
+import { Quaternion, TransformNode, Vector3 } from "@babylonjs/core"
 import { DecentralandSystem } from "../system"
 import { PLAYER_HEIGHT } from "../../babylon/scene/logic/static-entities"
 
@@ -9,7 +9,7 @@ export type ReportPositionSystem = DecentralandSystem & {
 }
 
 // this function generates a delegate that filters by time and limits position reports to 10Hz
-export function createCommunicationsPositionReportSystem(transports: () => Iterable<CommsTransportWrapper>, firstPersonCamera: FreeCamera): ReportPositionSystem {
+export function createCommunicationsPositionReportSystem(transports: () => Iterable<CommsTransportWrapper>, playerEntity: TransformNode): ReportPositionSystem {
   // force max of 10Hz
   const MAX_POSITIONS_PER_SECOND = 10
 
@@ -50,12 +50,10 @@ export function createCommunicationsPositionReportSystem(transports: () => Itera
     }
   }
 
-  if (!firstPersonCamera.rotationQuaternion) firstPersonCamera.rotationQuaternion = Quaternion.Identity()
-
   return {
     update() {
       // report the position of the first person camera to all transports
-      reportPosition(firstPersonCamera.globalPosition.subtract(new Vector3(0, PLAYER_HEIGHT, 0)), firstPersonCamera.rotationQuaternion, false)
+      reportPosition(playerEntity.absolutePosition.subtract(new Vector3(0, PLAYER_HEIGHT, 0)), playerEntity.absoluteRotationQuaternion, false)
     },
     reportPosition
   }

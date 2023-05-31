@@ -74,19 +74,23 @@ function applyTextureAndMask(
   maskColor: Record<'r' | 'g' | 'b', number>
 ) {
   const newMaterial = new StandardMaterial(`${name}_standard_material`, scene)
-  newMaterial.alphaMode = PBRMaterial.PBRMATERIAL_ALPHABLEND
-  newMaterial.backFaceCulling = true
-  newMaterial.specularColor = Color3.Black()
-  texture.hasAlpha = true
-  newMaterial.sideOrientation = Orientation.CW
-  newMaterial.diffuseTexture = texture
 
-  if (mask) {
-    newMaterial.emissiveTexture = mask
-    newMaterial.diffuseColor = new Color3(maskColor.r, maskColor.g, maskColor.b)
-  } else {
-    newMaterial.diffuseColor =  new Color3(color.r, color.g, color.b)
-  }
+  newMaterial.atomicMaterialsUpdate(newMaterial => {
+    newMaterial.alphaMode = PBRMaterial.PBRMATERIAL_ALPHABLEND
+    newMaterial.backFaceCulling = true
+    newMaterial.specularColor = Color3.Black()
+    texture.hasAlpha = true
+    newMaterial.sideOrientation = Orientation.CW
+    newMaterial.diffuseTexture = texture
+
+    if (mask) {
+      newMaterial.emissiveTexture = mask
+      newMaterial.diffuseColor = new Color3(maskColor.r, maskColor.g, maskColor.b)
+    } else {
+      newMaterial.diffuseColor = new Color3(color.r, color.g, color.b)
+    }
+  })
+
   mesh.material = newMaterial
 }
 
@@ -97,34 +101,35 @@ export function applySkinMaterialsToInstances(instances: InstantiatedEntries, lo
   for (const material of materials) {
     if (material instanceof PBRMaterial) {
       material.unfreeze()
-
-      // remove metallic effect
-      material.specularIntensity = 0
-      if (material.metallic) {
-        material.metallic = 0
-        material.metallicF0Factor = 0
-      }
-
-      if (material.name.toLowerCase().includes('hair')) {
-        material.roughness = 1
-        material.albedoColor = new Color3(
-          loadableAvatar.hairColor?.r ?? 0,
-          loadableAvatar.hairColor?.g ?? 0,
-          loadableAvatar.hairColor?.b ?? 0,
-        )
+      material.atomicMaterialsUpdate(material => {
+        // remove metallic effect
         material.specularIntensity = 0
-        material.alpha = 1
-      }
+        if (material.metallic) {
+          material.metallic = 0
+          material.metallicF0Factor = 0
+        }
 
-      if (material.name.toLowerCase().includes('skin')) {
-        material.albedoColor = new Color3(
-          loadableAvatar.skinColor?.r ?? 0,
-          loadableAvatar.skinColor?.g ?? 0,
-          loadableAvatar.skinColor?.b ?? 0,
-        )
-        material.specularIntensity = 0
-        material.alpha = 1
-      }
+        if (material.name.toLowerCase().includes('hair')) {
+          material.roughness = 1
+          material.albedoColor = new Color3(
+            loadableAvatar.hairColor?.r ?? 0,
+            loadableAvatar.hairColor?.g ?? 0,
+            loadableAvatar.hairColor?.b ?? 0,
+          )
+          material.specularIntensity = 0
+          material.alpha = 1
+        }
+
+        if (material.name.toLowerCase().includes('skin')) {
+          material.albedoColor = new Color3(
+            loadableAvatar.skinColor?.r ?? 0,
+            loadableAvatar.skinColor?.g ?? 0,
+            loadableAvatar.skinColor?.b ?? 0,
+          )
+          material.specularIntensity = 0
+          material.alpha = 1
+        }
+      })
 
       material.freeze()
     }
