@@ -22,12 +22,13 @@ import { AddToggle, guiPanel } from '../../../babylon/visual/ui'
 import { Checkbox } from '@babylonjs/gui'
 import { Atom } from '../../../misc/atom'
 import { updateVideoTexture } from './livekit-video-texture'
+import { mutedMicrophone } from '../../../../explorer/state'
 
 export type LivekitConfig = {
   url: string
   token: string
   scene: Scene
-  microphone: Atom<MediaStream>
+  microphone: Atom<string>
   audioContext: AudioContext
 }
 
@@ -56,18 +57,37 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
     if (typeof OffscreenCanvas !== 'undefined') {
       this.muteCheck = AddToggle('Mute microphone (Livekit)', guiPanel(config.scene))
       this.muteCheck.isEnabled = !!config.microphone.getOrNull()
-      this.muteCheck.isChecked = true
+      this.muteCheck.isChecked = mutedMicrophone.getOrNull() ?? true
 
       // enable checkbox only when we have a microphone available
-      config.microphone.observable.add((stream) => {
-        this.muteCheck!.isEnabled = true
-        voiceHandler.setInputStream(stream)
+      config.microphone.observable.add((microphone) => {
+        if (this.muteCheck) {
+          this.muteCheck.isEnabled = true
+        }
       })
 
       this.muteCheck.onIsCheckedChangedObservable.add((v) => {
         voiceHandler.setRecording(!v)
       })
+
+      mutedMicrophone.observable.add((muted) => {
+        if (this.muteCheck) {
+          this.muteCheck.isChecked = muted
+        }
+      })
     }
+
+    config.microphone.observable.add((microphone) => {
+      voiceHandler.setInputStream(microphone)
+    })
+
+    mutedMicrophone.observable.add((muted) => {
+      voiceHandler.setRecording(!muted)
+    })
+
+    voiceHandler.onRecording((recording) => {
+      mutedMicrophone.swap(!recording)
+    })
 
     this.room.startAudio().catch(commsLogger.error)
 
@@ -188,11 +208,9 @@ export type VoiceHandler = {
   // used to know if a user is talking or not, for the UI
   onUserTalking(cb: (userId: string, talking: boolean) => void): void
 
-  onError(cb: (message: string) => void): void
-
   onRecording(cb: (recording: boolean) => void): void
 
-  setInputStream(stream: MediaStream): Promise<void>
+  setInputStream(deviceId: string): Promise<void>
 
   setVoicePosition(address: string, position: proto.Position): void
 
@@ -202,7 +220,6 @@ export type VoiceHandler = {
 
 export function createLiveKitVoiceHandler(room: Room, scene: Scene): VoiceHandler {
   let recordingListener: ((state: boolean) => void) | undefined
-  let errorListener: ((message: string) => void) | undefined
 
   let validInput = false
   let onUserTalkingCallback: (userId: string, talking: boolean) => void = () => { }
@@ -300,13 +317,23 @@ export function createLiveKitVoiceHandler(room: Room, scene: Scene): VoiceHandle
   }
 
   function handleMediaDevicesError() {
-    if (errorListener) errorListener('Media Device Error')
+    commsLogger.error('Media Device Error')
   }
 
   room
     .on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     .on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
     .on(RoomEvent.MediaDevicesError, handleMediaDevicesError)
+    .on(RoomEvent.TrackMuted, (track, participant) => {
+      if (recordingListener && participant.isLocal) {
+        recordingListener(false)
+      }
+    })
+    .on(RoomEvent.TrackUnmuted, (track, participant) => {
+      if (recordingListener && participant.isLocal) {
+        recordingListener(true)
+      }
+    })
 
   commsLogger.log('voice handler initialized')
 
@@ -314,9 +341,13 @@ export function createLiveKitVoiceHandler(room: Room, scene: Scene): VoiceHandle
     setRecording(recording) {
       room.localParticipant
         .setMicrophoneEnabled(recording)
-        .then(() => {
+        .then((track) => {
           if (recordingListener) {
-            recordingListener(recording)
+            if (!track) {
+              recordingListener(false)
+            } else {
+              recordingListener(recording)
+            }
           }
         })
         .catch((err) => commsLogger.error('Error: ', err, ', recording=', recording))
@@ -327,16 +358,13 @@ export function createLiveKitVoiceHandler(room: Room, scene: Scene): VoiceHandle
     onRecording(cb) {
       recordingListener = cb
     },
-    onError(cb) {
-      errorListener = cb
-    },
-    setInputStream: async (localStream) => {
+    setInputStream: async (id) => {
       try {
-        await room.switchActiveDevice('audioinput', localStream.id)
+        await room.switchActiveDevice('audioinput', id)
         validInput = true
       } catch (e) {
+        commsLogger.error(e)
         validInput = false
-        if (errorListener) errorListener('setInputStream catch' + JSON.stringify(e))
       }
     },
     hasInput: () => {

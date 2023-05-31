@@ -1,6 +1,6 @@
 import { RuntimeAbstraction } from "./types"
 
-const MIN_FRAME_TIME = 8
+const MIN_FRAME_TIME = 24
 
 // this is the default update loop used by the scenes. it can be overriden by tests
 export async function defaultUpdateLoop(opts: RuntimeAbstraction) {
@@ -15,13 +15,14 @@ export async function defaultUpdateLoop(opts: RuntimeAbstraction) {
   //       a stable way to enable a graceful shutdown of the scene runtime.
   while (opts.isRunning()) {
     const now = performance.now()
-    let dtMillis = now - start
-    start = now
+    const dtMillis = now - start
 
     if (dtMillis < MIN_FRAME_TIME) {
       await sleep(MIN_FRAME_TIME - dtMillis - 1)
-      dtMillis = MIN_FRAME_TIME
+      continue
     }
+
+    start = now
 
     const dtSecs = dtMillis / 1000
 

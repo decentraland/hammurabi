@@ -24,7 +24,7 @@ export class AssetManager {
 
   constructor(public loadableScene: LoadableScene, public babylonScene: BABYLON.Scene) { }
 
-  async getContainerFuture(_src: string): Promise<BABYLON.AssetContainer> {
+  getContainerFuture(_src: string): Promise<BABYLON.AssetContainer> {
     const normalizedSrc = _src.toLowerCase()
     let fileHash = resolveFile(this.loadableScene.entity, normalizedSrc)
 
@@ -249,6 +249,8 @@ export function instantiateAssetContainer(assetContainer: BABYLON.AssetContainer
        * or are too small based on the distance to the camera.
        */
       mesh.isInFrustum = function (this: BABYLON.AbstractMesh, frustumPlanes: BABYLON.Plane[]): boolean {
+        if (!entity.context.deref()?.rootNode.isEnabled) return false
+
         if (this.absolutePosition) {
           const distanceToObject = tmpVector.copyFrom(this.absolutePosition).subtract(this.getScene().activeCamera!.position).length()
 
@@ -262,8 +264,8 @@ export function instantiateAssetContainer(assetContainer: BABYLON.AssetContainer
             // cull elements smaller than 20cm at 40meters
             if (this._boundingInfo.diagonalLength < 0.20 && distanceToObject > 20)
               return false
-            // cull elements smaller than 10cm at 20meters
-            if (this._boundingInfo.diagonalLength < 0.10 && distanceToObject > 15)
+            // cull elements smaller than 10cm at 10meters
+            if (this._boundingInfo.diagonalLength < 0.10 && distanceToObject > 10)
               return false
           }
         }

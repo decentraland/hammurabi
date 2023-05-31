@@ -15,8 +15,8 @@ export function addGlowLayer(scene: BABYLON.Scene) {
   effectLayers.push(highlightLayer)
 
   scene.onReadyObservable.addOnce(() => {
-    const gl = new BABYLON.GlowLayer('glow', scene)
-    effectLayers.push(gl)
+    // const gl = new BABYLON.GlowLayer('glow', scene)
+    // effectLayers.push(gl)
 
     effectLayers.forEach(($) => scene.effectLayers.includes($) || scene.addEffectLayer($))
 

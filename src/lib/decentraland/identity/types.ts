@@ -10,3 +10,8 @@ export type ExplorerIdentity = {
   // the signer function will be used to sign messages using the last element of the authChain
   signer: (message: string) => Promise<string>
 }
+
+export type StoreableIdentity = AuthIdentity & {
+  // is the address an ephemeral address? used to determine if the user is a guest
+  isGuest: boolean
+}

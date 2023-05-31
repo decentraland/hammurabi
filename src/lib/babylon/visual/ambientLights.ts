@@ -1,9 +1,10 @@
 import * as BABYLON from '@babylonjs/core'
 import { SkyMaterial, GridMaterial } from '@babylonjs/materials'
+import { floorMeshes } from '../scene/logic/colliders'
 
 const PARCEL_SIZE = 16
 
-export function setupEnvironment(scene: BABYLON.Scene) {
+export async function setupEnvironment(scene: BABYLON.Scene) {
   const groundColor = new BABYLON.Color3(0.1, 0.1, 0.1)
   const sunColor = new BABYLON.Color3(1, 1, 1)
 
@@ -50,10 +51,10 @@ export function setupEnvironment(scene: BABYLON.Scene) {
 
   if (document.location.protocol === 'https:') {
     // here we add XR support
-    scene.createDefaultXRExperienceAsync({
-      floorMeshes: [envHelper.ground!],
-    });
+    await scene.createDefaultXRExperienceAsync({ floorMeshes })
   }
+
+  floorMeshes.push(envHelper.ground!);
 
   skybox.material = skyMaterial
 

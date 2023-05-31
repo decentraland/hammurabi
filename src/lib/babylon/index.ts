@@ -7,14 +7,13 @@ import { addCrosshair } from './visual/reticle'
 import { pickPointerEventsMesh } from './scene/logic/pointer-events'
 import { AddButton, guiPanel } from './visual/ui'
 import '../misc/audio-debugger'
+import { engineInfoComponent } from '../decentraland/sdk-components/engine-info'
 
 export function isChrome() {
   return window.navigator.userAgent.includes('Chrome')
 }
 
 export async function initEngine(canvas: HTMLCanvasElement) {
-  BABYLON.Database.IDBStorageEnabled = true
-
   const parentElement = document.getElementById('voice-chat-audio') as HTMLAudioElement
 
   const audioContext = new AudioContext()
@@ -24,21 +23,40 @@ export async function initEngine(canvas: HTMLCanvasElement) {
 
   await parentElement.play()
 
-  const babylon = new BABYLON.Engine(canvas, true, {
-    audioEngine: true,
-    autoEnableWebVR: true,
-    powerPreference: 'high-performance',
-    xrCompatible: true,
-    deterministicLockstep: true,
-    lockstepMaxSteps: 4,
-    alpha: false,
-    antialias: false,
-    stencil: true,
-    audioEngineOptions: {
-      audioContext,
-      audioDestination
-    }
-  })
+  const createWebGpu = document.location.search.includes('WEBGPU') && (await BABYLON.WebGPUEngine.IsSupportedAsync)
+
+  const babylon = createWebGpu ?
+    new BABYLON.WebGPUEngine(canvas, {
+      audioEngine: true,
+      powerPreference: 'high-performance',
+      deterministicLockstep: true,
+      lockstepMaxSteps: 4,
+      antialias: false,
+      stencil: true,
+      audioEngineOptions: {
+        audioContext,
+        audioDestination
+      }
+    })
+    : new BABYLON.Engine(canvas, true, {
+      audioEngine: true,
+      autoEnableWebVR: true,
+      powerPreference: 'high-performance',
+      xrCompatible: true,
+      deterministicLockstep: true,
+      lockstepMaxSteps: 4,
+      antialias: false,
+      stencil: true,
+      audioEngineOptions: {
+        audioContext,
+        audioDestination
+      }
+    })
+
+  if (createWebGpu){
+    console.info('CREATING WebGPU ENGINE!!!!!!!!!!')
+    await (babylon as BABYLON.WebGPUEngine).initAsync();
+  }
 
   babylon.disableManifestCheck = true
   babylon.enableOfflineSupport = true
@@ -77,7 +95,7 @@ export async function initEngine(canvas: HTMLCanvasElement) {
 
   // setup visual parts and environment
   addGlowLayer(scene)
-  const { setCamera } = setupEnvironment(scene)
+  const { setCamera } = await setupEnvironment(scene)
 
   scene.gravity.set(0, -0.2, 0)
 
@@ -107,13 +125,9 @@ export async function initEngine(canvas: HTMLCanvasElement) {
     scene.render()
   })
 
-  // Watch for browser/canvas resize events
-  window.addEventListener('resize', function () {
-    babylon.resize()
-  })
-
   scene.onBeforeRenderObservable.add(() => {
     pickPointerEventsMesh(scene)
+    scene.cleanCachedTextureBuffer();
   })
 
   if (typeof OffscreenCanvas !== 'undefined') {

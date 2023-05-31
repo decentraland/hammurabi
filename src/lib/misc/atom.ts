@@ -2,6 +2,7 @@
 
 import { Observable } from "@babylonjs/core"
 import future, { IFuture } from "fp-future"
+import { useEffect, useState } from "react"
 
 const EMPTY = Symbol('empty')
 type EMPTY = typeof EMPTY
@@ -41,9 +42,25 @@ export function Atom<T>(initialValue: T | EMPTY = EMPTY): Atom<T> {
     observable,
     swap(newValue) {
       const oldValue = value
-      value = newValue
-      observable.notifyObservers(value)
+      if (newValue !== value) {
+        value = newValue
+        observable.notifyObservers(value)
+      }
       return oldValue == EMPTY ? undefined : oldValue
     }
   }
+}
+
+export function useAtom<T>(atom: Atom<T>): T | null {
+  const [value, setValue] = useState(atom.getOrNull())
+
+  useEffect(() => {
+    function obs() {
+      setValue(atom.getOrNull())
+    }
+    const observer = atom.observable.add(obs)
+    return (): void => { atom.observable.remove(observer) }
+  }, [atom])
+
+  return value
 }

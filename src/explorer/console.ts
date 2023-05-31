@@ -137,7 +137,7 @@ export function addChat(canvas: HTMLCanvasElement) {
   term.open(parent);
   // term.on("focus", () => term!.blur());
 
-  body.appendChild(chatInputElement);
+  canvas.parentElement!.appendChild(chatInputElement);
 
   body.addEventListener(
     "wheel",
@@ -178,7 +178,7 @@ export function addChat(canvas: HTMLCanvasElement) {
     }
   });
 
-  body.appendChild(parent);
+  canvas.parentElement!.appendChild(parent);
 
   function addChatCommand(name: string, description: string, fn: (message: string) => Promise<void>): void {
     if (chatCommands[name]) {

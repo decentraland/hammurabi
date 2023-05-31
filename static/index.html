@@ -1,6 +1,15 @@
 <!DOCTYPE html>
+<meta name="viewport"
+  content="initial-scale=1, maximum-scale=1, user-scalable=no, minimum-scale=1, width=device-width, height=device-height" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="theme-color" content="#000000" />
 
 <style>
+  :root {
+    --nav-height: 46px;
+  }
   html,
   body {
     overflow: hidden;
@@ -9,13 +18,138 @@
     margin: 0;
     padding: 0;
     background: radial-gradient(ellipse at top, #303443, #181a21);
+    font-family: 'Lato', sans-serif;
+    color: #f0f0f0;
+  }
+
+  a,
+  a:visited {
+    color: #5f83ff
   }
 
   nav {
     width: 100%;
-    height: 46px;
+    height: var(--nav-height);
     display: flex;
     background: #303443;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panels {
+    flex-direction: row;
+    display: flex;
+  }
+
+  .preview-iframe {
+    border: 0;
+    width: 100%;
+    height: 100%;
+    background: #4b4852;
+    border-radius: 16px;
+  }
+
+  .small-button {
+    font-size: 13px;
+    height: auto;
+    min-width: auto;
+    border-radius: 5px;
+  }
+
+  .danger {
+    background-color: darkred;
+    color: white;
+    border-color: crimson;
+    box-shadow: 0 5px #450000;
+  }
+
+  .panel-left,
+  .panel-right {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    width: 40vw;
+    background: #4b4852;
+    border-radius: 16px;
+    margin: 18px;
+    padding: 16px 25px;
+  }
+
+  .realm-browser {
+    position: fixed;
+    background: #181a21;
+    width: calc(100vw - 24px);
+    left: 12px;
+    top: 45px;
+    overflow: scroll;
+    z-index: 9999999;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 0 4px 10px black;
+  }
+
+  .realm-browser>div {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  #loading>progress {
+    width: 90vw;
+    height:32px;
+  }
+
+  .errors {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+  }
+  
+  .errors .error {
+    margin: 8px 16px;
+    border: 1px solid red;
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: white;
+    background: #a00;
+    box-shadow: 1px 1px 3px red;
+  }
+
+  .realm-browser>.selected {
+    background: red;
+  }
+
+  @media screen and (max-width: 600px) {
+    .panel-right {
+      display: none
+    }
+
+    .panel-left {
+      width: 80vw;
+    }
+  }
+
+  .panel-right {
+    text-align: left;
+    align-items: flex-start;
+    text-shadow: 1px 1px 0 #111;
+    overflow: scroll;
+    justify-content: flex-start;
+  }
+
+  .panel-left {
+    justify-content: stretch;
   }
 
   #realm-input {
@@ -31,64 +165,100 @@
 
   #renderCanvas {
     width: 100%;
-    height: calc(100vh - 46px);
+    height: 100%;
     touch-action: none;
     outline: none;
   }
 
-  select {
+  #mainContent {
+    height: calc(100vh - var(--nav-height))
+  }
+
+  #mainContent>* {
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .emptyState {
+    background: radial-gradient(ellipse at top, #303443, #181a21);
+  }
+
+  .canvasContainer {
+    padding: 0!important;
+    flex-direction: inherit!important;
+    align-items: inherit!important;
+    justify-content: inherit!important;
+  }
+
+  .canvasContainer > div {
+    position: relative;
+  }
+
+  .voicechat {
+    display: flex;
+  }
+  .voicechat > select {
     background: #181a21;
     border: 1px solid #000;
     margin: 6px 11px;
     border-radius: 4px;
     color: #fff;
   }
+  .voicechat > button {
+    height: 29px;
+  }
 
-  #start-button {
-    position: absolute;
-    top: calc(50vh + 30px);
-    left: calc(50vw - 100px);
-    z-index: 1000;
+  #loading {
+    background: #16141a no-repeat center center url(images/teleport.gif);
+    justify-content: end!important;
+    z-index: 888888;
+  }
+
+
+  button {
     background: #2a3a71;
     border: 1px solid #002542;
     margin: 6px 11px;
-    border-radius: 4px;
     color: #fff;
     box-sizing: border-box;
-    width: 200px;
+    min-width: 200px;
     height: 46px;
     font-size: 16px;
     font-weight: bold;
     border-radius: 9px;
     box-shadow: 0 5px #002542;
+    cursor: pointer;
   }
 
-  #start-button-user {
-    position: absolute;
-    top: calc(50vh - 60px);
-    left: calc(50vw - 100px);
-    z-index: 1000;
+  .ui {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  button.primary {
     background: #5f83ff;
     border: 1px solid #00569a;
-    margin: 6px 11px;
-    border-radius: 4px;
-    color: #fff;
-    box-sizing: border-box;
-    width: 200px;
-    height: 46px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 9px;
     box-shadow: 0 5px #00569a;
   }
 
-
   .console {
-    position: absolute;
+    position: absolute!important;
     left: 0;
     width: 800px;
     bottom: 0;
-    z-index: 999999;
+    z-index: 888888;
     pointer-events: none;
   }
 
@@ -121,7 +291,7 @@
     width: 766px;
     position: absolute;
     left: 0;
-    z-index: 999999;
+    z-index: 888888;
     display: block;
     font-family: arial;
     font-weight: bold;
@@ -288,40 +458,14 @@
   .xterm-underline {
     text-decoration: underline;
   }
-
-  #loading-placeholder {
-    background: url(cdn/ui/adz.png) no-repeat center center;
-    width: 100vw;
-    height: 100vh;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999999999;
-  }
 </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap" rel="stylesheet">
+
 <audio autoplay id="voice-chat-audio"></audio>
 
-<nav>
-  <input id="realm-input" type="text" placeholder="Realm URL"
-    value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main" list="programmingLanguages" />
-  <datalist id="programmingLanguages">
-    <option value="/ipfs/testing-realm">/ipfs/testing-realm</option>
-    <option value="https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main">
-      https://sdk-team-cdn.decentraland.org/ipfs/goerli-plaza-main</option>
-    <option value="menduz.dcl.eth">menduz.dcl.eth</option>
-  </datalist>
-  <select id="microphone" aria-placeholder="Select a microphone">
-    <option disabled>Select a microphone</option>
-  </select>
-</nav>
-
-<canvas id="renderCanvas" touch-action="none" style="visibility: hidden;"></canvas>
-
-<div id="ui">
-  <button id="start-button-user">Login with Ethereum</button>
-  <button id="start-button">Login as guest</button>
-</div>
+<div id="root"></div>
 
 <script src="js/bundle.js"></script>

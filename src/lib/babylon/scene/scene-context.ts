@@ -242,6 +242,8 @@ export class SceneContext implements EngineApiInterface {
    * processing more messages, similar to cooperative scheduling.
    */
   update(hasQuota: () => boolean) {
+    let rollingOperationCounter = 0
+
     // process all the incoming messages
     while (this.incomingMessages.length) {
       const message = this.incomingMessages[0]
@@ -285,7 +287,7 @@ export class SceneContext implements EngineApiInterface {
 
         // if we exceeded the quota, finish the processing of this "message" and yield
         // the execution control back to the event loop
-        if (!hasQuota()) {
+        if ((++rollingOperationCounter % 10) == 0 && !hasQuota()) {
           return false
         }
       }
@@ -413,6 +415,14 @@ export class SceneContext implements EngineApiInterface {
   }
   // }
 
+
+  // returns a future that will be resolved when the next frame is processed
+  async nextTick() {
+    const fut = future<CrdtSendToResponse>()
+    this.nextFrameFutures.push(fut)
+    return fut
+  }
+
   private async _crdtSendToRenderer(data: Uint8Array) {
     if (data.byteLength) {
       this.incomingMessages.push({ buffer: new ReadWriteByteBuffer(data), allowedEntityRange: SCENE_ENTITY_RANGE })
@@ -421,9 +431,7 @@ export class SceneContext implements EngineApiInterface {
     // create a future to wait until all the messages are processed. even if there
     // are no updates, we must return the future for CRDT updates like the camera
     // position
-    const fut = future<CrdtSendToResponse>()
-    this.nextFrameFutures.push(fut)
-    return fut
+    return this.nextTick()
   }
 
   // impl EngineApiInterface {

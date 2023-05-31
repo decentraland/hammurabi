@@ -239,6 +239,7 @@ export class AvatarRenderer extends TransformNode {
     // add all assets to scene
     for (const asset of assets) {
       const instances = instantiateAssetContainer(asset.container, this, this.entity)
+      // cleanupEmptyNodes(instances)
       this.instances.set(asset.wearable.id, instances)
     }
 
@@ -260,12 +261,15 @@ export class AvatarRenderer extends TransformNode {
     // create emotes for the recently instantiated wearables meshes
     const emotes = (await Promise.all(loadEmotePromises)).filter(Boolean) as EmoteWithContainer[]
 
+    const prefix = `${this.entity.context.deref()?.loadableScene.urn}-${this.entity.entityId.toString(16)}-`
+
     for (const emote of emotes) {
-      const controller = createEmote(emote, this.instances.values())
+      const controller = createEmote(prefix, emote, this.instances.values())
       if (controller) {
         this.emotes.set(emote.emote.id, controller)
       }
     }
+
     this.previousPlayingEmote = ''
     this.desiredEmote = undefined
   }

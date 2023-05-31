@@ -105,6 +105,14 @@
     - ... components (including UI)
   - [ ] Player entity
     - [x] TransformComponent
+  - [ ] World position entity (5)
+    - [ ] Implementation
+    - [ ] SDK implementation
+    - [ ] Tests
+    - [ ] ADR
+
+# Pending optimizations
+- Reuse armatures for avatars, combine meshes and apply animations to the final combined mesh
 
 # Pending tests
 

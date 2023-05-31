@@ -18,9 +18,11 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
   if (!parsed.baseUrl) throw new Error('Only URNs with baseUrl are supported at this time.')
 
   // cancel early if the scene is already loaded
-  if (loadedScenesByEntityId.has(parsed.entityId)) return
+  if (loadedScenesByEntityId.has(parsed.entityId)) return loadedScenesByEntityId.get(parsed.entityId)!
 
   const loadableScene = await getLoadableSceneFromUrl(parsed.entityId, parsed.baseUrl)
+
+  if ((loadableScene.entity.metadata as any).runtimeVersion !== '7') throw new Error('The scene is not compatible with the current runtime version. It may be using SDK6')
 
   const ctx = new SceneContext(engineScene, loadableScene, options.isGlobal)
 
@@ -33,6 +35,8 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
   connectSceneContextUsingWebWorkerQuickJs(ctx, loadableScene)
 
   loadedScenesByEntityId.set(parsed.entityId, ctx)
+
+  return ctx
 }
 
 /**
