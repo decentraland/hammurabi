@@ -22,21 +22,21 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
   public alias: number | null = null
   public events = mitt<CommsTransportEvents>()
 
-  private connected = future<void>()
+  private connected = future<Set<string>>()
   private peersToAddress = new Map<number, string>()
 
-  get connectedPromise(): IFuture<void> {
+  get connectedPromise(): IFuture<Set<string>> {
     return this.connected
   }
 
   private ws: WebSocket | null = null
 
-  constructor(public url: string, private identity: ExplorerIdentity) {}
-  
+  constructor(public url: string, private identity: ExplorerIdentity) { }
+
   setVoicePosition(_address: string, _position: Position): void {
   }
 
-  async connect(): Promise<void> {
+  async connect(): Promise<Set<string>> {
     if (this.ws) throw new Error('Cannot call connect twice per IBrokerTransport')
 
     const ws = new WebSocket(this.url, ['rfc5', 'rfc4'])
@@ -131,14 +131,16 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
     }
   }
 
-  handleWelcomeMessage(welcomeMessage: rfc5.WsWelcome, socket: WebSocket) {
+  handleWelcomeMessage(welcomeMessage: rfc5.WsWelcome, socket: WebSocket): Set<string> {
     this.alias = welcomeMessage.alias
     for (const [alias, address] of Object.entries(welcomeMessage.peerIdentities)) {
       this.peersToAddress.set(+alias | 0, address)
     }
     this.ws = socket
-    this.connected.resolve()
+    const connectedPeerAddress = new Set(this.peersToAddress.values())
     socket.addEventListener('message', this.onWsMessage.bind(this))
+    this.connected.resolve(connectedPeerAddress)
+    return connectedPeerAddress
   }
 
   send(body: Uint8Array, hints: SendHints) {

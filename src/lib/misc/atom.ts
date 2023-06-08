@@ -12,6 +12,7 @@ export type Atom<T> = {
   getOrNull(): T | null
   observable: Observable<T>
   swap(value: T): T | void
+  pipe(fn: (value: T) => void | Promise<void>): Promise<void>
 }
 
 export function Atom<T>(initialValue: T | EMPTY = EMPTY): Atom<T> {
@@ -25,6 +26,22 @@ export function Atom<T>(initialValue: T | EMPTY = EMPTY): Atom<T> {
   })
 
   return {
+    async pipe(fn) {
+      observable.add(async (t) => {
+        try {
+          await fn(t)
+        } catch (err) {
+          console.error(err)
+        }
+      })
+      if (value !== EMPTY) {
+        try {
+          await fn(value)
+        } catch (err) {
+          console.error(err)
+        }
+      }
+    },
     deref() {
       if (value === EMPTY) {
         const ret = future<T>()

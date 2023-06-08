@@ -16,7 +16,7 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
   const currentAdapter = Atom<CommsAdapter>()
   const activeTransports = new Map<string, CommsTransportWrapper>()
 
-  currentRealm.observable.add(async function connectNewCommsAdapter(realm: CurrentRealm) {
+  currentRealm.pipe(async function connectNewCommsAdapter(realm: CurrentRealm) {
     const identity = await userIdentity.deref()
     const newAdapter = await connectAdapter(realm.aboutResponse.comms?.fixedAdapter ?? "offline:offline", identity)
     const oldAdapter = currentAdapter.swap(newAdapter)

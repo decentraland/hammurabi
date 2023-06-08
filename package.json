@@ -6,6 +6,10 @@
   "author": "Protocol Squad",
   "license": "Apache-2.0",
   "scripts": {},
+  "prettier": {
+    "semi": false,
+    "printWidth": 120
+  },
   "engines": {
     "npm": ">=8.0.0",
     "node": ">=18.0.0"

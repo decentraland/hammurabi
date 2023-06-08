@@ -94,7 +94,10 @@ export class AssetManager {
   dispose() {
     for (const [hash, model] of Array.from(this.models.entries())) {
       model.then((container) => {
-        container.dispose()
+        /// TODO: this line should not be commented, but there is a bug in Babylon.js that
+        /// breaks the shared glTF materials when disposing the assetContainer. We will sacrifice
+        /// GPU memory for now until the bug is fixed.
+        // container.dispose()
       })
       this.models.delete(hash)
     }
@@ -219,7 +222,7 @@ function processAssetContainer(assetContainer: BABYLON.AssetContainer) {
 const tmpVector = new BABYLON.Vector3()
 
 export function instantiateAssetContainer(assetContainer: BABYLON.AssetContainer, parentNode: BABYLON.TransformNode, entity: BabylonEntity): BABYLON.InstantiatedEntries {
-  const instances = assetContainer.instantiateModelsToScene(name => name, false)
+  const instances = assetContainer.instantiateModelsToScene(name => name, true)
 
   for (let node of instances.rootNodes) {
     // reparent the root node inside the entity

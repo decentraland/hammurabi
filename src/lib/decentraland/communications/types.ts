@@ -28,8 +28,10 @@ export interface MinimumCommunicationsTransport {
    * The .connect() method resolves when the connection with the
    * transport was successful and it is ready to send and receive
    * messages.
+   * 
+   * This method returns a set of connected peerIdentities.
    */
-  connect(): Promise<void>
+  connect(): Promise<Set<string>>
   /**
    * The .disconnect() method can optionally receive an error that will
    * be bubbled up in the DISCONNECTED event. It should be used to

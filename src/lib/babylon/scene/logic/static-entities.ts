@@ -5,6 +5,7 @@ import { globalCoordinatesToSceneCoordinates } from "../coordinates";
 import { Entity } from "../../../decentraland/types";
 import { engineInfoComponent } from "../../../decentraland/sdk-components/engine-info";
 import { EntityUtils } from "../../../decentraland/crdt-internal/generational-index-pool";
+import { playerEntityAtom } from "../../../../explorer/state";
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
@@ -49,20 +50,21 @@ export function updateStaticEntities(context: SceneContext) {
   if (!Transform.has(StaticEntities.GlobalCenterOfCoordinates))
     Transform.create(StaticEntities.GlobalCenterOfCoordinates, { position: context.rootNode.position.scale(-1), scale: Vector3.One(), rotation: Quaternion.Identity(), parent: StaticEntities.RootEntity })
 
-  const engineCamera = context.babylonScene.activeCamera
 
   // StaticEntities.PlayerEntity
   {
-    // for now, until we have a proper Player, simply copy the position of the player by
-    // removing the camera height from its position. the PlayerEntity is located at the foot of the avatar
     const playerTransform = Transform.getMutable(StaticEntities.PlayerEntity)
 
+    const player = playerEntityAtom.getOrNull()
+
     // convert the camera position to scene-space coordinates
-    playerTransform.position = globalCoordinatesToSceneCoordinates(context, engineCamera!.position.subtractFromFloats(0, PLAYER_HEIGHT, 0))
+    playerTransform.position = globalCoordinatesToSceneCoordinates(context, player?.absolutePosition ?? Vector3.Zero())
+    playerTransform.rotation = player?.absoluteRotationQuaternion ?? Quaternion.Identity()
   }
 
   // StaticEntities.CameraEntity
   {
+    const engineCamera = context.babylonScene.activeCamera
     const cameraTransform = Transform.getMutable(StaticEntities.CameraEntity)
 
     engineCamera?.getWorldMatrix().decompose(
