@@ -1,13 +1,9 @@
 import * as BABYLON from '@babylonjs/core'
 import { setupEnvironment } from './visual/ambientLights'
-import { initKeyboard } from './input'
 import { addGlowLayer } from './visual/glowLayer'
-import { PLAYER_HEIGHT } from './scene/logic/static-entities'
-import { addCrosshair } from './visual/reticle'
 import { pickPointerEventsMesh } from './scene/logic/pointer-events'
 import { AddButton, guiPanel } from './visual/ui'
 import '../misc/audio-debugger'
-import { engineInfoComponent } from '../decentraland/sdk-components/engine-info'
 
 export function isChrome() {
   return window.navigator.userAgent.includes('Chrome')

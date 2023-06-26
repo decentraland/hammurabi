@@ -45,7 +45,7 @@ export const colliderMaterial = memoize((scene: Scene) => {
 export function setColliderMask(mesh: AbstractMesh, layers: number) {
   (mesh as any)[colliderSymbol] = layers
 
-  if (mesh.name.endsWith('_collider')) {
+  if (mesh.name.toLowerCase().includes('_collider')) {
     mesh.material = colliderMaterial(mesh.getScene())
     addFloorMesh(mesh)
   }

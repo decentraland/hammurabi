@@ -1,11 +1,14 @@
 // Based on https://github.com/ssatguru/BabylonJS-CharacterController
 
-import { ArcRotateCamera, Scene, Vector3, AbstractMesh, CreateCapsule } from "@babylonjs/core"
-import { colliderMaterial } from "../scene/logic/colliders"
+import { ArcRotateCamera, Scene, Vector3, AbstractMesh, CreateCapsule, Ray, Matrix } from "@babylonjs/core"
+import { colliderMaterial, getColliderLayers } from "../scene/logic/colliders"
 import { DecentralandSystem } from "../../decentraland/system"
 import { PLAYER_HEIGHT } from "../scene/logic/static-entities"
 import { initKeyboard } from "../input"
 import { addCrosshair } from "../visual/reticle"
+import { ColliderLayer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen"
+import { getParentEntity } from "../scene/logic/pointer-events"
+import { BabylonEntity } from "../scene/BabylonEntity"
 
 export type CharacterStates = 'IDLE' | 'WALK' | 'JUMP' | 'FALL' | 'RUN'
 
@@ -34,7 +37,7 @@ export async function createCharacterControllerSystem(scene: Scene) {
 
 export class CharacterController implements DecentralandSystem {
   camera: ArcRotateCamera
-  gravity = 9.8
+  gravity = 5.8
   // slopeLimit in degrees
   minSlopeLimit = 30
   maxSlopeLimit = 45
@@ -59,11 +62,15 @@ export class CharacterController implements DecentralandSystem {
   inFreeFall = false
   moveVector = new Vector3()
 
+  groundingEntity: WeakRef<BabylonEntity> | null = null
+  groundingPointLocal = Vector3.Zero()
+  groundingPointGlobal = Vector3.Zero()
 
   // verical position of AV when it is about to start a jump
   jumpStartPosY = 0
   // for how long the AV has been in the jump
   jumpTime = 0
+  shouldGround: boolean = false
 
   constructor(public scene: Scene) {
     this.capsule = CreateCapsule("player", { height: PLAYER_HEIGHT, radius: 0.4 }, scene)
@@ -125,6 +132,9 @@ export class CharacterController implements DecentralandSystem {
   }
 
   update() {
+    // restore the flag, will be updated during this funcion call-tree
+    this.shouldGround = false
+
     this.animationStartPosition.copyFrom(this.capsule.position)
     const dt: number = this.scene.getEngine().getDeltaTime() / 1000
 
@@ -132,12 +142,16 @@ export class CharacterController implements DecentralandSystem {
       this.grounded = false
       this.idleFallTime = 0
       this.doJump(dt)
+      this.groundingEntity = null
     } else if (this.anyMovement() || this.inFreeFall) {
       this.grounded = false
       this.idleFallTime = 0
+      this.groundingEntity = null
       this.doMove(dt)
     } else if (!this.inFreeFall) {
       this.doIdle(dt)
+    } else {
+      console.log('invalid locomotion state')
     }
 
     // prevent precision errors with huge delta times and falling to the void
@@ -333,15 +347,86 @@ export class CharacterController implements DecentralandSystem {
 
   endFreeFall(): void {
     this.movFallTime = 0
-    this.inFreeFall = false
+    if (this.inFreeFall) {
+      this.inFreeFall = false
+      this.shouldGround = true
+    }
+  }
+
+  // this function records the ground position and ground entity so we can calculate the movement of moving platforms
+  recordGroundPosition() {
+    const pickInfo = this.scene.pickWithRay(new Ray(this.capsule.absolutePosition.subtractFromFloats(0, -0.3, 0), Vector3.Down(), PLAYER_HEIGHT * 1.1), (mesh) => {
+      if (getColliderLayers(mesh) & ColliderLayer.CL_PHYSICS) return true
+      return false
+    })
+
+    const entity = getParentEntity(pickInfo?.pickedMesh ?? null)
+
+    if (entity && pickInfo?.pickedPoint) {
+      this.groundingEntity = new WeakRef(entity)
+
+      this.groundingPointGlobal.copyFrom(pickInfo.pickedPoint)
+
+      // get the local coordinate of the hit point by inverting the world matrix of the entity
+      const invMatrix = new Matrix()
+      entity.computeWorldMatrix(true).invertToRef(invMatrix)
+
+      // and transforming the world position to local entity position
+      Vector3.TransformCoordinatesToRef(this.groundingPointGlobal, invMatrix, this.groundingPointLocal)
+      return entity
+    } else {
+      this.groundingEntity = null
+    }
+    return null
+  }
+
+
+  movingPlatformSystem = {
+    update() { },
+    lateUpdate: () => {
+      const entity = this.groundingEntity?.deref()
+
+      if (entity) {
+        // first transform the local grounding position to a global position
+        const newGlobalGroundingPoint = Vector3.TransformCoordinates(this.groundingPointLocal, entity.computeWorldMatrix(true))
+        // then calculate the movement vector
+        const direction = newGlobalGroundingPoint.subtract(this.groundingPointGlobal)
+        const distance = direction.length()
+
+        if (distance > 0.001) {
+          console.log(distance, direction)
+          this.capsule.moveWithCollisions(direction)
+          const originalGroundingPoint = this.groundingPointLocal.clone()
+          if (entity == this.recordGroundPosition()) {
+            // replace the global grounding point for the next frame
+            this.groundingPointGlobal.copyFrom(newGlobalGroundingPoint)
+            // and keep the original local point
+            this.groundingPointLocal.copyFrom(originalGroundingPoint)
+          }
+          return
+        } else if (distance > 5) {
+          this.unGroundIt()
+          return
+        }
+      }
+    }
+  }
+
+  lateUpdate(): void {
+    if (this.shouldGround) {
+      this.recordGroundPosition()
+    }
   }
 
   //for how long has the av been falling while idle (not moving)
   idleFallTime: number = 0
   doIdle(dt: number): void {
-    if (this.grounded) {
-      return
+    const entity = this.groundingEntity?.deref()
+
+    if (entity) {
+      return // this stage is performed at the end of the frame, after all scenes updated their entities' transforms
     }
+
     this.movFallTime = 0
 
     if (dt === 0) {
@@ -395,11 +480,14 @@ export class CharacterController implements DecentralandSystem {
     if (this.groundFrameCount > this.groundFrameMax) {
       this.grounded = true
       this.idleFallTime = 0
+      this.shouldGround = true
     }
   }
+
   unGroundIt() {
     this.grounded = false
     this.groundFrameCount = 0
+    this.groundingEntity = null
   }
 
   savedCameraCollision: boolean = true

@@ -135,7 +135,10 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
 
     // finally adjust the camera position based on obstructions or hide some elements
     // based on the same conditions
-    cameraObstructionSystem
+    cameraObstructionSystem,
+
+    // once all scenes updated their position
+    characterControllerSystem.movingPlatformSystem
   )
 
   // when the realm changes, we need to destroy extra scenes and load the new ones
