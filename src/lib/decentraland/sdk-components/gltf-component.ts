@@ -54,7 +54,7 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
         // setup colliders
         instanced.rootNodes.forEach(root => {
           for (const mesh of root.getChildMeshes(false)) {
-            if (mesh.name.endsWith('_collider')) {
+            if (mesh.name.includes('_collider')) {
               setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_INVISIBLE_COLLIDER_LAYERS)
             } else {
               setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_VISIBLE_COLLIDER_LAYERS)
@@ -84,7 +84,7 @@ export const gltfContainerComponent = declareComponentUsingProtobufJs(PBGltfCont
     // this condition is "set same value, didn't change .src"
     entity.appliedComponents.gltfContainer?.instancedEntries?.rootNodes.forEach(root => {
       for (const mesh of root.getChildMeshes(false)) {
-        if (mesh.name.endsWith('_collider')) {
+        if (mesh.name.includes('_collider')) {
           setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_INVISIBLE_COLLIDER_LAYERS)
         } else {
           setColliderMask(mesh, newValue.invisibleMeshesCollisionMask ?? DEFAULT_VISIBLE_COLLIDER_LAYERS)

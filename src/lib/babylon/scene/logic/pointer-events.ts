@@ -39,7 +39,8 @@ const hoverText = memoize((scene: Scene) => {
  * This function walks the parents of the provided searchEntity
  * @returns the first BabylonEntity it encounters
  */
-function getParentEntity(leafEntity: Node): BabylonEntity | null {
+export function getParentEntity(leafEntity: Node | null): BabylonEntity | null {
+  if (!leafEntity) return null
   // walk the parents until we find the searchEntity we are looking for
   let parent: Node | null = leafEntity
   if (leafEntity instanceof BabylonEntity) return leafEntity

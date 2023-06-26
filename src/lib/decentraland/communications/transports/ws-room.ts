@@ -6,7 +6,7 @@ import { Authenticator } from '@dcl/crypto'
 import mitt from 'mitt'
 import { wsAsAsyncChannel } from '../ws-async-channel'
 import { ExplorerIdentity } from '../../identity/types'
-import { CommsTransportEvents, MinimumCommunicationsTransport, SendHints } from '../types'
+import { commsLogger, CommsTransportEvents, MinimumCommunicationsTransport, SendHints } from '../types'
 import { Position } from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
 
 // shared writer to leverage pools
@@ -210,7 +210,7 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
             data: peerUpdateMessage.body
           })
         } else {
-          debugger
+          commsLogger.error('receiving information from unknown peer', peerUpdateMessage.fromAlias)
         }
         break
       }

@@ -179,7 +179,7 @@ function processAssetContainer(assetContainer: BABYLON.AssetContainer) {
       }
     }
 
-    if (mesh.name.endsWith('_collider')) {
+    if (mesh.name.includes('_collider')) {
       setColliderMask(mesh, ColliderLayer.CL_PHYSICS | ColliderLayer.CL_POINTER)
     } else {
       setColliderMask(mesh, ColliderLayer.CL_NONE)
