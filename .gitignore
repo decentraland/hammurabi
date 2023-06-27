@@ -43,3 +43,7 @@ testing-realm/**/*.js
 testing-realm/**/*.js.map
 
 src/explorer/avatar-scene.json
+tsconfig.tsbuildinfo
+example-scene/
+src/scene-info.json
+static/scene-info.json
