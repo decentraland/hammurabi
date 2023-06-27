@@ -1,15 +1,15 @@
 /**
- * This file implements a QuickJS runtime that runs in the context of a RpcClient.
- * It can run inside WebWorkers and the RPC will abstract all the communication with
- * the main thread. The @dcl/rpc module was designed with the performance considerations
- * of this application in mind.
- * 
- * Based on static service definitions (i.e. EngineApiServiceDefinition) the @dcl/rpc
- * framework tenerates asynchronous clients to communicate with the rpc counterpart.
+ * This file implements a QuickJS runtime that runs in the context of a
+ * RpcClient. It can run inside WebWorkers and the RPC will abstract all the
+ * communication with the main thread. The @dcl/rpc module was designed with the
+ * performance considerations of this application in mind. Based on static
+ * service definitions (i.e. EngineApiServiceDefinition) the @dcl/rpc framework
+ * generates asynchronous clients to communicate with the rpc server
+ * counterpart.
  */
 
 import { RpcClientPort } from '@dcl/rpc'
-import { withQuickJsVm } from '.'
+import { withQuickJsVm } from "./withQuickJsVm"
 import { loadModuleForPort } from '../common-runtime/modules'
 import { RpcSceneRuntimeOptions } from '../common-runtime/types'
 import { getStartupData } from '../common-runtime/startup'

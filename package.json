@@ -15,31 +15,32 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
-    "@dcl/rpc": "^1.1.3-20230519185613.commit-95da0ce",
-    "fp-future": "^1.0.1",
-    "protobufjs": "^7.2.3",
     "@babylonjs/core": "^6.4.1",
     "@babylonjs/gui": "^6.4.1",
     "@babylonjs/inspector": "^6.4.1",
     "@babylonjs/loaders": "^6.4.1",
-    "@babylonjs/materials": "^6.4.1"
+    "@babylonjs/materials": "^6.4.1",
+    "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
+    "@dcl/rpc": "^1.1.3-20230519185613.commit-95da0ce",
+    "fp-future": "^1.0.1",
+    "protobufjs": "^7.2.3"
   },
   "devDependencies": {
-    "@dcl/schemas": "^7.1.0",
-    "@dcl/protocol": "https://sdk-team-cdn.decentraland.org/@dcl/protocol/branch//dcl-protocol-1.0.0-5048640306.commit-9754317.tgz",
     "@dcl/crypto": "^3.4.1",
-    "jest": "^29.5.0",
+    "@dcl/protocol": "https://sdk-team-cdn.decentraland.org/@dcl/protocol/branch//dcl-protocol-1.0.0-5048640306.commit-9754317.tgz",
+    "@dcl/schemas": "^7.1.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
+    "esbuild": "^0.17.19",
+    "esbuild-plugin-external-global": "^1.0.1",
+    "jest": "^29.5.0",
     "livekit-client": "^1.9.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.4",
-    "xterm": "^5.1.0",
-    "esbuild": "^0.17.19"
+    "xterm": "^5.1.0"
   }
 }

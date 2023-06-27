@@ -7,7 +7,7 @@ import { MaybeUint8Array } from "./types"
  *
  * Then it disposes the QuickJSHandle
  */
-export function dumpAndDispose(vm: QuickJSContext, val: QuickJSHandle) {
+export function extractValueAndDispose(vm: QuickJSContext, val: QuickJSHandle) {
   const ret = vm.getProp(vm.global, 'isUint8Array').consume((fn) => vm.callFunction(fn, vm.global, val))
   const isUint8Array = vm.unwrapResult(ret).consume(vm.dump)
   if (isUint8Array) {
@@ -24,7 +24,7 @@ export function dumpAndDispose(vm: QuickJSContext, val: QuickJSHandle) {
 /**
  * This function converts a native JS type into a QuickJSHandle to be passed onto the VM
  */
-export function nativeToVmType(vm: QuickJSContext, value: any): QuickJSHandle {
+export function transferValueToVM(vm: QuickJSContext, value: any): QuickJSHandle {
   if (typeof value === 'number') return vm.newNumber(value)
   if (typeof value === 'string') return vm.newString(value)
   if (typeof value === 'boolean') return value ? vm.true : vm.false
@@ -37,8 +37,8 @@ export function nativeToVmType(vm: QuickJSContext, value: any): QuickJSHandle {
   if (value && typeof value === 'object' && typeof value.then === 'function' && typeof value.catch === 'function') {
     const promise = vm.newPromise()
     value
-      .then((result: any) => nativeToVmType(vm, result).consume(($) => promise.resolve($)))
-      .catch((error: any) => nativeToVmType(vm, error).consume(($) => promise.reject($)))
+      .then((result: any) => transferValueToVM(vm, result).consume(($) => promise.resolve($)))
+      .catch((error: any) => transferValueToVM(vm, error).consume(($) => promise.reject($)))
     // IMPORTANT: Once you resolve an async action inside QuickJS,
     // call runtime.executePendingJobs() to run any code that was
     // waiting on the promise or callback.
@@ -47,23 +47,23 @@ export function nativeToVmType(vm: QuickJSContext, value: any): QuickJSHandle {
   }
   if (typeof value === 'function') {
     return vm.newFunction('a', (...args) => {
-      const localArgs = args.map(($) => $.consume(($) => dumpAndDispose(vm, $)))
+      const localArgs = args.map(($) => $.consume(($) => extractValueAndDispose(vm, $)))
       const val = value(...localArgs)
 
-      return nativeToVmType(vm, val)
+      return transferValueToVM(vm, val)
     })
   }
   if (Array.isArray(value)) {
     const array = vm.newArray()
     for (let i = 0; i < value.length; i++) {
-      nativeToVmType(vm, value[i]).consume(($) => vm.setProp(array, i, $))
+      transferValueToVM(vm, value[i]).consume(($) => vm.setProp(array, i, $))
     }
     return array
   }
   if (typeof value === 'object') {
     const obj = vm.newObject()
     for (const key of Object.getOwnPropertyNames(value)) {
-      nativeToVmType(vm, value[key]).consume(($) => vm.setProp(obj, key, $))
+      transferValueToVM(vm, value[key]).consume(($) => vm.setProp(obj, key, $))
     }
     return obj
   }

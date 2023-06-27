@@ -1,3 +1,16 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "eslint.format.enable": true,
+  "eslint.options": {
+    "semi": false,
+    "singleQuote": true,
+  },
+  "typescript.format.semicolons": "remove",
+  "typescript.locale": "en",
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.defaultFormatter": "vscode.typescript-language-features",
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }

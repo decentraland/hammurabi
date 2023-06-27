@@ -1,0 +1,465 @@
+:root {
+  --nav-height: 46px;
+}
+
+html,
+body {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(ellipse at top, #303443, #181a21);
+  font-family: sans-serif;
+  color: #f0f0f0;
+}
+
+a,
+a:visited {
+  color: #5f83ff
+}
+
+nav {
+  width: 100%;
+  height: var(--nav-height);
+  display: flex;
+  background: #303443;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panels {
+  flex-direction: row;
+  display: flex;
+}
+
+.preview-iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+  background: #4b4852;
+  border-radius: 16px;
+}
+
+.small-button {
+  font-size: 13px;
+  height: auto;
+  min-width: auto;
+  border-radius: 5px;
+}
+
+.danger {
+  background-color: darkred;
+  color: white;
+  border-color: crimson;
+  box-shadow: 0 5px #450000;
+}
+
+.panel-left,
+.panel-right {
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  width: 40vw;
+  background: #4b4852;
+  border-radius: 16px;
+  margin: 18px;
+  padding: 16px 25px;
+}
+
+.realm-browser {
+  position: fixed;
+  background: #181a21;
+  width: calc(100vw - 24px);
+  left: 12px;
+  top: 45px;
+  overflow: scroll;
+  z-index: 9999999;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 4px 10px black;
+}
+
+.realm-browser>div {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+#loading>progress {
+  width: 90vw;
+  height: 32px;
+}
+
+.errors {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.errors .error {
+  margin: 8px 16px;
+  border: 1px solid red;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+  background: #a00;
+  box-shadow: 1px 1px 3px red;
+}
+
+.realm-browser>.selected {
+  background: red;
+}
+
+@media screen and (max-width: 600px) {
+  .panel-right {
+    display: none
+  }
+
+  .panel-left {
+    width: 80vw;
+  }
+}
+
+.panel-right {
+  text-align: left;
+  align-items: flex-start;
+  text-shadow: 1px 1px 0 #111;
+  overflow: scroll;
+  justify-content: flex-start;
+}
+
+.panel-left {
+  justify-content: stretch;
+}
+
+#realm-input {
+  flex: 1;
+  margin: 6px 11px;
+  border: 0;
+  border-radius: 4px;
+  background: #181a21;
+  color: #fff;
+  padding: 6px 11px;
+  font-size: 16px;
+}
+
+#renderCanvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  outline: none;
+}
+
+#mainContent {
+  height: calc(100vh - var(--nav-height))
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  display: none !important;
+}
+
+.xterm-viewport {
+  -ms-overflow-style: none !important;
+  /* IE and Edge */
+  scrollbar-width: none !important;
+  /* Firefox */
+}
+
+#mainContent>* {
+  position: absolute;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px;
+}
+
+.emptyState {
+  background: radial-gradient(ellipse at top, #303443, #181a21);
+}
+
+.canvasContainer {
+  padding: 0 !important;
+  flex-direction: inherit !important;
+  align-items: inherit !important;
+  justify-content: inherit !important;
+}
+
+.canvasContainer>div {
+  position: relative;
+}
+
+.voicechat {
+  display: flex;
+}
+
+.voicechat>select {
+  background: #181a21;
+  border: 1px solid #000;
+  margin: 6px 11px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.voicechat>button {
+  height: 29px;
+}
+
+#loading {
+  background: #16141a no-repeat center center url(images/teleport.gif);
+  justify-content: end !important;
+  z-index: 888888;
+}
+
+
+button {
+  background: #2a3a71;
+  border: 1px solid #002542;
+  margin: 6px 11px;
+  color: #fff;
+  box-sizing: border-box;
+  min-width: 200px;
+  height: 46px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 9px;
+  box-shadow: 0 5px #002542;
+  cursor: pointer;
+}
+
+.ui {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100vh;
+}
+
+button.primary {
+  background: #5f83ff;
+  border: 1px solid #00569a;
+  box-shadow: 0 5px #00569a;
+}
+
+.console {
+  position: absolute !important;
+  left: 0;
+  width: 800px;
+  bottom: 0;
+  z-index: 888888;
+  pointer-events: none;
+}
+
+.console>.xterm {
+  box-sizing: border-box;
+  bottom: 74px;
+  pointer-events: none;
+  margin: 0px 16px;
+}
+
+.chatHistory {
+  padding: 10px;
+}
+
+.chatHistory>div {
+  font-family: "arial";
+  white-space: pre;
+  font-weight: bold;
+  color: #cccccc;
+  text-rendering: geometricPrecision;
+  font-size: 16px;
+  text-shadow: 1px 1px 0px black;
+}
+
+.chatHistory .name {
+  text-decoration: underline;
+}
+
+.chatInput {
+  width: 766px;
+  position: absolute;
+  left: 0;
+  z-index: 888888;
+  display: block;
+  font-family: arial;
+  font-weight: bold;
+  font-size: 16px;
+  color: #cccccc;
+  border-width: 0;
+  background: rgba(0, 0, 0, 0.10);
+  outline: none !important;
+  box-shadow: none !important;
+  bottom: 0;
+  margin: 16px;
+  box-sizing: border-box;
+  padding: 11px 17px;
+  border-radius: 34px;
+}
+
+.chatInput:valid {
+  pointer-events: all;
+  background: rgba(0, 0, 0, 0.1);
+  text-shadow: 1px 1px 0px black;
+}
+
+.chatInput:focus {
+  pointer-events: all;
+  background: rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 0px black;
+}
+
+/**
+      *  Default styles for xterm.js
+      */
+
+.xterm {
+  font-feature-settings: "liga" 0;
+  position: relative;
+  user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+}
+
+.xterm.focus,
+.xterm:focus {
+  outline: none;
+}
+
+.xterm .xterm-helpers {
+  position: absolute;
+  top: 0;
+  /**
+    * The z-index of the helpers must be higher than the canvases in order for
+    * IMEs to appear on top.
+    */
+  z-index: 10;
+}
+
+.xterm .xterm-helper-textarea {
+  /*
+        * HACK: to fix IE's blinking cursor
+        * Move textarea out of the screen to the far left, so that the cursor is not visible.
+        */
+  position: absolute;
+  opacity: 0;
+  left: -9999em;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: -10;
+  /** Prevent wrapping so the IME appears against the textarea at the correct position */
+  white-space: nowrap;
+  overflow: hidden;
+  resize: none;
+}
+
+.xterm .composition-view {
+  /* TODO: Composition position got messed up somewhere */
+  /* background: #000; */
+  color: #fff;
+  display: none;
+  position: absolute;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.xterm .composition-view.active {
+  display: block;
+}
+
+.xterm .xterm-viewport {
+  /* On OS X this is required in order for the scroll bar to appear fully opaque */
+  /* background-color: #000; */
+  overflow-y: scroll;
+  cursor: default;
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.xterm .xterm-screen {
+  position: relative;
+}
+
+.xterm .xterm-screen canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.xterm .xterm-scroll-area {
+  visibility: hidden;
+}
+
+.xterm-char-measure-element {
+  display: inline-block;
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: -9999em;
+  line-height: normal;
+}
+
+.xterm {
+  cursor: text;
+}
+
+.xterm.enable-mouse-events {
+  /* When mouse events are enabled (eg. tmux), revert to the standard pointer cursor */
+  cursor: default;
+}
+
+.xterm.xterm-cursor-pointer {
+  cursor: pointer;
+}
+
+.xterm.column-select.focus {
+  /* Column selection mode */
+  cursor: crosshair;
+}
+
+.xterm .xterm-accessibility,
+.xterm .xterm-message {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+  color: transparent;
+}
+
+.xterm .live-region {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.xterm-dim {
+  opacity: 0.5;
+}
+
+.xterm-underline {
+  text-decoration: underline;
+}

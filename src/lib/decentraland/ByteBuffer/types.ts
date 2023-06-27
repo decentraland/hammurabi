@@ -1,7 +1,8 @@
 /**
- * Implementation of read-write ByteBuffer with independent read and write heads.
- * Exposes methods to read and write a variety of different lengths of integers
- * and buffers. Each write moves the write head, and each read does the same.
+ * Implementation of read-write ByteBuffer with independent read and write
+ * heads. Exposes methods to read and write a variety of different lengths of
+ * integers and buffers. Each write moves the write head, and each read does the
+ * same.
  * 
  * @public
  */

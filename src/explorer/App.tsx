@@ -1,11 +1,11 @@
 import React from 'react'
-import { createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client'
 import { Renderer } from './Renderer'
 import { useAtom } from '../lib/misc/atom'
 import { currentRealm, loadingState, realmErrors, userDidInteract, userIdentity } from './state'
 import { NavBar } from './Nav'
-import { Login } from './Login';
-import { EmptyState } from './EmptyState';
+import { Login } from './Login'
+import { EmptyState } from './EmptyState'
 
 const RealmErrors: React.FC = () => {
   const errors = useAtom(realmErrors)

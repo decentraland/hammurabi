@@ -1,11 +1,12 @@
 /**
- * This file implements a sandboxed runtime that runs in the context of a RpcClient.
- * It can run inside WebWorkers and the RPC will abstract all the communication with
- * the main thread. The @dcl/rpc module was designed with the performance considerations
- * of this application in mind.
+ * This file implements a sandboxed runtime that runs in the context of a
+ * RpcClient. It can run inside WebWorkers and the RPC will abstract all the
+ * communication with the main thread. The @dcl/rpc module was designed with
+ * the performance considerations of this application in mind.
  * 
- * Based on static service definitions (i.e. EngineApiServiceDefinition) the @dcl/rpc
- * framework tenerates asynchronous clients to communicate with the rpc counterpart.
+ * Based on static service definitions (i.e. EngineApiServiceDefinition) the
+ * @dcl/rpc framework tenerates asynchronous clients to communicate with the
+ * rpc server counterpart.
  */
 
 import { RpcClientPort } from '@dcl/rpc'

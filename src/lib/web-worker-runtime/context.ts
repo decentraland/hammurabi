@@ -91,7 +91,7 @@ export function createModuleRuntime(
           await module.exports.onStart()
         } catch (err: any) {
           console.error(err)
-          console.error('⚠️⚠️⚠️⚠️ THE SCENE HAS SUFFERED AN ERROR AND WILL NOW BE TERMINATED ⚠️⚠️⚠️⚠️')
+          console.error('⚠️⚠️️⚠️ THE SCENE HALTED ON AN ERROR AND WILL BE TERMINATED ⚠️️⚠️⚠️')
           throw err
         }
       }
@@ -103,7 +103,7 @@ export function createModuleRuntime(
           await module.exports.onUpdate(deltaTime)
         } catch (err) {
           console.error(err)
-          console.error('⚠️⚠️⚠️⚠️ THE SCENE HAS SUFFERED AN ERROR AND WILL NOW BE TERMINATED ⚠️⚠️⚠️⚠️')
+          console.error('⚠️⚠️️⚠️ THE SCENE HALTED ON AN ERROR AND WILL BE TERMINATED ⚠️️⚠️⚠️')
           throw err
         }
       }

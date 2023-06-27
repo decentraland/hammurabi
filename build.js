@@ -3,6 +3,8 @@
 const esbuild = require('esbuild')
 const child_process = require('child_process')
 const { future } = require('fp-future')
+const { externalGlobalPlugin } = require('esbuild-plugin-external-global')
+
 
 const WATCH_MODE = process.argv.includes('--watch')
 const PRODUCTION = process.argv.includes('--production')
@@ -36,8 +38,23 @@ async function buildBundle(entryPoint, output) {
     outfile: output,
     sourcemap: process.env.NO_SOURCEMAP ? undefined : 'linked',
     minify: PRODUCTION,
+    external: [
+      'react', 'react-dom', 'react-dom/client',
+      '@babylonjs/core', '@babylonjs/inspector', '@babylonjs/materials', '@babylonjs/loaders', '@babylonjs/gui'
+    ],
     plugins: [
-      nodeBuiltIns()
+      nodeBuiltIns(),
+      externalGlobalPlugin({
+        'react': 'window.React',
+        'react-dom': 'window.ReactDOM',
+        'react-dom/client': 'window.ReactDOM',
+        '@babylonjs/core': 'window.BABYLON',
+        '@babylonjs/inspector': 'window.BABYLON.Inspector',
+        '@babylonjs/materials': 'window.BABYLON',
+        '@babylonjs/loaders/glTF/glTFFileLoader': 'window.BABYLON',
+        '@babylonjs/loaders/glTF/2.0': 'window.BABYLON.GLTF2',
+        '@babylonjs/gui': 'window.BABYLON.GUI',
+      })
     ]
   })
 
