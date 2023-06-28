@@ -11,6 +11,9 @@
 # testing
 /coverage
 
+# build
+tsconfig.tsbuildinfo
+
 # production
 /build
 
