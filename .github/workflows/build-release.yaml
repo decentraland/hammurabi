@@ -13,6 +13,8 @@ jobs:
         with:
           node-version: 18.x
           cache: 'npm'
+      - name: Setup
+        run: echo "DCL_DISABLE_ANALYTICS=true" > /home/runner/.dclrc
       - name: Install
         run: make install
       - name: Build
