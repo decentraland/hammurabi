@@ -26,7 +26,9 @@ export function addChat(canvas: HTMLCanvasElement) {
   term.resize(80, 25)
 
   const parent = document.createElement("div")
+  parent.id = "console"
   const chatInputElement = document.createElement("input")
+  parent.appendChild(chatInputElement)
 
   const chatCommands: { [key: string]: IChatCommand } = {}
 
@@ -136,8 +138,6 @@ export function addChat(canvas: HTMLCanvasElement) {
 
   term.open(parent)
   // term.on("focus", () => term!.blur());
-
-  canvas.parentElement!.appendChild(chatInputElement)
 
   body.addEventListener(
     "wheel",

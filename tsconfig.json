@@ -6,7 +6,6 @@
     "declarationMap": true, /* Generates a sourcemap for each corresponding '.d.ts' file. */
     "sourceMap": true, /* Generates corresponding '.map' file. */
     "useDefineForClassFields": false, /* Emit a class-level 'define' function instead of individual '_defineProperty' calls. */
-    "extendedDiagnostics": true,
     "types": [],
     "lib": [
       "ES2022",

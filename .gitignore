@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 **/node_modules
+/static/vendor
 
 /.pnp
 .pnp.js
@@ -13,6 +14,7 @@
 
 # build
 tsconfig.tsbuildinfo
+build-log.txt
 
 # production
 /build

@@ -1,5 +1,30 @@
+/**
+ * Please use these colors throughout the app. The 'variation' value is
+ * optional in the naming pattern:
+ * --[variation]-[name]-color
+ *
+ * See also:
+ * https://docs.google.com/presentation/d/1L_Mw8RQPN8hv58AaPTEBaVCLOjpkoKESLj5xvp4qULI/edit#slide=id.g602b52e41a_0_72
+ */
+:root {
+  --black-color: #161518;
+  --dark-grey-color: #37333d;
+  --grey-color: #736e7d;
+  --light-grey-color: #f3f2f5;
+  --white-color: #fafafa;
+  --opaque-orange-color: #fc996e;
+  --orange-color: #ff7439;
+  --opaque-red-color: #ff5373;
+  --red-color: #ff2d5e;
+  --light-purple-color: #c640cd;
+  --purple-color: #a524b3;
+  --dark-purple-color: #691fa9;
+}
 :root {
   --nav-height: 46px;
+  --main-text-color: var(--white-color);
+  --background-color: var(--black-color);
+  --background-color-secondary: var(--dark-grey-color);
 }
 
 html,
@@ -9,21 +34,21 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: radial-gradient(ellipse at top, #303443, #181a21);
+  background: radial-gradient(ellipse at top, var(--background-color-secondary), var(--background-color));
   font-family: sans-serif;
-  color: #f0f0f0;
+  color: var(--main-text-color);
 }
 
 a,
 a:visited {
-  color: #5f83ff
+  color: var(--red-color);
 }
 
 nav {
   width: 100%;
   height: var(--nav-height);
   display: flex;
-  background: #303443;
+  background: var(--background-color-secondary);
 }
 
 #root {
@@ -78,9 +103,22 @@ nav {
   padding: 16px 25px;
 }
 
+::-webkit-scrollbar {
+  width: 12px; /* width of the entire scrollbar */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+::-webkit-scrollbar-track {
+  background: var(--grey-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--light-grey-color);
+}
+
 .realm-browser {
   position: fixed;
-  background: #181a21;
+  background: var(--black-color);
   width: calc(100vw - 24px);
   left: 12px;
   top: 45px;
@@ -88,7 +126,6 @@ nav {
   z-index: 9999999;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  box-shadow: 0 4px 10px black;
 }
 
 .realm-browser>div {
@@ -99,6 +136,27 @@ nav {
 #loading>progress {
   width: 90vw;
   height: 32px;
+}
+
+#loader-base {
+  width: 80%;
+  margin: auto;
+    margin-top: auto;
+  position: relative;
+  margin-top: 16.6%;
+}
+#loader-text {
+  margin-bottom: 2em;
+  text-align: center;
+}
+#loader-indicator {
+  height: 20px;
+  background: linear-gradient(to right, var(--red-color), var(--orange-color));
+  border-radius: 8px;
+  -webkit-transition : width 1s ease;
+     -moz-transition : width 1s ease;
+       -o-transition : width 1s ease;
+          transition : width 1s ease;
 }
 
 .errors {
@@ -260,6 +318,7 @@ button.primary {
 
 .console {
   position: absolute !important;
+  display: none;
   left: 0;
   width: 800px;
   bottom: 0;
