@@ -8,10 +8,12 @@ install: node_modules testing-realm/node_modules 2&>> build-log.txt
 CF_PAGES_URL ?= http://localhost:8099
 
 node_modules: package-lock.json package.json
-	@npm install 2&>> build-log.txt
+	@echo "~ Installing dependencies..."
+	@npm install 2&> build-log.txt
 
 testing-realm/node_modules: testing-realm/package-lock.json testing-realm/package.json
-	@cd testing-realm; npm install 2&>> build-log.txt
+	@echo "~ Installing dependencies for scenes..."
+	@cd testing-realm; npm install 2&> build-log.txt
 
 test:
 	@echo "~ Running tests..."
@@ -25,23 +27,24 @@ test-watch:
 	@node_modules/.bin/jest --detectOpenHandles --colors --runInBand --watch $(TESTARGS)
 
 build-testing-realm: testing-realm/node_modules avatars-scene
+	@echo "~ Building test scenes..."
 	@cd testing-realm; \
 		node_modules/.bin/sdk-commands export-static \
 			--destination ../static/ipfs \
 			--realmName testing-realm \
 			--timestamp 1683892881318 \
 			--commsAdapter ws-room:ws-room-service.decentraland.org/rooms/hammurabi \
-			--baseUrl=$(CF_PAGES_URL)/ipfs
+			--baseUrl=$(CF_PAGES_URL)/ipfs 2&> build-log.txt
 
 avatars-scene: testing-realm/node_modules
-	@cd testing-realm/avatars-scene; \
-		npm run build
+	@echo "~ Building avatar scenes..."
+	@cd testing-realm/avatars-scene; npm run build 2&> build-log.txt
 	@cd testing-realm/avatars-scene; \
 		../node_modules/.bin/sdk-commands export-static \
 			--destination ../../static/ipfs \
 			--timestamp 1683892881318 \
 			--json > ../../src/explorer/avatar-scene.json \
-			--baseUrl=$(CF_PAGES_URL)/ipfs
+			--baseUrl=$(CF_PAGES_URL)/ipfs 2&> build-log.txt
 
 sdk-watch: testing-realm/node_modules
 	@cd testing-realm; npm run start
