@@ -5,11 +5,6 @@ export const libs = [
         "src": "https://cdn.jsdelivr.net/npm/livekit-client@1.11.4/dist/livekit-client.umd.js"
     },
     {
-        "name": "ajv",
-        "progress": 6,
-        "src": "https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv2020.bundle.js"
-    },
-    {
         "name": "BabylonJS",
         "progress": 10,
         "src": "https://cdn.babylonjs.com/babylon.max.js"
@@ -57,7 +52,7 @@ export const libs = [
     }
 ]
 window.addEventListener('load', function () {
-    const USE_CUSTOM_VENDOR_PATH = null // 'http://localhost:8098'
+    const USE_CUSTOM_VENDOR_PATH = '/static/vendor'
     const loaderText = document.getElementById("loader-text")!
     const loaderProgress = document.getElementById("loader-indicator")!
     const loaderBase = document.getElementById("loader-base")!

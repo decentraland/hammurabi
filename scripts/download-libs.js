@@ -1,21 +1,12 @@
-const urls = [
-  "https://cdn.babylonjs.com/babylon.max.js",
-  "https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.js",
-  "https://cdn.babylonjs.com/loaders/babylonjs.loaders.js",
-  "https://cdn.babylonjs.com/gui/babylon.gui.js",
-  "https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.max.js",
-  "https://unpkg.com/react/umd/react.development.js",
-  "https://unpkg.com/react-dom/umd/react-dom.development.js",
-  "https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.js",
-  "https://cdn.jsdelivr.net/npm/protobufjs@7.2.4/dist/protobuf.js",
-]
-
 const fs = require("fs")
 const path = require("path")
 
 ;(async function download() {
+    const bootstrap = fs.readFileSync(path.join(__dirname, "../src/explorer/bootstrap.ts"), "utf-8") 
+    const urls = bootstrap.match(/https:\/\/[^\s"']+/g)
     fs.mkdirSync(path.join(__dirname, "../static/vendor"), { recursive: true, force: true })
-    for (const url of urls) {
+    for (const _url of urls) {
+        const url = _url.slice(0, _url.length - 1)
         const filename = path.basename(url)
         if (fs.existsSync(path.join(__dirname, "../static/vendor", filename))) {
             console.log(`Skipping ${url} (already exists on ./static/vendor)`)

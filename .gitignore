@@ -4,6 +4,7 @@
 /node_modules
 **/node_modules
 /static/vendor
+**/install-log.txt
 
 /.pnp
 .pnp.js
