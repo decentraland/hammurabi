@@ -46,14 +46,18 @@ avatars-scene: testing-realm/node_modules
 sdk-watch: testing-realm/node_modules
 	@cd testing-realm; npm run start
 
-build: node_modules build-testing-realm
+src/explorer/dependencies.ts: src/**/*.ts
+	@echo "~ Analyzing first party dependencies..."
+	@bash scripts/build-first-party-deps.sh
+
+build: node_modules build-testing-realm src/explorer/dependencies.ts
 	@echo "~ Running build..."
 	@node ./build.js --production
 	@echo "~ Typechecking tests..."
 	@node_modules/.bin/tsc --project test/tsconfig.json
 	@echo "Build finished"
 
-start: build-testing-realm
+start: node_modules build-testing-realm src/explorer/dependencies.ts
 	@node ./build.js --watch
 
 .PHONY: build test

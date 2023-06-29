@@ -30,32 +30,35 @@ const nodeBuiltIns = () => {
   }
 }
 
-async function buildBundle(entryPoint, output) {
+const externals = {
+  'react': 'window.React',
+  'react-dom': 'window.ReactDOM',
+  'react-dom/client': 'window.ReactDOM',
+  'xterm': '{ Terminal: window.Terminal }',
+  'livekit-client': 'window.LivekitClient',
+  '@babylonjs/core': 'window.BABYLON',
+  '@babylonjs/inspector': 'window.BABYLON.Inspector',
+  '@babylonjs/materials': 'window.BABYLON',
+  '@babylonjs/loaders/glTF/glTFFileLoader': 'window.BABYLON',
+  '@babylonjs/loaders/glTF/2.0': 'window.BABYLON.GLTF2',
+  '@babylonjs/gui': 'window.BABYLON.GUI',
+}
+
+async function buildBundle(entryPoints, output, options = { isWorker: false}) {
   const context = await esbuild.context({
-    entryPoints: [entryPoint],
+    entryPoints: entryPoints,
     bundle: true,
     platform: 'browser',
-    outfile: output,
-    sourcemap: process.env.NO_SOURCEMAP ? undefined : 'linked',
+    format: options.isWorker ? undefined : 'esm',
+    outdir: options.isWorker ? undefined : output,
+    outfile: options.isWorker ? output : undefined,
+    sourcemap: 'linked',
     minify: PRODUCTION,
-    external: [
-      'react', 'react-dom', 'react-dom/client', 'xterm',
-      '@babylonjs/core', '@babylonjs/inspector', '@babylonjs/materials', '@babylonjs/loaders', '@babylonjs/gui'
-    ],
+    splitting: !options.isWorker,
+    external: Object.keys(externals),
     plugins: [
       nodeBuiltIns(),
-      externalGlobalPlugin({
-        'react': 'window.React',
-        'react-dom': 'window.ReactDOM',
-        'react-dom/client': 'window.ReactDOM',
-        'xterm': '{ Terminal: window.Terminal }',
-        '@babylonjs/core': 'window.BABYLON',
-        '@babylonjs/inspector': 'window.BABYLON.Inspector',
-        '@babylonjs/materials': 'window.BABYLON',
-        '@babylonjs/loaders/glTF/glTFFileLoader': 'window.BABYLON',
-        '@babylonjs/loaders/glTF/2.0': 'window.BABYLON.GLTF2',
-        '@babylonjs/gui': 'window.BABYLON.GUI',
-      })
+      externalGlobalPlugin(externals)
     ]
   })
 
@@ -71,13 +74,19 @@ async function buildBundle(entryPoint, output) {
 }
 
 async function main() {
-  const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
-
-  const ctxMain = await buildBundle('src/explorer/index.ts', 'static/js/bundle.js')
-  const bootstrap = await buildBundle('src/explorer/bootstrap.ts', 'static/js/bootstrap.js')
+  const workerCtx = await buildBundle(
+    ['src/runtime/index.ts'],
+    'static/js/scene-runtime.worker.js',
+    { isWorker: true }
+  )
+  const ctx = await buildBundle([
+    'src/explorer/index.ts',
+    'src/explorer/bootstrap.ts',
+    'src/explorer/dependencies.ts',
+  ], 'static/js')
 
   if (WATCH_MODE) {
-    let { host, port } = await ctxMain.serve({
+    let { host, port } = await ctx.serve({
       servedir: 'static',
       port: 8099
     })

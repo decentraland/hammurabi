@@ -15,6 +15,7 @@
 # build
 tsconfig.tsbuildinfo
 build-log.txt
+src/explorer/dependencies.ts
 
 # production
 /build
