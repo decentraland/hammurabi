@@ -48,7 +48,7 @@ async function buildBundle(entryPoint, output) {
         'react': 'window.React',
         'react-dom': 'window.ReactDOM',
         'react-dom/client': 'window.ReactDOM',
-        'xterm': 'window.Terminal',
+        'xterm': '{ Terminal: window.Terminal }',
         '@babylonjs/core': 'window.BABYLON',
         '@babylonjs/inspector': 'window.BABYLON.Inspector',
         '@babylonjs/materials': 'window.BABYLON',
@@ -74,6 +74,7 @@ async function main() {
   const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
 
   const ctxMain = await buildBundle('src/explorer/index.ts', 'static/js/bundle.js')
+  const bootstrap = await buildBundle('src/explorer/bootstrap.ts', 'static/js/bootstrap.js')
 
   if (WATCH_MODE) {
     let { host, port } = await ctxMain.serve({

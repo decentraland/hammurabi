@@ -12,8 +12,9 @@ interface IChatCommand {
 
 export function addChat(canvas: HTMLCanvasElement) {
   const body = document.getElementsByTagName("body")[0]
-  const ENTER = 13
-  const ESCAPE = 27
+  const ENTER = "Enter"
+  const ESCAPE = "Escape"
+  const TILDE = "`"
   const term = new Terminal({
     disableStdin: true,
     allowTransparency: true,
@@ -42,8 +43,7 @@ export function addChat(canvas: HTMLCanvasElement) {
 
   chatInputElement.addEventListener("keydown", function (event) {
     const message = chatInputElement.value
-
-    if (event.which === ENTER) {
+    if (event.code === ENTER) {
       if (message.length > 0) {
         // Check if message is a command
         if (message[0] === "/") {
@@ -63,9 +63,23 @@ export function addChat(canvas: HTMLCanvasElement) {
       hideChat()
       chatInputElement.value = ""
       event.stopPropagation()
-    } else if (event.which === ESCAPE) {
+    } else if (event.key === ESCAPE) {
       hideChat()
       event.stopPropagation()
+    }
+  })
+
+  window.addEventListener('keydown', (event) => {
+    console.log(event.key)
+    if (event.key === TILDE) {
+      event.stopPropagation()
+      if (parent.style.display === "block") {
+        hideChat()
+        parent.style.display = "none"
+      } else {
+        parent.style.display = "block"
+        showChatInput()
+      }
     }
   })
 

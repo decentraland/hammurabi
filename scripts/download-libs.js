@@ -6,7 +6,8 @@ const urls = [
   "https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.max.js",
   "https://unpkg.com/react/umd/react.development.js",
   "https://unpkg.com/react-dom/umd/react-dom.development.js",
-  "https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.js"
+  "https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.js",
+  "https://cdn.jsdelivr.net/npm/protobufjs@7.2.4/dist/protobuf.js",
 ]
 
 const fs = require("fs")
