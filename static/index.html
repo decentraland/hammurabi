@@ -7,7 +7,7 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <meta name="theme-color" content="#000000" />
     <link rel="stylesheet" href="styles/index.css" />
-    <link rel="preload" href="images/teleport.gif" as="image" />
+    <link rel="preload prefetch" href="images/teleport.gif" as="image" />
   </head>
   <body>
     <audio autoplay id="voice-chat-audio"></audio>
@@ -18,7 +18,7 @@
     </div>
     <script type="text/javascript">
       ;window.addEventListener('load', function() {
-        // const USE_CUSTOM_VENDOR_PATH = 'http://localhost:8098'
+        const USE_CUSTOM_VENDOR_PATH = 'http://localhost:8098'
         const libs = [
           { "name": "BabylonJS", "progress": 5, "src": "https://cdn.babylonjs.com/babylon.max.js" },
           { "name": "BabylonJS Materials library", "progress": 15, "src": "https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.js" },
@@ -27,7 +27,8 @@
           { "name": "BabylonJS Inspector", "progress": 40, "src": "https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.max.js" },
           { "name": "React", "progress": 50, "src": "https://unpkg.com/react/umd/react.development.js" },
           { "name": "ReactDOM", "progress": 65, "src": "https://unpkg.com/react-dom/umd/react-dom.development.js" },
-          { "name": "Hammurabi", "progress": 70, "src": "js/bundle.js" }
+          { "name": "xterm.js", "progress": 70, "src": "https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.js", },
+          { "name": "Hammurabi", "progress": 75, "src": "js/bundle.js" }
         ];
         function load() {
           const lib = libs[0]
@@ -47,6 +48,10 @@
             } else {
               document.getElementById('loader-base').style.display = 'none'
             }
+          }
+          script.onerror = function() {
+            document.getElementById('loader-text').innerText = 'Failed to load ' + lib.name
+            document.getElementById('loader-indicator').style.width = '0%'
           }
           document.querySelector('body').appendChild(script)
         }

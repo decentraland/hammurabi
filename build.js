@@ -39,7 +39,7 @@ async function buildBundle(entryPoint, output) {
     sourcemap: process.env.NO_SOURCEMAP ? undefined : 'linked',
     minify: PRODUCTION,
     external: [
-      'react', 'react-dom', 'react-dom/client',
+      'react', 'react-dom', 'react-dom/client', 'xterm',
       '@babylonjs/core', '@babylonjs/inspector', '@babylonjs/materials', '@babylonjs/loaders', '@babylonjs/gui'
     ],
     plugins: [
@@ -48,6 +48,7 @@ async function buildBundle(entryPoint, output) {
         'react': 'window.React',
         'react-dom': 'window.ReactDOM',
         'react-dom/client': 'window.ReactDOM',
+        'xterm': 'window.Terminal',
         '@babylonjs/core': 'window.BABYLON',
         '@babylonjs/inspector': 'window.BABYLON.Inspector',
         '@babylonjs/materials': 'window.BABYLON',
