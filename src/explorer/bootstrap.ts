@@ -52,7 +52,7 @@ export const libs = [
     }
 ]
 window.addEventListener('load', function () {
-    const USE_CUSTOM_VENDOR_PATH = '/static/vendor'
+    const USE_CUSTOM_VENDOR_PATH = '/vendor'
     const loaderText = document.getElementById("loader-text")!
     const loaderProgress = document.getElementById("loader-indicator")!
     const loaderBase = document.getElementById("loader-base")!

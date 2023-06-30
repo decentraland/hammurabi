@@ -37,6 +37,7 @@ import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-s
 import { delayedInterpolationComponent } from '../../decentraland/sdk-components/delayed-interpolation'
 import { tweenComponent } from '../../decentraland/sdk-components/tween'
 import { materialComponent } from '../../decentraland/sdk-components/material-component'
+import { ContentAndHash } from './ContentAndHash'
 
 const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
 
@@ -412,11 +413,9 @@ export class SceneContext implements EngineApiInterface {
   }
 
   // impl RuntimeApi {
-  async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
+  async readFile(file: string): Promise<ContentAndHash> {
     return this.assetManager.readFile(file)
   }
-  // }
-
 
   // returns a future that will be resolved when the next frame is processed
   async nextTick() {

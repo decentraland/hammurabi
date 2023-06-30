@@ -61,14 +61,18 @@ src/explorer/dependencies.ts: src/lib/**/*ts
 	@bash scripts/build-first-party-deps.sh
 	@echo "~ First party dependencies file 'src/explorer/dependencies.ts' updated."
 
-build: node_modules build-testing-realm src/explorer/dependencies.ts
+build: node_modules build-testing-realm static/vendor src/explorer/dependencies.ts
 	@echo "~ Running build..."
 	@node ./build.js --production
 	@echo "~ Typechecking tests..."
 	@node_modules/.bin/tsc --project test/tsconfig.json
 	@echo "Build finished"
 
-start: node_modules build-testing-realm src/explorer/dependencies.ts
+static/vendor: src/explorer/bootstrap.ts
+	@echo "~ Building vendor..."
+	@node scripts/download-libs.js
+
+start: node_modules build-testing-realm static/vendor src/explorer/dependencies.ts
 	@node ./build.js --watch
 
 .PHONY: build test install start sdk-watch build-testing-realm update-snapshots test-watch 

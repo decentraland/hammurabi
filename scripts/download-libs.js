@@ -5,8 +5,7 @@ const path = require("path")
     const bootstrap = fs.readFileSync(path.join(__dirname, "../src/explorer/bootstrap.ts"), "utf-8") 
     const urls = bootstrap.match(/https:\/\/[^\s"']+/g)
     fs.mkdirSync(path.join(__dirname, "../static/vendor"), { recursive: true, force: true })
-    for (const _url of urls) {
-        const url = _url.slice(0, _url.length - 1)
+    for (const url of urls) {
         const filename = path.basename(url)
         if (fs.existsSync(path.join(__dirname, "../static/vendor", filename))) {
             console.log(`Skipping ${url} (already exists on ./static/vendor)`)
