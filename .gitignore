@@ -3,6 +3,8 @@
 # dependencies
 /node_modules
 **/node_modules
+/static/vendor
+**/install-log.txt
 
 /.pnp
 .pnp.js
@@ -10,6 +12,11 @@
 
 # testing
 /coverage
+
+# build
+tsconfig.tsbuildinfo
+build-log.txt
+src/explorer/dependencies.ts
 
 # production
 /build
@@ -38,3 +45,7 @@ testing-realm/**/*.js
 testing-realm/**/*.js.map
 
 src/explorer/avatar-scene.json
+tsconfig.tsbuildinfo
+example-scene/
+src/scene-info.json
+static/scene-info.json

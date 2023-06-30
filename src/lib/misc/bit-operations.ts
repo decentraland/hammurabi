@@ -1,10 +1,10 @@
 
-// returns true if value contains all bits turned on
-export function bitIntersectsAndContainsAll(value: number, bits: number) {
-  return (value & bits) === bits
+// returns true if value has all the bits of the "checkMask" turned on
+export function bitIntersectsAndContainsAll(value: number, checkMask: number) {
+  return (value & checkMask) === checkMask
 }
 
-// returns true if value contains any of bits are turned on
-export function bitIntersectsAndContainsAny(value: number, bits: number) {
-  return (value & bits) !== 0
+// returns true if any of the bits in the "checkMask" are turned on
+export function bitIntersectsAndContainsAny(value: number, checkMask: number) {
+  return (value & checkMask) !== 0
 }

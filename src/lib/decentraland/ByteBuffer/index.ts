@@ -6,10 +6,12 @@ const defaultInitialCapacity = 10240
 
 /**
  * ByteBuffer is a wrapper of DataView which also adds a read and write offset.
- *  Also in a write operation it resizes the buffer is being used if it needs.
+ * Additionally, in a write operation it might resize the buffer that is being
+ * used if required.
  *
  * - Use read and write function to generate or consume data.
- * - Use set and get only if you are sure that you're doing.
+ * - `get` and `set` should only be used under special circumstances; it's a
+ * dangerous operation given that the buffer might have dirty values.
  */
 export class ReadWriteByteBuffer implements ByteBuffer {
   #buffer: Uint8Array
@@ -29,7 +31,7 @@ export class ReadWriteByteBuffer implements ByteBuffer {
   }
 
   /**
-   * Increement the write offset and resize the buffer if it needs.
+   * Increment the write offset and resize the buffer if needed.
    */
   #woAdd(amount: number) {
     if (this.woffset + amount > this.#buffer.byteLength) {
@@ -46,8 +48,8 @@ export class ReadWriteByteBuffer implements ByteBuffer {
   }
 
   /**
-   * Increment the read offset and throw an error if it's trying to read
-   *  outside the bounds.
+   * Increment the read offset and throw an error if the operation requested is
+   * trying to read values outside the boundaries.
    */
   #roAdd(amount: number) {
     if (this.roffset + amount > this.woffset) {
@@ -251,7 +253,7 @@ export class ReadWriteByteBuffer implements ByteBuffer {
 
 /**
  * Take the max between currentSize and intendedSize and then plus 1024. Then,
- *  find the next nearer multiple of 1024.
+ * find the next multiple of 1024.
  * @param currentSize - number
  * @param intendedSize - number
  * @returns the calculated number

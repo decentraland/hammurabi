@@ -1,7 +1,8 @@
 /**
- * This file implements a naive sandboxing method to remove every funtion that is not
- * in the allow list from the execution context. It is definitely bypasseable but also
- * good enough since the scenes run in an already isolated context, WebWorkers.
+ * This file implements a naive sandboxing method to remove every funtion that
+ * is not in the allow list from the execution context. It can be bypassed; but
+ * it's good enough since the scenes already run in the isolated context of
+ * WebWorkers.
  */
 
 export const allowListES2020: Array<keyof typeof globalThis> = [
@@ -70,7 +71,7 @@ export async function runWithScope(code: string, context: any) {
     has() {
       return true
     },
-    get(target, propKey, receiver) {
+    get(_target, propKey, _receiver) {
       if (propKey === 'eval') return eval
       if (propKey === 'globalThis') return proxy
       if (propKey === 'global') return proxy

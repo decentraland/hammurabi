@@ -1,19 +1,19 @@
-import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, ThinTexture, TransformNode, Vector3 } from "@babylonjs/core";
-import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
-import { BabylonEntity } from "../scene/BabylonEntity";
-import { createLoadableAvatarConfig } from "./loader";
-import { AvatarShapeWithAssetManagers, EmoteWithContainer, WearableWithContainer } from "./adr-65/types";
-import { BodyShape } from "@dcl/schemas";
-import { getFacialFeatures, applyFacialFeaturesToMeshes, applySkinMaterialsToInstances } from "./adr-65/customizations";
-import { getVisibleSlots } from "./adr-65/slots";
-import { isWearableFacialFeatureLoader } from "./adr-65/utils";
-import { loadEmoteForBodyShape, loadWearableForBodyShape } from "./adr-65/loader";
-import { getBodyShapeAndHideBodyParts } from "./adr-65/body";
-import { instantiateAssetContainer } from "../scene/AssetManager";
-import { createLogger } from "../../misc/logger";
-import { BabylonEmote, createEmote } from "./adr-65/emote";
-import { AdvancedDynamicTexture, TextBlock } from "@babylonjs/gui";
-import { PLAYER_HEIGHT } from "../scene/logic/static-entities";
+import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, TransformNode, Vector3 } from '@babylonjs/core'
+import { AdvancedDynamicTexture, TextBlock } from '@babylonjs/gui'
+import { PBAvatarShape } from '@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen'
+import { BodyShape } from '@dcl/schemas'
+import { createLogger } from '../../misc/logger'
+import { instantiateAssetContainer } from '../scene/AssetManager'
+import { BabylonEntity } from '../scene/BabylonEntity'
+import { PLAYER_HEIGHT } from '../scene/logic/static-entities'
+import { getBodyShapeAndHideBodyParts } from './adr-65/body'
+import { applyFacialFeaturesToMeshes, applySkinMaterialsToInstances, getFacialFeatures } from './adr-65/customizations'
+import { BabylonEmote, createEmote } from './adr-65/emote'
+import { loadEmoteForBodyShape, loadWearableForBodyShape } from './adr-65/loader'
+import { getVisibleSlots } from './adr-65/slots'
+import { AvatarShapeWithAssetManagers, EmoteWithContainer, WearableWithContainer } from './adr-65/types'
+import { isWearableFacialFeatureLoader } from './adr-65/utils'
+import { createLoadableAvatarConfig } from './loader'
 
 const avatarRendererLogger = createLogger('AvatarRenderer')
 
@@ -53,9 +53,9 @@ export class AvatarRenderer extends TransformNode {
   previousAbsolutePosition = Vector3.Zero()
   headingAngle = 0
   lastPositionCommands: PositionRecord[] = []
-  labelPlane: Mesh;
-  texture: AdvancedDynamicTexture;
-  textBlock: TextBlock;
+  labelPlane: Mesh
+  texture: AdvancedDynamicTexture
+  textBlock: TextBlock
 
   constructor(private entity: BabylonEntity) {
     super('AvatarRenderer', entity.getScene())
@@ -118,17 +118,17 @@ export class AvatarRenderer extends TransformNode {
       const rotMatrix = Matrix.Identity()
 
       // reset the rotation
-      Matrix.RotationYawPitchRollToRef(this.headingAngle, 0, 0, rotMatrix);
+      Matrix.RotationYawPitchRollToRef(this.headingAngle, 0, 0, rotMatrix)
 
       // restore the scale to a blank scaling matrix
-      const scalingMatrix = Matrix.Scaling(scale.x, scale.y, scale.z);
+      const scalingMatrix = Matrix.Scaling(scale.x, scale.y, scale.z)
 
       // apply the scale to the rotation matrix, into _worldMatrix
       scalingMatrix.multiplyToRef(rotMatrix, this._worldMatrix)
 
       // finally restore the translation into _worldMatrix
-      this._worldMatrix.setTranslation(position);
-      this.absolutePosition.copyFrom(position);
+      this._worldMatrix.setTranslation(position)
+      this.absolutePosition.copyFrom(position)
     }
 
     const r = super._afterComputeWorldMatrix()
@@ -140,7 +140,7 @@ export class AvatarRenderer extends TransformNode {
     this.lastPositionCommands.push({ position: this.absolutePosition.clone(), when: now })
 
     if (this.deltaMovementSpeed.length() > 0.05) {
-      this.headingAngle = Math.atan2(this.deltaMovementSpeed.x, this.deltaMovementSpeed.z) + Math.PI;
+      this.headingAngle = Math.atan2(this.deltaMovementSpeed.x, this.deltaMovementSpeed.z) + Math.PI
     }
 
     // remove records older than 0.2 second

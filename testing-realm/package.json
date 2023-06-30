@@ -16,6 +16,7 @@
     "trailingComma": "none"
   },
   "dependencies": {
+    "2": "^3.0.0",
     "fp-future": "^1.0.1"
   },
   "workspaces": [
