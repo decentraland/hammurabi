@@ -18,7 +18,7 @@
     "@dcl/quickjs-emscripten": "^0.21.0-3680274614.commit-1808aa1",
     "@dcl/rpc": "^1.1.3-20230519185613.commit-95da0ce",
     "fp-future": "^1.0.1",
-    "protobufjs": "^7.2.3",
+    "protobufjs": "^7.2.4",
     "@babylonjs/core": "^6.4.1",
     "@babylonjs/gui": "^6.4.1",
     "@babylonjs/inspector": "^6.4.1",
