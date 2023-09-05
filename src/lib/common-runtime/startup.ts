@@ -19,7 +19,18 @@ export async function getStartupData(port: RpcClientPort) {
 
   // look for the "bin/game.js" or similar specified in the .main field
   const mainFileName = scene.main
-  const mainFile = await runtime.readFile({ fileName: mainFileName })
 
-  return { mainFile, scene, mainFileName }
+  const mainFileContent = await async function() {
+    const isSdk7 = (scene as any).runtimeVersion === '7'
+    if (isSdk7) {
+      const res = await runtime.readFile({ fileName: mainFileName })
+      return res.content
+    } else {
+      const res = await fetch('https://renderer-artifacts.decentraland.org/sdk7-adaption-layer/main/index.min.js')
+      return new Uint8Array(await res.arrayBuffer())
+    }
+  }()
+    
+
+  return { mainFileContent, scene, mainFileName }
 }
