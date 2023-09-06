@@ -22,7 +22,7 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
 
   const loadableScene = await getLoadableSceneFromUrl(parsed.entityId, parsed.baseUrl)
 
-  if ((loadableScene.entity.metadata as any).runtimeVersion !== '7') throw new Error('The scene is not compatible with the current runtime version. It may be using SDK6')
+  //if ((loadableScene.entity.metadata as any).runtimeVersion !== '7') throw new Error('The scene is not compatible with the current runtime version. It may be using SDK6')
 
   const ctx = new SceneContext(engineScene, loadableScene, options.isGlobal)
 

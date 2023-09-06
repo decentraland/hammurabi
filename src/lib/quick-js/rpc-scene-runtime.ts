@@ -16,7 +16,7 @@ import { getStartupData } from '../common-runtime/startup'
 
 // this function starts the scene runtime as explained in ADR-133
 export async function startQuickJsSceneRuntime(port: RpcClientPort, options: RpcSceneRuntimeOptions) {
-  const { mainFile, mainFileName } = await getStartupData(port)
+  const { mainFileContent, mainFileName } = await getStartupData(port)
   await withQuickJsVm(async (opts) => {
     opts.provide({
       ...options,
@@ -26,7 +26,7 @@ export async function startQuickJsSceneRuntime(port: RpcClientPort, options: Rpc
     })
 
     const decoder = new TextDecoder()
-    await opts.eval(decoder.decode(mainFile.content), mainFileName)
+    await opts.eval(decoder.decode(mainFileContent), mainFileName)
 
     await options.updateLoop({ ...opts, isRunning: () => (port.state === 'open') })
   })
