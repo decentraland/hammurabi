@@ -31,6 +31,7 @@ export function addChat(canvas: HTMLCanvasElement) {
   const chatCommands: { [key: string]: IChatCommand } = {};
 
   const onChatMessage = new Observable<string>();
+  const onTeleportRequested = new Observable<any>();
 
   parent.setAttribute("class", "console");
   chatInputElement.setAttribute("class", "chatInput");
@@ -212,9 +213,17 @@ export function addChat(canvas: HTMLCanvasElement) {
     clearChat()
   })
 
+  addChatCommand("teleport", "Teleport player to position", async (message) => {
+    const parts = message.split(',')
+    const x = parts[0]
+    const y = parts[1]
+    onTeleportRequested.notifyObservers({ x, y})
+  })
+
   return {
     addConsoleMessage,
     onChatMessage,
+    onTeleportRequested,
     clearChat,
     addChatCommand
   }

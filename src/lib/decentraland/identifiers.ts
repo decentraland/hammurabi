@@ -2,7 +2,7 @@ export function parseEntityUrn(urn: string): { entityId: string, urn: string, ba
   // many URN formats are valid for Decentraland.
   // for simplicity, at this stage we will only parse one type of URN:
 
-  const matches = urn.match(/^(urn\:decentraland\:entity\:(ba[a-zA-Z0-9]{57}))/)
+  const matches = urn.match(/^(urn\:decentraland\:entity\:([a-zA-Z0-9]+))/)
 
   if (!matches) throw new Error(`The provided URN is not supported: ${urn}`)
 
