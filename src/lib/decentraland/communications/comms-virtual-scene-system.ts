@@ -11,17 +11,17 @@ import { CommsTransportWrapper } from "./CommsTransportWrapper"
 import { AVATAR_ENTITY_RANGE, StaticEntities } from "../../babylon/scene/logic/static-entities"
 import { Avatar } from "@dcl/schemas"
 import { unwrapPromise } from "../../misc/promises"
-import { avatarCustomizationsComponent, avatarEquippedDataComponent } from "../sdk-components/avatar-customizations"
+import {avatarEquippedDataComponent } from "../sdk-components/avatar-customizations"
 
 export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<CommsTransportWrapper>, userConsoleFn: MessageLoggerFunction): VirtualScene {
   // reserve entity numbers from 128 to 512 for avatars
   const entityPool = createGenerationalIndexPool(AVATAR_ENTITY_RANGE[0], AVATAR_ENTITY_RANGE[1])
 
   const PlayerIdentityData = createLwwStore(playerIdentityDataComponent)
-  const AvatarCustomizations = createLwwStore(avatarCustomizationsComponent)
+  // const AvatarCustomizations = createLwwStore(avatarCustomizationsComponent)
   const AvatarEquippedData = createLwwStore(avatarEquippedDataComponent)
   const Transform = createLwwStore(transformComponent)
-  const listOfComponentsToSynchronize: ComponentDefinition<any>[] = [PlayerIdentityData, AvatarCustomizations, AvatarEquippedData, Transform]
+  const listOfComponentsToSynchronize: ComponentDefinition<any>[] = [PlayerIdentityData, AvatarEquippedData, Transform]
 
   const localAvatars = new Map<string, Avatar>()
 
@@ -93,18 +93,18 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
         localAvatars.set(address, serialized)
         const entity = findPlayerEntityByAddress(event.address, true, transport)
         if (entity) {
-          PlayerIdentityData.getMutable(entity).name = serialized.name
+          // PlayerIdentityData.getMutable(entity).name = serialized.name
           PlayerIdentityData.getMutable(entity).isGuest = !serialized.hasConnectedWeb3
-          AvatarCustomizations.createOrReplace(entity, {
-            bodyShapeUrn: serialized.avatar.bodyShape,
-            eyesColor: serialized.avatar.eyes.color,
-            hairColor: serialized.avatar.hair.color,
-            skinColor: serialized.avatar.skin.color,
-          })
-          AvatarEquippedData.createOrReplace(entity, {
-            emotesUrns: (serialized.avatar.emotes ?? []).map($ => $.urn),
-            wearableUrns: serialized.avatar.wearables ?? []
-          })
+          // AvatarCustomizations.createOrReplace(entity, {
+          //   bodyShapeUrn: serialized.avatar.bodyShape,
+          //   eyesColor: serialized.avatar.eyes.color,
+          //   hairColor: serialized.avatar.hair.color,
+          //   skinColor: serialized.avatar.skin.color,
+          // })
+          // AvatarEquippedData.createOrReplace(entity, {
+          //   emotesUrns: (serialized.avatar.emotes ?? []).map($ => $.urn),
+          //   wearableUrns: serialized.avatar.wearables ?? []
+          // })
         }
       }
     })
@@ -131,7 +131,7 @@ export function createAvatarVirtualSceneSystem(getTransports: () => Iterable<Com
     if (!entityPool.hasFreeEntities()) return null
 
     const entity = entityPool.getFreeEntity()
-    PlayerIdentityData.createOrReplace(entity, { address, isGuest: true, name: address })
+    PlayerIdentityData.createOrReplace(entity, { address, isGuest: true })
 
     unwrapPromise(transport.sendProfileRequest({ address, profileVersion: 0 }))
 

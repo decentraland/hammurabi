@@ -63,6 +63,7 @@ export const NavBar: React.FC = () => {
   function setRealm(connString: string) {
     setLoading(true)
     document.getElementById('renderCanvas')?.focus()
+    console.log('setRealm', connString)
     connectRealm(currentRealm, connString)
       .then((newRealm) => {
         const q = new URLSearchParams(globalThis.location.search)
@@ -124,6 +125,7 @@ export const NavBar: React.FC = () => {
       setRealm(url.get('realm')!)
     }
   }, [])
+  console.log()
 
   return <>
     <nav>

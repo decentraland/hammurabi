@@ -1,4 +1,4 @@
-import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/bff/http_endpoints.gen"
+import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/realm/about.gen"
 import { Atom } from "../../misc/atom"
 import { ExplorerIdentity } from "../identity/types"
 import { connectAdapter } from "./connect-adapter"

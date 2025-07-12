@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { initEngine } from '../lib/babylon'
 import { createAvatarRendererSystem } from '../lib/babylon/avatar-rendering-system'
-import { unloadScene, loadSceneContext } from '../lib/babylon/scene/load'
+import { unloadScene, loadSceneContext, getLoadableSceneFromLocalContext, loadSceneContextFromLocal } from '../lib/babylon/scene/load'
 import { PLAYER_HEIGHT, StaticEntities } from '../lib/babylon/scene/logic/static-entities'
 import { createSceneCullingSystem } from '../lib/babylon/scene/scene-culling'
 import { createSceneTickSystem } from '../lib/babylon/scene/update-scheduler'
@@ -146,7 +146,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     const desiredRunningScenes = new Map<string, { isGlobal: boolean }>()
 
     // first load the desired scenes into the desiredRunningScenes set
-    avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
+    // avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
     realm.aboutResponse.configurations?.scenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: false }))
     realm.aboutResponse.configurations?.globalScenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
 
@@ -157,7 +157,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     }
 
     updatePending()
-
+    
     // destroy all unwanted scenes, copy the loadedScenesByEntityId into an array to avoid
     // errors caused by mutations of the loadedScenesByEntityId
     for (const entityId of Array.from(loadedScenesByEntityId.keys())) {
@@ -189,13 +189,17 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
         errors.push(`${err}`)
       }
     }
+    
+    if (realm.baseUrl.includes('localhost')) {
+      await loadSceneContextFromLocal(scene, { baseUrl: realm.baseUrl , isGlobal: false })
+    }
 
     // finally teleport to a location in the new realm. pick the first non-global scene
     for (const [_, loadedScene] of loadedScenesByEntityId) {
       if (!loadedScene.isGlobalScene) {
         // activate loading screen
         const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
-
+        console.log({ position })
         characterControllerSystem.teleport(position)
         characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
 
