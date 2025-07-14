@@ -18,7 +18,6 @@ export function loadModuleForPort(port: RpcClientPort, moduleName: string) {
   switch (moduleName) {
     case '~system/EngineApi':
       const originalService = codegen.loadService(port, EngineApiServiceDefinition)
-      console.log({ originalService })
       // WARNING: quickJs is not yet capable of handling Uint8Array, so we need to coerce the Uint8Array
       //          values manually. This is a temporary solution until the proper fix is implemented
       return {

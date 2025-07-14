@@ -30,7 +30,7 @@ export async function defaultUpdateLoop(opts: RuntimeAbstraction) {
   }
 }
 
-async function sleep(ms: number) {
+export async function sleep(ms: number) {
   if (ms > 1)
     return new Promise(resolve => setTimeout(resolve, ms))
 }

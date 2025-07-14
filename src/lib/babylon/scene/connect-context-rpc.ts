@@ -88,7 +88,8 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
         data: []
       }
     },
-    async sendBinary() {
+    async sendBinary(data) {
+      // console.log('[SendBinary]', data.peerData)
       return {
         data: []
       }

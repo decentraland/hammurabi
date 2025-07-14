@@ -7,6 +7,8 @@ import { loadedScenesByEntityId } from '../../../explorer/state'
 import { VirtualScene } from '../../decentraland/virtual-scene'
 import { json } from '../../misc/json'
 import { Entity } from '@dcl/schemas'
+import { initHotReload } from './hot-reload'
+import { sleep } from '../../misc/promises'
 
 /**
  * Creates and initializes a scene context from a loadable scene
@@ -34,9 +36,6 @@ async function createSceneContext(engineScene: BABYLON.Scene, loadableScene: Loa
  */
 export async function loadSceneContext(engineScene: BABYLON.Scene, options: { urn: string, isGlobal: boolean }, virtualScene?: VirtualScene) {
   const parsed = parseEntityUrn(options.urn)
-  console.log('Connecting using webworker', parsed)
-
-  console.log('loadSceneContext', options)
 
   if (!parsed.baseUrl) throw new Error('Only URNs with baseUrl are supported at this time.')
 
@@ -51,15 +50,28 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
 /**
  * Loads a scene from a local context environment
  */
-export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, options: { baseUrl: string, isGlobal: boolean }, virtualScene?: VirtualScene) {
-  console.log('loadSceneContextFromLocal', options)
+export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, options: { baseUrl: string, isGlobal: boolean, withoutHotReload?: boolean }, virtualScene?: VirtualScene) {
   const loadableScene = await getLoadableSceneFromLocalContext(options.baseUrl)
-  const entityId = loadableScene.urn
+  const entityId = 'local-preview'
 
   // cancel early if the scene is already loaded
   if (loadedScenesByEntityId.has(entityId)) return loadedScenesByEntityId.get(entityId)!
 
-  return await createSceneContext(engineScene, loadableScene, entityId, options.isGlobal, virtualScene)
+  const sceneContext = await createSceneContext(engineScene, loadableScene, entityId, options.isGlobal, virtualScene)
+  
+  async function reloadScene() {
+    unloadScene(entityId)
+    await sleep(100)
+    options.withoutHotReload = true
+    loadSceneContextFromLocal(engineScene, options)
+  }
+
+  if (!options.withoutHotReload) {
+    // Initialize hot reload for local development
+    initHotReload(options.baseUrl, 'local-scene', reloadScene)
+  }
+  
+  return sceneContext
 }
 
 /**
@@ -76,8 +88,7 @@ export function unloadScene(entityId: string) {
 }
 
 export async function getLoadableSceneFromUrl(entityId: string, baseUrl: string): Promise<LoadableScene> {
-  console.log('getLoadableSceneFromUrl', { entityId, baseUrl })
-  const result = await fetch(new URL(entityId, baseUrl).toString())
+  const result = await fetch(`${baseUrl}${entityId}`)
   const entity = await result.json()
 
   return {

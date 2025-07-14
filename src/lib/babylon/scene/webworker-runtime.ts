@@ -42,7 +42,6 @@ rpcServer.setHandler(async function handler(port) {
 })
 
 export async function connectSceneContextUsingWebWorkerQuickJs(ctx: SceneContext, loadableScene: LoadableScene) {
-  console.log('connectSceneContextUsingWebWorkerQuickJs', loadableScene)
   const scene = loadableScene.entity.metadata as Scene
 
   // create a new worker for this scene

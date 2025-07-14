@@ -16,7 +16,6 @@ import { customEvalSdk } from './sandbox'
 
 // this function starts the scene runtime as explained in ADR-133
 export async function startWebWorkerSceneRuntime(port: RpcClientPort, options: RpcSceneRuntimeOptions) {
-  console.log('startWebWorkerSceneRuntime', options)
   const { mainFile } = await getStartupData(port)
  
   // first create an empty sandbox

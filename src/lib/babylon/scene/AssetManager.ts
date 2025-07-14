@@ -66,7 +66,6 @@ export class AssetManager {
 
     const absoluteLocation = resolveFileAbsolute(this.loadableScene, file)
     if (!absoluteLocation) throw new Error(`File not found: ${file}`)
-    console.log({ absoluteLocation })
     const res = await fetch(absoluteLocation)
 
     if (!res.ok) throw new Error(`Error loading URL: ${absoluteLocation}`)

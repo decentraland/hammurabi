@@ -146,7 +146,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     const desiredRunningScenes = new Map<string, { isGlobal: boolean }>()
 
     // first load the desired scenes into the desiredRunningScenes set
-    // avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
+    avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
     realm.aboutResponse.configurations?.scenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: false }))
     realm.aboutResponse.configurations?.globalScenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
 
@@ -199,7 +199,6 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
       if (!loadedScene.isGlobalScene) {
         // activate loading screen
         const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
-        console.log({ position })
         characterControllerSystem.teleport(position)
         characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
 
