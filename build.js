@@ -38,7 +38,17 @@ async function buildBundle(entryPoint, output) {
     minify: PRODUCTION,
     plugins: [
       nodeBuiltIns()
-    ]
+    ],
+    // Enable live reload in watch mode
+    ...(WATCH_MODE && {
+      banner: {
+        js: `(() => {
+          if (typeof window !== 'undefined') {
+            new EventSource('/esbuild').addEventListener('change', () => location.reload());
+          }
+        })()`
+      }
+    })
   })
 
   if (WATCH_MODE) {
