@@ -71,7 +71,7 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
   const characterControllerSystem = await createCharacterControllerSystem(scene)
 
   // then init all the rendering systems
-  const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, currentRealm, scene, selectedInputVoiceDevice, audioContext)
+  const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, currentRealm, scene, selectedInputVoiceDevice, audioContext!)
   const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, characterControllerSystem.capsule)
   const networkedProfileSystem = createNetworkedProfileSystem(realmCommunicationSystem.getTransports)
   const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports, gameConsole.addConsoleMessage)

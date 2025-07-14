@@ -108,20 +108,20 @@ export function initKeyboard(scene: BABYLON.Scene, characterController: Characte
 export function enableMouseLockBehaviorAndPointerEvents(scene: BABYLON.Scene) {
   const hasPointerLock = () => !!document.pointerLockElement
 
-  const canvas = scene.getEngine().getRenderingCanvas()!
+  const canvas = scene.getEngine().getRenderingCanvas()
 
-  if (!canvas.requestPointerLock) {
+  if (canvas && !canvas.requestPointerLock) {
     canvas.requestPointerLock = canvas.requestPointerLock || canvas['mozRequestPointerLock']
   }
 
   scene.onPointerObservable.add((e) => {
     if (e.type === BABYLON.PointerEventTypes.POINTERDOWN) {
       if (hasPointerLock()) {
-        canvas.focus()
+        canvas?.focus()
         interactWithScene(PointerEventType.PET_DOWN, InputAction.IA_POINTER)
       } else {
-        canvas.requestPointerLock()
-        canvas.focus()
+        canvas?.requestPointerLock()
+        canvas?.focus()
       }
     } else if (e.type === BABYLON.PointerEventTypes.POINTERUP) {
       if (hasPointerLock()) {
