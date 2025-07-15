@@ -132,7 +132,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
   async connect(): Promise<Set<string>> {
     await this.room.connect(this.config.url, this.config.token, { autoSubscribe: true })
     await this.room.engine.waitForPCInitialConnection()
-    commsLogger.log(this.room.name, `Connected to livekit room ${this.room.name}`)
+    commsLogger.log(this.room.name, `Connected to livekit room ${this.room.name}`, { sid: this.room.sid, metadata: this.room.metadata} )
     return new Set(this.room.participants.keys())
   }
 

@@ -36,9 +36,11 @@ export type CommsEvents = Pick<CommsTransportEvents, 'DISCONNECTION' | 'PEER_DIS
  */
 export class CommsTransportWrapper {
   readonly events = mitt<CommsEvents>()
+  readonly sceneId: string
   public state: RoomConnectionStatus = RoomConnectionStatus.NONE
 
-  constructor(private transport: MinimumCommunicationsTransport) {
+  constructor(private transport: MinimumCommunicationsTransport, sceneId: string) {
+    this.sceneId = sceneId
     this.transport.events.on('message', this.handleMessage.bind(this))
     this.transport.events.on('DISCONNECTION', (event) => this.events.emit('DISCONNECTION', event))
     this.transport.events.on('PEER_DISCONNECTED', (event) => this.events.emit('PEER_DISCONNECTED', event))

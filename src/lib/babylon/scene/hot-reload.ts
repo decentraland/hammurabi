@@ -26,13 +26,11 @@ export async function initHotReload(baseUrl: string, entityId: string, reloadSce
   await start()
 
   async function start(): Promise<void> {
-    logger.log(`Starting to watch scene: ${entityId} on port ${port}`)
-
     try {
       wsConnection = new WebSocket(`ws://localhost:${port}`)
       wsConnection.binaryType = 'arraybuffer'
       wsConnection.onopen = () => {
-        logger.log(`Connected to development server for scene: ${entityId}`)
+        logger.log(`[Hot Reoad]: Connected to development server for scene: ${entityId}`)
       }
 
       wsConnection.onmessage = async (event) => {        

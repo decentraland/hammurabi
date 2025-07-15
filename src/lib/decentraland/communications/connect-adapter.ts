@@ -1,16 +1,59 @@
+import { userIdentity } from "../../../explorer/state"
+import { getLoadableSceneFromLocalContext } from "../../babylon/scene/load"
 import { Atom } from "../../misc/atom"
 import { signedFetch } from "../identity/signed-fetch"
 import { ExplorerIdentity } from "../identity/types"
 import { CommsAdapter } from "./types"
 
+export async function connectLocalAdapter(baseUrl: string) {
+  const { urn } = await getLoadableSceneFromLocalContext(baseUrl)
+  const localCommsGatekeeper = 'https://comms-gatekeeper-local.decentraland.org/get-scene-adapter'
+  const identity = await userIdentity.deref()
+  try {
+    const result = await signedFetch(
+      localCommsGatekeeper,
+      identity.authChain,
+      { method: 'POST', responseBodyType: 'json' },
+      {
+        intent: 'dcl:explorer:comms-handshake',
+        signer: 'dcl:explorer',
+        isGuest: identity.isGuest,
+        realm: {
+          serverName: 'LocalPreview'
+        },
+        realmName: 'LocalPreview',
+        sceneId: urn,
+      }
+    )
+    if (result.ok && result.json.adapter) {
+      return await connectAdapter(result.json.adapter, identity)
+    }
+    throw 'Invalid livekit connection'
+  } catch (e) {
+    throw e
+  }
+}
+  
+
 // this function returns adapters for the different protocols. in case of receiving a transport instead,
 // a stub adapter will be created to wrap the transport
-export async function connectAdapter(connStr: string, identity: ExplorerIdentity): Promise<CommsAdapter> {
+export async function connectAdapter(connStr: string, identity: ExplorerIdentity, ): Promise<CommsAdapter> {
   const ix = connStr.indexOf(':')
   const protocol = connStr.substring(0, ix)
   const url = connStr.substring(ix + 1)
 
   switch (protocol) {
+    case 'livekit': {
+      return {
+        reportPosition(position) {
+          // stub
+        },
+        desiredTransports: Atom<string[]>([connStr]),
+        disconnect() {
+          // stub
+        }
+      } 
+    }
     case 'offline': {
       return {
         reportPosition(position) {
@@ -54,6 +97,7 @@ export async function connectAdapter(connStr: string, identity: ExplorerIdentity
           'There was an error acquiring the communications connection. Decentraland will try to connect to another realm'
         )
       }
+      console.log('[BOEDO]', { response })
 
       type SignedLoginResult = {
         fixedAdapter?: string

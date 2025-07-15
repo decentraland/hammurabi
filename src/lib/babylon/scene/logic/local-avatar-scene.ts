@@ -20,7 +20,8 @@ export async function createLocalAvatarSceneSystem(scene: Scene, currentAvatar: 
         type: "scene",
       },
     },
-    true
+    true,
+    'local-avatar'
   )
 
   await localAvatarScene.initAsyncJobs()

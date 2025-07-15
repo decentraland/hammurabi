@@ -37,6 +37,7 @@ import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-s
 import { delayedInterpolationComponent } from '../../decentraland/sdk-components/delayed-interpolation'
 import { tweenComponent } from '../../decentraland/sdk-components/tween'
 import { materialComponent } from '../../decentraland/sdk-components/material-component'
+import { CommsTransportWrapper } from '../../decentraland/communications/CommsTransportWrapper'
 
 const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
 
@@ -47,8 +48,12 @@ export class SceneContext implements EngineApiInterface {
   #ref = new WeakRef(this)
   rootNode: BabylonEntity
 
+  readonly entityId: string
+
   // this future is resolved when the scene is disposed
   readonly stopped = future<void>()
+
+  readonly metadata: Scene
 
   // after the "tick" is completed, resolving the futures will send back the CRDT
   // updates to the scripting scene
@@ -135,17 +140,18 @@ export class SceneContext implements EngineApiInterface {
   deletedEntities = new Set<Entity>()
   id: number = incrementalId++
 
-  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean) {
+  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean, entityId: string) {
+    this.entityId = entityId
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
 
     // the rootNode must be positioned according to the value of the "scenes.base" of the scene metadata (scene.json)
-    const metadata = loadableScene.entity.metadata as Scene
-    if (metadata.scene?.base) {
-      const base = parseParcelPosition(metadata.scene.base)
-      this.rootNode.name = metadata.scene.base
+    this.metadata = loadableScene.entity.metadata as Scene
+    if (this.metadata.scene?.base) {
+      const base = parseParcelPosition(this.metadata.scene.base)
+      this.rootNode.name = this.metadata.scene.base
       gridToWorld(base.x, base.y, this.rootNode.position)
 
-      const r = createParcelOutline(babylonScene, metadata.scene.base, metadata.scene.parcels)
+      const r = createParcelOutline(babylonScene, this.metadata.scene.base, this.metadata.scene.parcels)
       r.result.parent = this.rootNode
 
       // position the GlobalCenterOfCoordinates entity
@@ -156,12 +162,12 @@ export class SceneContext implements EngineApiInterface {
 
     // calculate a naive bounding box for the scene to calculate the distance to the outer bounds
     // and use that distance to prioritize the message quota for ADR-148
-    if (metadata.scene?.parcels) {
+    if (this.metadata.scene?.parcels) {
       let minX: number | null = null
       let minZ: number | null = null
       let maxX: number | null = null
       let maxZ: number | null = null
-      for (const position of metadata.scene.parcels) {
+      for (const position of this.metadata.scene.parcels) {
         const vec = parseParcelPosition(position)
         if (minX == null || vec.x < minX) minX = vec.x
         if (minZ == null || vec.y < minZ) minZ = vec.y
@@ -170,7 +176,7 @@ export class SceneContext implements EngineApiInterface {
       }
 
       // as per https://docs.decentraland.org/creator/development-guide/scene-limitations/
-      const height = Math.log2(metadata.scene.parcels.length + 1) * 20
+      const height = Math.log2(this.metadata.scene.parcels.length + 1) * 20
 
       if (minX) {
         this.boundingBox = new BABYLON.BoundingBox(
@@ -451,8 +457,18 @@ export class SceneContext implements EngineApiInterface {
 
     return { hasEntities, data: result.data }
   }
+
   async crdtSendToRenderer(payload: CrdtSendToRendererRequest): Promise<CrdtSendToResponse> {
     return this._crdtSendToRenderer(payload.data)
   }
-  // }
+
+  async attachLivekitTransport(transports: Iterable<CommsTransportWrapper>) {
+    for (const transport of transports) {
+      if (transport.sceneId === this.entityId) {
+        transport.events.on('sceneMessageBus', (event) => {
+          console.log('[MessageBus scene]', event)
+        })
+      }
+    }
+  }
 }

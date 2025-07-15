@@ -191,7 +191,9 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     }
     
     if (realm.baseUrl.includes('localhost')) {
-      await loadSceneContextFromLocal(scene, { baseUrl: realm.baseUrl , isGlobal: false })
+      const ctx = await loadSceneContextFromLocal(scene, { baseUrl: realm.baseUrl, isGlobal: false })
+      const transports = realmCommunicationSystem.getTransports()
+      ctx.attachLivekitTransport(transports)
     }
 
     // finally teleport to a location in the new realm. pick the first non-global scene

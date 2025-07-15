@@ -1,7 +1,7 @@
 import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/realm/about.gen"
 import { Atom } from "../../misc/atom"
 import { ExplorerIdentity } from "../identity/types"
-import { connectAdapter } from "./connect-adapter"
+import { connectAdapter, connectLocalAdapter } from "./connect-adapter"
 import { connectTransport } from "./connect-transport"
 import { CommsAdapter, commsLogger } from "./types"
 import { CommsTransportWrapper } from "./CommsTransportWrapper"
@@ -18,7 +18,9 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
 
   currentRealm.pipe(async function connectNewCommsAdapter(realm: CurrentRealm) {
     const identity = await userIdentity.deref()
-    const newAdapter = await connectAdapter(realm.aboutResponse.comms?.fixedAdapter ?? "offline:offline", identity)
+    
+    const isLocalPreview = realm.aboutResponse.configurations?.realmName === "LocalPreview"
+    const newAdapter = isLocalPreview ? await connectLocalAdapter(realm.baseUrl) : await connectAdapter(realm.aboutResponse.comms?.fixedAdapter ?? "offline:offline", identity)
     const oldAdapter = currentAdapter.swap(newAdapter)
     if (oldAdapter) {
       oldAdapter.disconnect()
@@ -62,7 +64,6 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
 
         // store the handle of the active transport
         activeTransports.set(connectionString, transport)
-
         // and then hook into its connection events
         transport.events.on('DISCONNECTION', (e) => {
           commsLogger.error(`🔌❌ ${connectionString} disconnected`, e)

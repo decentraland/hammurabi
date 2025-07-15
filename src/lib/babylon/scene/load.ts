@@ -16,7 +16,7 @@ import { sleep } from '../../misc/promises'
 async function createSceneContext(engineScene: BABYLON.Scene, loadableScene: LoadableScene, entityId: string, isGlobal: boolean, virtualScene?: VirtualScene): Promise<SceneContext> {
   if ((loadableScene.entity.metadata as any).runtimeVersion !== '7') throw new Error('The scene is not compatible with the current runtime version. It may be using SDK6')
 
-  const ctx = new SceneContext(engineScene, loadableScene, isGlobal)
+  const ctx = new SceneContext(engineScene, loadableScene, isGlobal, entityId)
 
   if (virtualScene) {
     ctx.subscriptions.push(virtualScene.createSubscription())
@@ -24,7 +24,6 @@ async function createSceneContext(engineScene: BABYLON.Scene, loadableScene: Loa
 
   await ctx.initAsyncJobs()
   connectSceneContextUsingWebWorkerQuickJs(ctx, loadableScene)
-
   loadedScenesByEntityId.set(entityId, ctx)
 
   return ctx
@@ -47,18 +46,20 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
   return await createSceneContext(engineScene, loadableScene, parsed.entityId, options.isGlobal, virtualScene)
 }
 
+export const LOCAL_PREVIEW_SCENE_ID = 'local-preview'
+
 /**
  * Loads a scene from a local context environment
  */
 export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, options: { baseUrl: string, isGlobal: boolean, withoutHotReload?: boolean }, virtualScene?: VirtualScene) {
   const loadableScene = await getLoadableSceneFromLocalContext(options.baseUrl)
-  const entityId = 'local-preview'
+  const entityId = LOCAL_PREVIEW_SCENE_ID
 
   // cancel early if the scene is already loaded
   if (loadedScenesByEntityId.has(entityId)) return loadedScenesByEntityId.get(entityId)!
 
   const sceneContext = await createSceneContext(engineScene, loadableScene, entityId, options.isGlobal, virtualScene)
-  
+
   async function reloadScene() {
     unloadScene(entityId)
     await sleep(100)
@@ -68,7 +69,7 @@ export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, opti
 
   if (!options.withoutHotReload) {
     // Initialize hot reload for local development
-    initHotReload(options.baseUrl, 'local-scene', reloadScene)
+    initHotReload(options.baseUrl, LOCAL_PREVIEW_SCENE_ID, reloadScene)
   }
   
   return sceneContext
@@ -114,8 +115,7 @@ export async function fetchSceneJson(baseUrl: string) {
  * @param baseUrl The base URL of the local context
  * @returns Object containing scene entities and metadata
  */
-export async function getLoadableSceneFromLocalContext(baseUrl: string): Promise<any> {
-  
+export async function getLoadableSceneFromLocalContext(baseUrl: string) {
   // First, fetch scene.json to get the pointers
   const sceneConfig = await fetchSceneJson(baseUrl)
   const pointers = sceneConfig.scene?.parcels || []

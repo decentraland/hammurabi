@@ -51,7 +51,6 @@ export async function connectSceneContextUsingWebWorkerQuickJs(ctx: SceneContext
   })
 
   const transport = WebWorkerTransport(worker)
-
   rpcServer.attachTransport(transport, ctx)
 
   // when the scene stops, we will close the transport. that will release the resources
