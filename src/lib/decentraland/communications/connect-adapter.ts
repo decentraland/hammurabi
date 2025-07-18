@@ -26,7 +26,7 @@ export async function connectLocalAdapter(baseUrl: string) {
       }
     )
     if (result.ok && result.json.adapter) {
-      return await connectAdapter(result.json.adapter, identity)
+      return await connectAdapter(result.json.adapter, identity, urn)
     }
     throw 'Invalid livekit connection'
   } catch (e) {
@@ -37,7 +37,7 @@ export async function connectLocalAdapter(baseUrl: string) {
 
 // this function returns adapters for the different protocols. in case of receiving a transport instead,
 // a stub adapter will be created to wrap the transport
-export async function connectAdapter(connStr: string, identity: ExplorerIdentity, ): Promise<CommsAdapter> {
+export async function connectAdapter(connStr: string, identity: ExplorerIdentity, sceneId: string): Promise<CommsAdapter> {
   const ix = connStr.indexOf(':')
   const protocol = connStr.substring(0, ix)
   const url = connStr.substring(ix + 1)
@@ -48,7 +48,7 @@ export async function connectAdapter(connStr: string, identity: ExplorerIdentity
         reportPosition(position) {
           // stub
         },
-        desiredTransports: Atom<string[]>([connStr]),
+        desiredTransports: Atom([{ url: connStr, sceneId }]),
         disconnect() {
           // stub
         }
@@ -59,7 +59,7 @@ export async function connectAdapter(connStr: string, identity: ExplorerIdentity
         reportPosition(position) {
           // stub
         },
-        desiredTransports: Atom<string[]>(),
+        desiredTransports: Atom([{ url: '', sceneId }]),
         disconnect() {
           // stub
         }
@@ -67,7 +67,7 @@ export async function connectAdapter(connStr: string, identity: ExplorerIdentity
     }
     case 'ws-room': {
       return {
-        desiredTransports: Atom<string[]>([connStr]),
+        desiredTransports: Atom([{ url: connStr, sceneId }]),
         reportPosition(position) {
           // stub
         },
@@ -106,7 +106,7 @@ export async function connectAdapter(connStr: string, identity: ExplorerIdentity
 
       if (typeof response.fixedAdapter === 'string' && !response.fixedAdapter.startsWith('signed-login:')) {
         return {
-          desiredTransports: Atom<string[]>([response.fixedAdapter]),
+          desiredTransports: Atom([{ url: response.fixedAdapter, sceneId }]),
           reportPosition(position) {
             // stub
           },

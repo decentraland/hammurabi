@@ -50,6 +50,7 @@ export class SceneContext implements EngineApiInterface {
 
   readonly entityId: string
 
+  private _transport?: CommsTransportWrapper
   // this future is resolved when the scene is disposed
   readonly stopped = future<void>()
 
@@ -462,13 +463,59 @@ export class SceneContext implements EngineApiInterface {
     return this._crdtSendToRenderer(payload.data)
   }
 
-  async attachLivekitTransport(transports: Iterable<CommsTransportWrapper>) {
+  get transport(): CommsTransportWrapper | undefined {
+    return this._transport
+  }
+
+  private incomingNetworkMessages: Uint8Array[] = []
+  
+  getNetworkMessages(): Uint8Array[] {
+    const messages = [...this.incomingNetworkMessages]
+    this.incomingNetworkMessages.length = 0
+    return messages
+  }
+  
+  attachLivekitTransport(transports: Iterable<CommsTransportWrapper>) {
     for (const transport of transports) {
       if (transport.sceneId === this.entityId) {
+        this._transport = transport
         transport.events.on('sceneMessageBus', (event) => {
-          console.log('[MessageBus scene]', event)
+          if (event.data.sceneId === this.entityId) {
+            if (event.data.data.byteLength) {
+              const [msgType, data] = decodeMessage(event.data.data)
+              console.log('[MessageBus scene]', data, event.address, event.data.sceneId === this.entityId)
+              const senderBytes = new TextEncoder().encode(event.address)
+              const messageLength = senderBytes.byteLength + data.byteLength + 1
+              const serializedMessage = new Uint8Array(messageLength)
+              serializedMessage.set(new Uint8Array([senderBytes.byteLength]), 0)
+              serializedMessage.set(senderBytes, 1)
+              serializedMessage.set(data, senderBytes.byteLength + 1)
+              this.incomingNetworkMessages.push(serializedMessage)
+            }
+          }
         })
       }
     }
   }
+}
+
+/**
+ * MsgType utils to diff between old string messages, and new uint8Array messages.
+ */
+export enum MsgType {
+  String = 1,
+  Uint8Array = 2
+}
+
+function decodeMessage(value: Uint8Array): [MsgType, Uint8Array] {
+  const msgType = value.at(0) as MsgType
+  const data = value.subarray(1)
+  return [msgType, data]
+}
+
+export function encodeMessage(data: Uint8Array, type: MsgType) {
+  const message = new Uint8Array(data.byteLength + 1)
+  message.set([type])
+  message.set(data, 1)
+  return message
 }

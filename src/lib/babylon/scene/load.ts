@@ -46,14 +46,12 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
   return await createSceneContext(engineScene, loadableScene, parsed.entityId, options.isGlobal, virtualScene)
 }
 
-export const LOCAL_PREVIEW_SCENE_ID = 'local-preview'
-
 /**
  * Loads a scene from a local context environment
  */
 export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, options: { baseUrl: string, isGlobal: boolean, withoutHotReload?: boolean }, virtualScene?: VirtualScene) {
   const loadableScene = await getLoadableSceneFromLocalContext(options.baseUrl)
-  const entityId = LOCAL_PREVIEW_SCENE_ID
+  const entityId = loadableScene.urn
 
   // cancel early if the scene is already loaded
   if (loadedScenesByEntityId.has(entityId)) return loadedScenesByEntityId.get(entityId)!
@@ -69,7 +67,7 @@ export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, opti
 
   if (!options.withoutHotReload) {
     // Initialize hot reload for local development
-    initHotReload(options.baseUrl, LOCAL_PREVIEW_SCENE_ID, reloadScene)
+    initHotReload(options.baseUrl, entityId, reloadScene)
   }
   
   return sceneContext

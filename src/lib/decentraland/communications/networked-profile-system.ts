@@ -26,7 +26,7 @@ export function createNetworkedProfileSystem(getTransports: () => Iterable<Comms
     // first ensure the transports are all wired
     for (const it of transports) {
       if (!wiredTransports.has(it)) {
-        wireTransportEvents(it)
+        // wireTransportEvents(it)
         wiredTransports.add(it)
       }
     }

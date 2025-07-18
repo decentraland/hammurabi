@@ -12,7 +12,7 @@ import { CommunicationsControllerServiceDefinition } from "@dcl/protocol/out-ts/
 import { UserActionModuleServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/user_action_module.gen";
 import { RestrictedActionsServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/restricted_actions.gen";
 import { SignedFetchServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/signed_fetch.gen";
-import { SceneContext } from "./scene-context";
+import { encodeMessage, MsgType, SceneContext } from "./scene-context";
 import { userIdentity } from "../../../explorer/state";
 import { signedFetch, getSignedHeaders } from "../../decentraland/identity/signed-fetch";
 import { Authenticator } from "@dcl/crypto";
@@ -88,10 +88,19 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
         data: []
       }
     },
-    async sendBinary(data) {
-      // console.log('[SendBinary]', data.peerData)
+    async sendBinary(req, context) {
+      if (req.peerData.length) {
+        console.log('Called sendBinary', req.peerData)
+      }
+      if (context.transport) {
+        for (const peerData of req.peerData) {
+          for (const data of peerData.data) {
+            void context.transport.sendParcelSceneMessage({ sceneId: context.entityId, data: encodeMessage(data, MsgType.Uint8Array) }, peerData.address)
+          }
+        }
+      }
       return {
-        data: []
+        data: context.getNetworkMessages()
       }
     }
   }))

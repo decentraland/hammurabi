@@ -4,7 +4,7 @@ import { createLogger } from "../../misc/logger"
 import { Position } from "@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen"
 
 export type CommsAdapter = {
-  desiredTransports: Atom<string[]>
+  desiredTransports: Atom<[{ url: string; sceneId: string }]>
   reportPosition: (position: { x: number, y: number, z: number }) => void
   disconnect(): void
 }
@@ -23,7 +23,7 @@ export interface MinimumCommunicationsTransport {
    * connected to this transport. The hints can be used to tweak the
    * default behavior of the transport.
    */
-  send(data: Uint8Array, hints: SendHints): void
+  send(data: Uint8Array, hints: SendHints, destination: string[]): void
   /**
    * The .connect() method resolves when the connection with the
    * transport was successful and it is ready to send and receive
