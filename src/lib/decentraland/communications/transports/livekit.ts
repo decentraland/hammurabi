@@ -28,8 +28,8 @@ export type LivekitConfig = {
   url: string
   token: string
   scene: Scene
-  microphone: Atom<string>
-  audioContext: AudioContext
+  microphone?: Atom<string>
+  audioContext?: AudioContext
 }
 
 export type VoiceSpatialParams = {
@@ -48,7 +48,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
   muteCheck?: Checkbox
 
   constructor(private config: LivekitConfig) {
-    this.room = new Room({ expWebAudioMix: { audioContext: this.config.audioContext } })
+    this.room = new Room({ expWebAudioMix: { audioContext: this.config.audioContext ?? null as any } })
 
     Object.assign(globalThis, { Engine, livekit: this })
 
@@ -56,11 +56,11 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
 
     if (typeof OffscreenCanvas !== 'undefined') {
       this.muteCheck = AddToggle('Mute microphone (Livekit)', guiPanel(config.scene))
-      this.muteCheck.isEnabled = !!config.microphone.getOrNull()
+      this.muteCheck.isEnabled = !!config.microphone?.getOrNull()
       this.muteCheck.isChecked = mutedMicrophone.getOrNull() ?? true
 
       // enable checkbox only when we have a microphone available
-      config.microphone.pipe((microphone) => {
+      config.microphone?.pipe((microphone) => {
         if (this.muteCheck) {
           this.muteCheck.isEnabled = true
         }
@@ -77,7 +77,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
       })
     }
 
-    config.microphone.pipe((microphone) => {
+    config.microphone?.pipe((microphone) => {
       voiceHandler.setInputStream(microphone)
     })
 
@@ -97,13 +97,21 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
         commsLogger.error('media device failure', failure);
       })
       .on(RoomEvent.ParticipantConnected, (_: RemoteParticipant) => {
-        commsLogger.log(this.room.name, 'remote participant joined', _.identity)
+        const address = _.identity
+        commsLogger.log(this.room.name, 'remote participant joined', address)
+        
+        this.events.emit('PEER_CONNECTED', {
+          address: address
+        })
       })
       .on(RoomEvent.ParticipantDisconnected, (_: RemoteParticipant) => {
+        const address = _.identity
+        
         this.events.emit('PEER_DISCONNECTED', {
-          address: _.identity
+          address: address
         })
-        commsLogger.log(this.room.name, 'remote participant left', _.identity)
+        
+        commsLogger.log(this.room.name, 'remote participant left', address)
       })
       .on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
         commsLogger.log(this.room.name, 'connection state changed', state)

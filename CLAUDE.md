@@ -31,8 +31,9 @@ This is the **hammurabi** project - a reference implementation of the Decentrala
 **Communications System (`src/lib/decentraland/communications/`)**:
 - Multi-protocol adapter system supporting LiveKit, WebSocket rooms, and offline modes
 - `CommsTransportWrapper` - Transport abstraction layer
-- Position reporting and networked profile systems
+- Position reporting and multiplayer avatar systems
 - Local server connection for previews via gatekeeper service at `localhost:3000`
+- ADR-204 compliant profile fetching from Catalyst network
 
 **CRDT Wire Protocol (`src/lib/decentraland/crdt-wire-protocol/`)**:
 - Component-based entity system with conflict resolution
@@ -42,13 +43,17 @@ This is the **hammurabi** project - a reference implementation of the Decentrala
 
 **SDK Components (`src/lib/decentraland/sdk-components/`)**:
 - Transform, mesh renderer, GLTF container, animator components
-- Avatar shape and customization system
+- Avatar system: `avatarShapeComponent` (SDK7 fake avatars) and `avatarBaseComponent` (multiplayer players)
+- `playerIdentityDataComponent` for player identity information
 - Pointer events, raycasts, and collision detection
 - Material and billboard components with Babylon.js integration
 
 ### Key Technical Details
 
-- Uses generational entity IDs with range-based access control
+- **Entity Allocation**: Uses Unity-compatible reserved entity ranges (32-255 for remote players, 1 for local player)
+- **Avatar Architecture**: Separate systems for SDK7 scene avatars vs real multiplayer players
+- **Profile System**: ADR-204 compliant with Catalyst-based profile fetching and version announcements
+- **Player Management**: `PlayerEntityManager` handles entity allocation/deallocation for multiplayer
 - Implements ADR-148 for frame processing and ADR-133 for main.crdt loading
 - Scene boundary calculation for message prioritization based on distance
 - Asset loading managed through centralized `AssetManager`

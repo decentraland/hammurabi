@@ -34,10 +34,12 @@ import { createValueSetComponentStore } from '../../decentraland/crdt-internal/g
 import { VirtualSceneSubscription } from '../../decentraland/virtual-scene'
 import { MAX_ENTITY_NUMBER } from '../../decentraland/crdt-internal/generational-index-pool'
 import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-shape'
+import { avatarBaseComponent } from '../../decentraland/sdk-components/avatar-base'
 import { delayedInterpolationComponent } from '../../decentraland/sdk-components/delayed-interpolation'
 import { tweenComponent } from '../../decentraland/sdk-components/tween'
 import { materialComponent } from '../../decentraland/sdk-components/material-component'
 import { CommsTransportWrapper } from '../../decentraland/communications/CommsTransportWrapper'
+import { createAvatarCommunicationSystem, AvatarCommunicationSystem } from '../../decentraland/communications/avatar-communication-system'
 
 const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
 
@@ -51,6 +53,7 @@ export class SceneContext implements EngineApiInterface {
   readonly entityId: string
 
   private _transport?: CommsTransportWrapper
+  private _avatarSystem?: AvatarCommunicationSystem
   // this future is resolved when the scene is disposed
   readonly stopped = future<void>()
 
@@ -109,6 +112,7 @@ export class SceneContext implements EngineApiInterface {
     [gltfContainerLoadingStateComponent.componentId]: createLwwStore(gltfContainerLoadingStateComponent),
     [engineInfoComponent.componentId]: createLwwStore(engineInfoComponent),
     [avatarShapeComponent.componentId]: createLwwStore(avatarShapeComponent),
+    [avatarBaseComponent.componentId]: createLwwStore(avatarBaseComponent),
     [tweenComponent.componentId]: createLwwStore(tweenComponent),
     [delayedInterpolationComponent.componentId]: createLwwStore(delayedInterpolationComponent),
     [materialComponent.componentId]: createLwwStore(materialComponent),
@@ -307,6 +311,11 @@ export class SceneContext implements EngineApiInterface {
       resolveCyclicParening(this)
     }
 
+    // Update avatar system if it exists
+    if (this._avatarSystem) {
+      this._avatarSystem.update()
+    }
+
     // mark the frame as processed. this signals the lateUpdate to respond to the scene with updates
     this.finishedProcessingIncomingMessagesOfTick = true
     return true
@@ -405,6 +414,12 @@ export class SceneContext implements EngineApiInterface {
     }
     this.subscriptions.length = 0
 
+    // Dispose avatar system if it exists
+    if (this._avatarSystem) {
+      this._avatarSystem.dispose()
+      this._avatarSystem = undefined
+    }
+
     this.stopped.resolve()
 
     this.assetManager.dispose()
@@ -474,27 +489,29 @@ export class SceneContext implements EngineApiInterface {
     return messages
   }
   
-  attachLivekitTransport(transports: Iterable<CommsTransportWrapper>) {
-    for (const transport of transports) {
-      if (transport.sceneId === this.entityId) {
-        this._transport = transport
-        transport.events.on('sceneMessageBus', (event) => {
-          if (event.data.sceneId === this.entityId) {
-            if (event.data.data.byteLength) {
-              const [msgType, data] = decodeMessage(event.data.data)
-              console.log('[MessageBus scene]', data, event.address, event.data.sceneId === this.entityId)
-              const senderBytes = new TextEncoder().encode(event.address)
-              const messageLength = senderBytes.byteLength + data.byteLength + 1
-              const serializedMessage = new Uint8Array(messageLength)
-              serializedMessage.set(new Uint8Array([senderBytes.byteLength]), 0)
-              serializedMessage.set(senderBytes, 1)
-              serializedMessage.set(data, senderBytes.byteLength + 1)
-              this.incomingNetworkMessages.push(serializedMessage)
-            }
-          }
-        })
+  attachLivekitTransport(transport: CommsTransportWrapper) {
+    this._transport = transport
+    
+    // Create avatar communication system for this scene
+    this._avatarSystem = createAvatarCommunicationSystem(transport)
+    
+    // Add the avatar system subscription to this scene's subscriptions
+    this.subscriptions.push(this._avatarSystem.createSubscription())
+    
+    transport.events.on('sceneMessageBus', (event) => {
+      if (event.data.sceneId === this.entityId) {
+        if (event.data.data.byteLength) {
+          const [_, data] = decodeMessage(event.data.data)
+          const senderBytes = new TextEncoder().encode(event.address)
+          const messageLength = senderBytes.byteLength + data.byteLength + 1
+          const serializedMessage = new Uint8Array(messageLength)
+          serializedMessage.set(new Uint8Array([senderBytes.byteLength]), 0)
+          serializedMessage.set(senderBytes, 1)
+          serializedMessage.set(data, senderBytes.byteLength + 1)
+          this.incomingNetworkMessages.push(serializedMessage)
+        }
       }
-    }
+    })
   }
 }
 

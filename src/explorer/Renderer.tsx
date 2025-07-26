@@ -5,7 +5,6 @@ import { unloadScene, loadSceneContext, getLoadableSceneFromLocalContext, loadSc
 import { PLAYER_HEIGHT, StaticEntities } from '../lib/babylon/scene/logic/static-entities'
 import { createSceneCullingSystem } from '../lib/babylon/scene/scene-culling'
 import { createSceneTickSystem } from '../lib/babylon/scene/update-scheduler'
-import { createAvatarVirtualSceneSystem } from '../lib/decentraland/communications/comms-virtual-scene-system'
 import { createNetworkedProfileSystem } from '../lib/decentraland/communications/networked-profile-system'
 import { createCommunicationsPositionReportSystem } from '../lib/decentraland/communications/position-report-system'
 import { createRealmCommunicationSystem } from '../lib/decentraland/communications/realm-communications-system'
@@ -21,6 +20,7 @@ import { createCharacterControllerSystem } from '../lib/babylon/avatars/Characte
 import { createCameraFollowsPlayerSystem } from '../lib/babylon/scene/logic/camera-follows-player'
 import { createCameraObstructionSystem } from '../lib/babylon/scene/logic/hide-camera-obstuction-system'
 import { createLocalAvatarSceneSystem } from '../lib/babylon/scene/logic/local-avatar-scene'
+import { createSceneComms } from '../lib/decentraland/communications/scene-comms'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -71,46 +71,46 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
   const characterControllerSystem = await createCharacterControllerSystem(scene)
 
   // then init all the rendering systems
-  const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, currentRealm, scene, selectedInputVoiceDevice, audioContext!)
-  const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, characterControllerSystem.capsule)
-  const networkedProfileSystem = createNetworkedProfileSystem(realmCommunicationSystem.getTransports)
-  const avatarVirtualScene = createAvatarVirtualSceneSystem(realmCommunicationSystem.getTransports, gameConsole.addConsoleMessage)
+  // const realmCommunicationSystem = createRealmCommunicationSystem(userIdentity, currentRealm, scene, selectedInputVoiceDevice, audioContext!)
+  // const networkedPositionReportSystem = createCommunicationsPositionReportSystem(realmCommunicationSystem.getTransports, characterControllerSystem.capsule)
+  // const networkedProfileSystem = createNetworkedProfileSystem(realmCommunicationSystem.getTransports)
+  // Avatar system is now handled by individual scene contexts
+  const identity = await userIdentity.deref()
+  const avatar = identity.isGuest ? await generateRandomAvatar(identity.address) : await downloadAvatar(identity.address)
   const avatarRenderingSystem = createAvatarRendererSystem(scene, () => loadedScenesByEntityId.values())
   const sceneCullingSystem = createSceneCullingSystem(scene, () => loadedScenesByEntityId.values())
   const sceneTickSystem = createSceneTickSystem(scene, () => loadedScenesByEntityId.values(), MS_PER_FRAME_PROCESSING_SCENE_MESSAGES)
-  const localAvatarSceneSystem = await createLocalAvatarSceneSystem(scene, networkedProfileSystem.currentAvatar)
+  const localAvatarSceneSystem = await createLocalAvatarSceneSystem(scene, avatar)
   const cameraFollowsPlayerSystem = createCameraFollowsPlayerSystem(characterControllerSystem.camera, localAvatarSceneSystem.playerEntity, characterControllerSystem)
   const cameraObstructionSystem = createCameraObstructionSystem(scene, characterControllerSystem.camera)
 
   playerEntityAtom.swap(characterControllerSystem.capsule)
 
-  gameConsole.onChatMessage.add(message => {
-    const transports = Array.from(realmCommunicationSystem.getTransports())
-    for (const t of transports) {
-      t.sendChatMessage({ timestamp: Date.now(), message })
-      gameConsole.addConsoleMessage({ message: `You: ${message}`, isCommand: false, color: 0x00cece })
-    }
-  })
+  // gameConsole.onChatMessage.add(message => {
+  //   const transports = Array.from(realmCommunicationSystem.getTransports())
+  //   for (const t of transports) {
+  //     t.sendChatMessage({ timestamp: Date.now(), message })
+  //     gameConsole.addConsoleMessage({ message: `You: ${message}`, isCommand: false, color: 0x00cece })
+  //   }
+  // })
 
-  realmCommunicationSystem.currentRealm.pipe(realm => {
-    gameConsole.addConsoleMessage({ message: `🌐 Connected to realm ${realm.aboutResponse.configurations?.realmName}`, isCommand: false })
-  })
+  // realmCommunicationSystem.currentRealm.pipe(realm => {
+    // gameConsole.addConsoleMessage({ message: `🌐 Connected to realm ${realm.aboutResponse.configurations?.realmName}`, isCommand: false })
+  // })
 
   addSystems(scene,
     // the realmCommunicationSystem is in charge to handle realm connections and connect/disconnect transports accordingly.
-    realmCommunicationSystem,
+    // realmCommunicationSystem,
 
     // as its name implies, the networked position report system is in charge of
     // broadcasting our position to the rest of the network
-    networkedPositionReportSystem,
+    // networkedPositionReportSystem,
 
     // the networked profile system is in charge of announcing updates in our local
     // profile to the rest of the network
-    networkedProfileSystem,
+    // networkedProfileSystem,
 
-    // the avatar virtual scene contains all the player entities (via comms) that are
-    // broadcasted/replicated to the rest of the running scenes
-    avatarVirtualScene,
+    // avatar system is now handled by individual scene contexts
 
     // this system executes the update and lateUpdate functions as defined in ADR-148
     sceneTickSystem,
@@ -138,93 +138,103 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     cameraObstructionSystem
   )
 
+  const realm = await currentRealm.deref()
+  const ctx = await loadSceneContextFromLocal(scene, { baseUrl: realm.baseUrl, isGlobal: false })
+  const sceneTransport = await createSceneComms(realm, userIdentity, scene)
+  ctx.attachLivekitTransport(sceneTransport)
+
+  const { position } = pickWorldSpawnpoint(ctx.loadableScene.entity.metadata as Scene)
+  characterControllerSystem.teleport(position)
+  characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
+//   ctx.nextTick().then(() => {
+//   // deactivate loading screen
+//   const { position } = pickWorldSpawnpoint(ctx.loadableScene.entity.metadata as Scene)
+
+//   characterControllerSystem.teleport(position)
+//   characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
+// })
+
   // when the realm changes, we need to destroy extra scenes and load the new ones
-  realmCommunicationSystem.currentRealm.pipe(async realm => {
-    const errors: string[] = []
+  // realmCommunicationSystem.currentRealm.pipe(async realm => {
+  //   const errors: string[] = []
 
-    // create an empty set of desired running scenes
-    const desiredRunningScenes = new Map<string, { isGlobal: boolean }>()
+  //   // create an empty set of desired running scenes
+  //   const desiredRunningScenes = new Map<string, { isGlobal: boolean }>()
 
-    // first load the desired scenes into the desiredRunningScenes set
-    avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
-    realm.aboutResponse.configurations?.scenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: false }))
-    realm.aboutResponse.configurations?.globalScenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
+  //   // first load the desired scenes into the desiredRunningScenes set
+  //   // avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
+  //   realm.aboutResponse.configurations?.scenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: false }))
+  //   realm.aboutResponse.configurations?.globalScenesUrn.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
 
-    const pendingSet = new Set<string>(desiredRunningScenes.keys())
+  //   const pendingSet = new Set<string>(desiredRunningScenes.keys())
 
-    function updatePending() {
-      loadingState.swap({ total: desiredRunningScenes.size, pending: pendingSet.size })
-    }
+  //   function updatePending() {
+  //     loadingState.swap({ total: desiredRunningScenes.size, pending: pendingSet.size })
+  //   }
 
-    updatePending()
+  //   updatePending()
     
-    // destroy all unwanted scenes, copy the loadedScenesByEntityId into an array to avoid
-    // errors caused by mutations of the loadedScenesByEntityId
-    for (const entityId of Array.from(loadedScenesByEntityId.keys())) {
-      if (!desiredRunningScenes.has(entityId))
-        unloadScene(entityId)
-    }
+  //   // destroy all unwanted scenes, copy the loadedScenesByEntityId into an array to avoid
+  //   // errors caused by mutations of the loadedScenesByEntityId
+  //   for (const entityId of Array.from(loadedScenesByEntityId.keys())) {
+  //     if (!desiredRunningScenes.has(entityId))
+  //       unloadScene(entityId)
+  //   }
 
-    // now that all unwanted scenes are destroyed, load the new realm
-    for (const [urn, { isGlobal }] of desiredRunningScenes) {
-      try {
-        if (!loadedScenesByEntityId.has(urn)) {
-          setTimeout(() => {
-            if (pendingSet.has(urn)) {
-              console.error(`Scene ${urn} timed out loading`)
-              pendingSet.delete(urn)
-              updatePending()
-            }
-          }, 60000)
-        }
+  //   // now that all unwanted scenes are destroyed, load the new realm
+  //   for (const [urn, { isGlobal }] of desiredRunningScenes) {
+  //     try {
+  //       if (!loadedScenesByEntityId.has(urn)) {
+  //         setTimeout(() => {
+  //           if (pendingSet.has(urn)) {
+  //             console.error(`Scene ${urn} timed out loading`)
+  //             pendingSet.delete(urn)
+  //             updatePending()
+  //           }
+  //         }, 60000)
+  //       }
 
-        const ctx = await loadSceneContext(scene, { urn, isGlobal }, avatarVirtualScene)
-        ctx.nextTick().finally(() => {
-          pendingSet.delete(urn)
-          updatePending()
-        })
-      } catch (err) {
-        pendingSet.delete(urn)
-        updatePending()
-        errors.push(`${err}`)
-      }
-    }
+  //       const ctx = await loadSceneContext(scene, { urn, isGlobal })
+  //       ctx.nextTick().finally(() => {
+  //         pendingSet.delete(urn)
+  //         updatePending()
+  //       })
+  //     } catch (err) {
+  //       pendingSet.delete(urn)
+  //       updatePending()
+  //       errors.push(`${err}`)
+  //     }
+  //   }
     
-    if (realm.baseUrl.includes('localhost')) {
-      const ctx = await loadSceneContextFromLocal(scene, { baseUrl: realm.baseUrl, isGlobal: false })
-      const transports = realmCommunicationSystem.getTransports()
-      ctx.attachLivekitTransport(transports)
-    }
+  //   // finally teleport to a location in the new realm. pick the first non-global scene
+  //   for (const [_, loadedScene] of loadedScenesByEntityId) {
+  //     if (!loadedScene.isGlobalScene) {
+  //       // activate loading screen
+  //       const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
+  //       characterControllerSystem.teleport(position)
+  //       characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
 
-    // finally teleport to a location in the new realm. pick the first non-global scene
-    for (const [_, loadedScene] of loadedScenesByEntityId) {
-      if (!loadedScene.isGlobalScene) {
-        // activate loading screen
-        const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
-        characterControllerSystem.teleport(position)
-        characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
+  //       loadedScene.nextTick().then(() => {
+  //         // deactivate loading screen
+  //         const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
 
-        loadedScene.nextTick().then(() => {
-          // deactivate loading screen
-          const { position } = pickWorldSpawnpoint(loadedScene.loadableScene.entity.metadata as Scene)
+  //         characterControllerSystem.teleport(position)
+  //         characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
+  //       })
+  //       break
+  //     }
+  //   }
 
-          characterControllerSystem.teleport(position)
-          characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
-        })
-        break
-      }
-    }
-
-    realmErrors.swap(errors)
-  })
+  //   realmErrors.swap(errors)
+  // })
 
   // generate a random avatar based on our identity
-  userIdentity.pipe(async identity => {
-    if (identity.isGuest)
-      networkedProfileSystem.setAvatar(await generateRandomAvatar(identity.address))
-    else
-      networkedProfileSystem.setAvatar(await downloadAvatar(identity.address))
-  })
+  // userIdentity.pipe(async identity => {
+  //   if (identity.isGuest)
+      
+  //   else
+  //     networkedProfileSystem.setAvatar()
+  // })
 
   return scene
 }

@@ -17,6 +17,7 @@ import { PBDelayedInterpolation } from '@dcl/protocol/out-ts/decentraland/sdk/co
 import { applyDelayedInterpolation } from './logic/delayed-interpolation'
 import { PBTween } from '@dcl/protocol/out-ts/decentraland/sdk/components/tween.gen'
 import { PBMaterial } from '@dcl/protocol/out-ts/decentraland/sdk/components/material.gen'
+import { PBAvatarBase } from '@dcl/protocol/out-ts/decentraland/sdk/components/avatar_base.gen'
 import { memoize } from '../../misc/memoize'
 
 export type TransformCommand = { value: Transform, time: number }
@@ -49,6 +50,7 @@ export type AppliedComponents = {
   }
   pointerEvents: PBPointerEvents
   avatarRenderer: AvatarRenderer
+  avatarBase: PBAvatarBase
   delayedInterpolation: PBDelayedInterpolation
   tween: PBTween
   material: {

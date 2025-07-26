@@ -8,7 +8,7 @@ import { Avatar } from "@dcl/schemas"
 
 // this system internally creates a SceneContext to host the playerEntity
 // IMPORTANT: this behavior is not final, will be revisited while implementing AvatarAttachment component
-export async function createLocalAvatarSceneSystem(scene: Scene, currentAvatar: Atom<Avatar>) {
+export async function createLocalAvatarSceneSystem(scene: Scene, currentAvatar: Avatar) {
   const localAvatarScene = new SceneContext(
     scene,
     {
@@ -32,38 +32,6 @@ export async function createLocalAvatarSceneSystem(scene: Scene, currentAvatar: 
     setAvatarRenderer(playerEntity, value)
   }
 
-
-  setAvatarShape({
-    id: "Guest (loading)",
-    name: "Guest (loading)",
-    wearables: [
-      "urn:decentraland:off-chain:base-avatars:sneakers",
-      "urn:decentraland:off-chain:base-avatars:eyes_00",
-      "urn:decentraland:off-chain:base-avatars:eyebrows_00",
-      "urn:decentraland:off-chain:base-avatars:mouth_00",
-      "urn:decentraland:off-chain:base-avatars:beard",
-      "urn:decentraland:off-chain:base-avatars:triple_ring",
-      "urn:decentraland:off-chain:base-avatars:basketball_shorts",
-    ],
-    emotes: [],
-    bodyShape: "urn:decentraland:off-chain:base-avatars:BaseMale",
-    eyeColor: {
-      r: 1.0,
-      g: 0.0,
-      b: 0.0,
-    },
-    hairColor: {
-      r: 0.0,
-      g: 0.0,
-      b: 1.0,
-    },
-    skinColor: {
-      r: 0.0,
-      g: 1.0,
-      b: 0.0,
-    },
-  })
-
   function setAvatarShapeFromAvatar(av: Avatar) {
     setAvatarShape({
       id: av.ethAddress,
@@ -76,8 +44,7 @@ export async function createLocalAvatarSceneSystem(scene: Scene, currentAvatar: 
       skinColor: av.avatar.skin.color
     })
   }
-
-  currentAvatar.pipe(setAvatarShapeFromAvatar)
+  setAvatarShapeFromAvatar(currentAvatar)
 
   return {
     playerEntity,

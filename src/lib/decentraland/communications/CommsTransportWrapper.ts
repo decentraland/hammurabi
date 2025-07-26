@@ -17,7 +17,7 @@ export type TransportPacket<T> = {
   data: T
 }
 
-export type CommsEvents = Pick<CommsTransportEvents, 'DISCONNECTION' | 'PEER_DISCONNECTED'> & {
+export type CommsEvents = Pick<CommsTransportEvents, 'DISCONNECTION' | 'PEER_CONNECTED' | 'PEER_DISCONNECTED'> & {
   // ADR-104 messages
   sceneMessageBus: TransportPacket<proto.Scene>
   chatMessage: TransportPacket<proto.Chat>
@@ -42,6 +42,7 @@ export class CommsTransportWrapper {
     this.sceneId = sceneId
     this.transport.events.on('message', this.handleMessage.bind(this))
     this.transport.events.on('DISCONNECTION', (event) => this.events.emit('DISCONNECTION', event))
+    this.transport.events.on('PEER_CONNECTED', (event) => this.events.emit('PEER_CONNECTED', event))
     this.transport.events.on('PEER_DISCONNECTED', (event) => this.events.emit('PEER_DISCONNECTED', event))
   }
 
@@ -49,10 +50,7 @@ export class CommsTransportWrapper {
     if (this.state !== RoomConnectionStatus.NONE) return
     try {
       this.state = RoomConnectionStatus.CONNECTING
-      const peers = await this.transport.connect()
-      for (const address in peers) {
-        this.sendProfileRequest({ address, profileVersion: 0 })
-      }
+      await this.transport.connect()
       this.state = RoomConnectionStatus.CONNECTED
     } catch (e: any) {
       this.state = RoomConnectionStatus.DISCONNECTED

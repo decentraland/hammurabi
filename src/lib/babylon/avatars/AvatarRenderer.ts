@@ -1,5 +1,6 @@
 import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, ThinTexture, TransformNode, Vector3 } from "@babylonjs/core";
 import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
+import { PBAvatarBase } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_base.gen";
 import { BabylonEntity } from "../scene/BabylonEntity";
 import { createLoadableAvatarConfig } from "./loader";
 import { AvatarShapeWithAssetManagers, EmoteWithContainer, WearableWithContainer } from "./adr-65/types";
@@ -203,6 +204,7 @@ export class AvatarRenderer extends TransformNode {
   }
 
   currentShape: PBAvatarShape | null = null
+  currentAvatarBase: PBAvatarBase | null = null
 
   setAvatarShape(shape: PBAvatarShape) {
     if (this.currentShape == shape) return
@@ -220,6 +222,28 @@ export class AvatarRenderer extends TransformNode {
         }
       })
       .catch(avatarRendererLogger.error)
+  }
+
+  updateAvatarBase(avatarBase: PBAvatarBase) {
+    if (this.currentAvatarBase === avatarBase) return
+    
+    this.currentAvatarBase = avatarBase
+    this.textBlock.text = avatarBase.name || ''
+    
+    // Create a PBAvatarShape from AvatarBase data for compatibility with existing loading system
+    const fakeAvatarShape: PBAvatarShape = {
+      id: avatarBase.bodyShapeUrn || '',
+      bodyShape: avatarBase.bodyShapeUrn || '',
+      wearables: [], // Will be populated if needed
+      emotes: [],
+      eyeColor: avatarBase.eyesColor,
+      hairColor: avatarBase.hairColor,
+      skinColor: avatarBase.skinColor,
+      name: avatarBase.name || ''
+    }
+    
+    // Use existing avatar loading system with converted data
+    this.setAvatarShape(fakeAvatarShape)
   }
 
   async loadModelsFromConfig(config: AvatarShapeWithAssetManagers) {

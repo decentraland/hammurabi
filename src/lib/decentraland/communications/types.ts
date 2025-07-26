@@ -11,6 +11,7 @@ export type CommsAdapter = {
 
 export type CommsTransportEvents = {
   DISCONNECTION: TransportDisconnectedEvent
+  PEER_CONNECTED: PeerConnectedEvent
   PEER_DISCONNECTED: PeerDisconnectedEvent
   message: TransportMessageEvent
   error: Error
@@ -60,6 +61,12 @@ export type TransportDisconnectedEvent = {
   kicked: boolean
   // Optional error
   error?: Error
+}
+
+// PEER_CONNECTED
+export type PeerConnectedEvent = {
+  // The ethereum address of the connected peer
+  address: string
 }
 
 // PEER_DISCONNECTED
