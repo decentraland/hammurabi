@@ -9,6 +9,7 @@ import { json } from '../../misc/json'
 import { Entity } from '@dcl/schemas'
 import { initHotReload } from './hot-reload'
 import { sleep } from '../../misc/promises'
+import { Atom } from '../../misc/atom'
 
 /**
  * Creates and initializes a scene context from a loadable scene
@@ -49,20 +50,17 @@ export async function loadSceneContext(engineScene: BABYLON.Scene, options: { ur
 /**
  * Loads a scene from a local context environment
  */
-export async function loadSceneContextFromLocal(engineScene: BABYLON.Scene, options: { baseUrl: string, isGlobal: boolean, withoutHotReload?: boolean }, virtualScene?: VirtualScene) {
+export async function loadSceneContextFromLocal(sceneContext: Atom<SceneContext>, engineScene: BABYLON.Scene, options: { baseUrl: string, isGlobal: boolean, withoutHotReload?: boolean }, virtualScene?: VirtualScene): Promise<Atom<SceneContext>> {
   const loadableScene = await getLoadableSceneFromLocalContext(options.baseUrl)
   const entityId = loadableScene.urn
 
-  // cancel early if the scene is already loaded
-  if (loadedScenesByEntityId.has(entityId)) return loadedScenesByEntityId.get(entityId)!
-
-  const sceneContext = await createSceneContext(engineScene, loadableScene, entityId, options.isGlobal, virtualScene)
+  sceneContext.swap(await createSceneContext(engineScene, loadableScene, entityId, options.isGlobal, virtualScene))
 
   async function reloadScene() {
     unloadScene(entityId)
     await sleep(100)
     options.withoutHotReload = true
-    loadSceneContextFromLocal(engineScene, options)
+    loadSceneContextFromLocal(sceneContext, engineScene, options)
   }
 
   if (!options.withoutHotReload) {

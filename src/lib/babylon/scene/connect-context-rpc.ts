@@ -89,12 +89,10 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
       }
     },
     async sendBinary(req, context) {
-      if (req.peerData.length) {
-        console.log('Called sendBinary', req.peerData)
-      }
       if (context.transport) {
         for (const peerData of req.peerData) {
           for (const data of peerData.data) {
+            console.log('[SendBINARY]1', peerData)
             void context.transport.sendParcelSceneMessage({ sceneId: context.entityId, data: encodeMessage(data, MsgType.Uint8Array) }, peerData.address)
           }
         }

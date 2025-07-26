@@ -57,4 +57,6 @@ build: node_modules build-testing-realm
 start: build-testing-realm
 	node ./build.js --watch
 
+dev: node ./build.js --watch
+
 .PHONY: build test

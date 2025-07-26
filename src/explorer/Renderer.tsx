@@ -21,6 +21,8 @@ import { createCameraFollowsPlayerSystem } from '../lib/babylon/scene/logic/came
 import { createCameraObstructionSystem } from '../lib/babylon/scene/logic/hide-camera-obstuction-system'
 import { createLocalAvatarSceneSystem } from '../lib/babylon/scene/logic/local-avatar-scene'
 import { createSceneComms } from '../lib/decentraland/communications/scene-comms'
+import { SceneContext } from '../lib/babylon/scene/scene-context'
+import { Atom } from '../lib/misc/atom'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -139,11 +141,14 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
   )
 
   const realm = await currentRealm.deref()
-  const ctx = await loadSceneContextFromLocal(scene, { baseUrl: realm.baseUrl, isGlobal: false })
+  const sceneContext: Atom<SceneContext> = Atom()
   const sceneTransport = await createSceneComms(realm, userIdentity, scene)
-  ctx.attachLivekitTransport(sceneTransport)
-
-  const { position } = pickWorldSpawnpoint(ctx.loadableScene.entity.metadata as Scene)
+  sceneContext.pipe(async (ctx) => {
+    ctx.attachLivekitTransport(sceneTransport)
+  })
+  const ctx = await loadSceneContextFromLocal(sceneContext, scene, { baseUrl: realm.baseUrl, isGlobal: false })
+  
+  const { position } = pickWorldSpawnpoint((await ctx.deref()).loadableScene.entity.metadata as Scene)
   characterControllerSystem.teleport(position)
   characterControllerSystem.capsule.position.y += PLAYER_HEIGHT
 //   ctx.nextTick().then(() => {

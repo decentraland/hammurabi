@@ -32,7 +32,7 @@ export interface MinimumCommunicationsTransport {
    * 
    * This method returns a set of connected peerIdentities.
    */
-  connect(): Promise<Set<string>>
+  connect(): Promise<void>
   /**
    * The .disconnect() method can optionally receive an error that will
    * be bubbled up in the DISCONNECTED event. It should be used to
