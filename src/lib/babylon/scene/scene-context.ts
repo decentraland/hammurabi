@@ -144,7 +144,6 @@ export class SceneContext implements EngineApiInterface {
   constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean, entityId: string) {
     this.entityId = entityId
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
-
     // the rootNode must be positioned according to the value of the "scenes.base" of the scene metadata (scene.json)
     this.metadata = loadableScene.entity.metadata as Scene
     if (this.metadata.scene?.base) {

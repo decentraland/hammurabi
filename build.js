@@ -63,8 +63,7 @@ async function buildBundle(entryPoint, output) {
 }
 
 async function main() {
-  const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
-
+  // const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
   const ctxMain = await buildBundle('src/explorer/index.ts', 'static/js/bundle.js')
 
   if (WATCH_MODE) {
