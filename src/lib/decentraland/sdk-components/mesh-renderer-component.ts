@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core'
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
-import { PBMeshRenderer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_renderer.gen";
+import { PBMeshRenderer } from "@dcl/protocol/out-js/decentraland/sdk/components/mesh_renderer.gen";
 import { ComponentType } from "../crdt-internal/components";
 import { memoize } from "../../misc/memoize";
 import { baseMaterial } from '../../babylon/scene/BabylonEntity';

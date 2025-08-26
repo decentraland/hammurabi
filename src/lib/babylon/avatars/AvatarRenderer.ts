@@ -1,6 +1,6 @@
 import { AbstractMesh, InstantiatedEntries, Matrix, Mesh, MeshBuilder, Plane, ThinTexture, TransformNode, Vector3 } from "@babylonjs/core";
-import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
-import { PBAvatarBase } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_base.gen";
+import { PBAvatarShape } from "@dcl/protocol/out-js/decentraland/sdk/components/avatar_shape.gen";
+import { PBAvatarBase } from "@dcl/protocol/out-js/decentraland/sdk/components/avatar_base.gen";
 import { BabylonEntity } from "../scene/BabylonEntity";
 import { createLoadableAvatarConfig } from "./loader";
 import { AvatarShapeWithAssetManagers, EmoteWithContainer, WearableWithContainer } from "./adr-65/types";
@@ -55,8 +55,8 @@ export class AvatarRenderer extends TransformNode {
   headingAngle = 0
   lastPositionCommands: PositionRecord[] = []
   labelPlane: Mesh;
-  texture: AdvancedDynamicTexture;
-  textBlock: TextBlock;
+  texture?: AdvancedDynamicTexture;
+  textBlock?: TextBlock;
 
   constructor(private entity: BabylonEntity) {
     super('AvatarRenderer', entity.getScene())
@@ -67,23 +67,32 @@ export class AvatarRenderer extends TransformNode {
       entity.getScene()
     )
 
-    this.texture = AdvancedDynamicTexture.CreateForMesh(
-      this.labelPlane,
-      512,
-      32,
-      false
-    )
+    // Skip UI creation in headless environment
+    if (typeof OffscreenCanvas !== 'undefined') {
+      this.texture = AdvancedDynamicTexture.CreateForMesh(
+        this.labelPlane,
+        512,
+        32,
+        false
+      )
+    }
 
-    this.textBlock = new TextBlock()
+    // Skip UI creation in headless environment
+    if (typeof OffscreenCanvas !== 'undefined') {
+      this.textBlock = new TextBlock()
+    }
 
     this.labelPlane.position.y = PLAYER_HEIGHT + 0.125 * 3
     this.labelPlane.parent = this
     this.labelPlane.billboardMode = 7
 
-    this.textBlock.fontWeight = '700'
-    this.textBlock.outlineColor = '#6ef759'
-    this.textBlock.outlineWidth = 1
-    this.textBlock.color = '#572a21'
+    // Configure text styling only if textBlock exists
+    if (this.textBlock) {
+      this.textBlock.fontWeight = '700'
+      this.textBlock.outlineColor = '#6ef759'
+      this.textBlock.outlineWidth = 1
+      this.textBlock.color = '#572a21'
+    }
 
     const originalF = this.labelPlane.isInFrustum
 
@@ -99,7 +108,10 @@ export class AvatarRenderer extends TransformNode {
       return originalF.call(this, frustumPlanes)
     }
 
-    this.texture.addControl(this.textBlock)
+    // Skip UI setup in headless environment
+    if (this.texture && this.textBlock) {
+      this.texture.addControl(this.textBlock)
+    }
   }
 
   // This function is called after Babylon calculates the world matrix of the entity
@@ -212,7 +224,9 @@ export class AvatarRenderer extends TransformNode {
     // TODO: this information is present in the realm definition (AboutResponse#content.publicUrl)
     const contentServerBaseUrl = 'https://peer.decentraland.org/content'
 
-    this.textBlock.text = shape.name || ''
+    if (this.textBlock) {
+      this.textBlock.text = shape.name || ''
+    }
     this.currentShape = shape
 
     createLoadableAvatarConfig(shape, contentServerBaseUrl, this.getScene())
@@ -228,7 +242,9 @@ export class AvatarRenderer extends TransformNode {
     if (this.currentAvatarBase === avatarBase) return
     
     this.currentAvatarBase = avatarBase
-    this.textBlock.text = avatarBase.name || ''
+    if (this.textBlock) {
+      this.textBlock.text = avatarBase.name || ''
+    }
     
     // Create a PBAvatarShape from AvatarBase data for compatibility with existing loading system
     const fakeAvatarShape: PBAvatarShape = {
@@ -259,9 +275,12 @@ export class AvatarRenderer extends TransformNode {
       loadWearableForBodyShape(loader, bodyShape).catch(avatarRendererLogger.error)
     )
 
-    const loadEmotePromises = config.loadedEmotes.map(loader =>
-      loadEmoteForBodyShape(loader, bodyShape).catch(avatarRendererLogger.error)
-    )
+    // Skip emote loading in headless environment
+    const loadEmotePromises = typeof OffscreenCanvas !== 'undefined' 
+      ? config.loadedEmotes.map(loader =>
+          loadEmoteForBodyShape(loader, bodyShape).catch(avatarRendererLogger.error)
+        )
+      : []
 
     const assets = (await Promise.all(loadWearablePromises)).filter(Boolean) as WearableWithContainer[]
 

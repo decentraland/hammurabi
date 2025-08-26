@@ -4,6 +4,7 @@ import {
 } from '@dcl/protocol/out-js/decentraland/sdk/development/local_development.gen'
 import { loadSceneContextFromLocal, unloadScene } from './load'
 import { sleep } from '../../misc/promises'
+import { WebSocket } from 'ws'
 
 interface WebSocketMessage {
   type: string
@@ -26,6 +27,7 @@ export async function initHotReload(baseUrl: string, entityId: string, reloadSce
   await start()
 
   async function start(): Promise<void> {
+    console.log('init hot reload')
     try {
       wsConnection = new WebSocket(`ws://localhost:${port}`)
       wsConnection.binaryType = 'arraybuffer'
@@ -34,6 +36,7 @@ export async function initHotReload(baseUrl: string, entityId: string, reloadSce
       }
 
       wsConnection.onmessage = async (event) => {        
+        console.log('onmessage')
         // Only decode if the data is binary (ArrayBuffer)
         if (event.data instanceof ArrayBuffer) {
           try {

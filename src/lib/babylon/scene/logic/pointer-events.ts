@@ -2,12 +2,12 @@ import { Matrix, Node, PickingInfo, PointerEventTypes, Ray, Scene, Vector3 } fro
 import * as GUI from '@babylonjs/gui'
 import { BabylonEntity } from '../BabylonEntity'
 import { getColliderLayers } from './colliders'
-import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
+import { ColliderLayer } from '@dcl/protocol/out-js/decentraland/sdk/components/mesh_collider.gen'
 import { memoize } from '../../../misc/memoize'
 import { advancedUiTexture } from '../../visual/ui'
-import { InputAction, PointerEventType } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/input_action.gen'
+import { InputAction, PointerEventType } from '@dcl/protocol/out-js/decentraland/sdk/components/common/input_action.gen'
 import { pointerEventsResultComponent } from '../../../decentraland/sdk-components/pointer-events-result'
-import { PBPointerEventsResult } from '@dcl/protocol/out-ts/decentraland/sdk/components/pointer_events_result.gen'
+import { PBPointerEventsResult } from '@dcl/protocol/out-js/decentraland/sdk/components/pointer_events_result.gen'
 import { pickingToRaycastHit, raycastResultFromRay } from './raycasts'
 
 // returns true if the entity has PointerEvents

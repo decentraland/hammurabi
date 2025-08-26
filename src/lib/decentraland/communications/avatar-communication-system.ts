@@ -36,7 +36,7 @@ export function createAvatarCommunicationSystem(transport: CommsTransportWrapper
         throw new Error(`Failed to fetch profile: ${response.status}`)
       }
       
-      const data = await response.json()
+      const data: any = await response.json()
       return data[0].avatars?.[0] // Return the profile data
     } catch (error) {
       console.error('Failed to fetch profile from Catalyst:', error)
@@ -60,11 +60,7 @@ export function createAvatarCommunicationSystem(transport: CommsTransportWrapper
         if (profile && profile.version >= announcedVersion) {
           profileCache.set(address, {profile, version: profile.version})
           updatePlayerComponents(entity, address, profile)
-          
-          if (!cached) {
-            console.log(`[AvatarSystem] ${profile.name} joined scene ${transport.sceneId}`)
-          }
-        }
+                  }
       } catch (error) {
         console.error('Failed to handle profile version announcement:', error)
       }
@@ -72,7 +68,6 @@ export function createAvatarCommunicationSystem(transport: CommsTransportWrapper
   }
 
   function updatePlayerComponents(entity: Entity, address: string, profile: any) {
-    console.log('[updatePlayerComponents]: ', { entity, address, profile })
     // Update PlayerIdentityData component (protobuf)
     PlayerIdentityData.createOrReplace(entity, { 
       address: address, 
@@ -144,9 +139,7 @@ export function createAvatarCommunicationSystem(transport: CommsTransportWrapper
     
     // Allocate entity for the new participant
     const entity = findPlayerEntityByAddress(address, true)
-    if (entity) {
-      console.log(`[AvatarSystem] Peer connected: ${address} -> entity ${entity}`)
-      
+    if (entity) {      
       // Trigger initial profile fetch
       transport.events.emit('profileMessage', {
         address: address,
@@ -158,10 +151,10 @@ export function createAvatarCommunicationSystem(transport: CommsTransportWrapper
   })
   
   transport.events.on('PEER_DISCONNECTED', (event) => {
+    // TODO: handle the .off event
     console.log('[PEER_DISCONNECTED]', event)
     const entity = findPlayerEntityByAddress(event.address, false)
     if (entity) {
-      console.log(`[AvatarSystem] Peer disconnected: ${event.address}`)
       removePlayerEntity(entity, event.address)
     }
   })
@@ -195,7 +188,6 @@ export function createAvatarCommunicationSystem(transport: CommsTransportWrapper
     findPlayerEntityByAddress(event.address, true)
 
     const name = cached?.profile?.name || 'Unknown'
-    console.log(`[AvatarSystem] Chat from ${name}: ${event.data.message}`)
   })
 
   // Public API for managing the avatar system

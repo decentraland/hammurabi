@@ -1,5 +1,5 @@
 import { ComponentType } from "../crdt-internal/components";
-import { PBDelayedInterpolation } from "@dcl/protocol/out-ts/decentraland/sdk/components/delayed_interpolation.gen";
+import { PBDelayedInterpolation } from "@dcl/protocol/out-js/decentraland/sdk/components/delayed_interpolation.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 
 export const delayedInterpolationComponent = declareComponentUsingProtobufJs(PBDelayedInterpolation, 1101, (entity, component) => {

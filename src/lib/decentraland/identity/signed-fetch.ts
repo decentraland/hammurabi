@@ -55,7 +55,7 @@ export function signedFetch(
         init?.method ?? 'get',
         path,
         {
-          origin: location.origin,
+          origin: 'hammurabi-server://',
           ...additionalMetadata
         },
         (payload) => Authenticator.signPayload(identity, payload)

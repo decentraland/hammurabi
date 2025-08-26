@@ -1,5 +1,5 @@
 import { ComponentType } from "../crdt-internal/components";
-import { PBAnimator } from "@dcl/protocol/out-ts/decentraland/sdk/components/animator.gen";
+import { PBAnimator } from "@dcl/protocol/out-js/decentraland/sdk/components/animator.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { applyAnimations } from '../../babylon/scene/logic/apply-animations';
 

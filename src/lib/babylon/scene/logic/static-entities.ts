@@ -5,7 +5,7 @@ import { globalCoordinatesToSceneCoordinates } from "../coordinates";
 import { Entity } from "../../../decentraland/types";
 import { engineInfoComponent } from "../../../decentraland/sdk-components/engine-info";
 import { EntityUtils } from "../../../decentraland/crdt-internal/generational-index-pool";
-import { playerEntityAtom } from "../../../../explorer/state";
+import { playerEntityAtom } from "../../../decentraland/state";
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,

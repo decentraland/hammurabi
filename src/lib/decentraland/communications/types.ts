@@ -1,7 +1,7 @@
 import { Atom } from "../../misc/atom"
 import { Emitter } from "mitt"
 import { createLogger } from "../../misc/logger"
-import { Position } from "@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen"
+import { Position } from "@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen"
 
 export type CommsAdapter = {
   desiredTransports: Atom<[{ url: string; sceneId: string }]>

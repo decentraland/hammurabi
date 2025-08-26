@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core'
 import { interactWithScene } from './scene/logic/pointer-events'
-import { InputAction, PointerEventType } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/input_action.gen'
+import { InputAction, PointerEventType } from '@dcl/protocol/out-js/decentraland/sdk/components/common/input_action.gen'
 import { CharacterController } from './avatars/CharacterController'
 
 enum Keys {
@@ -84,17 +84,17 @@ export function initKeyboard(scene: BABYLON.Scene, characterController: Characte
     [keyName: string]: boolean
   } = {}
 
-  document.body.addEventListener('keydown', (e) => {
-    keyState[Keys.KEY_SHIFT] = e.shiftKey
-    keyState[Keys.KEY_CTRL] = e.ctrlKey
-    keyState[e.keyCode] = true
-  })
+  // document.body.addEventListener('keydown', (e) => {
+  //   keyState[Keys.KEY_SHIFT] = e.shiftKey
+  //   keyState[Keys.KEY_CTRL] = e.ctrlKey
+  //   keyState[e.keyCode] = true
+  // })
 
-  document.body.addEventListener('keyup', (e) => {
-    keyState[Keys.KEY_SHIFT] = e.shiftKey
-    keyState[Keys.KEY_CTRL] = e.ctrlKey
-    keyState[e.keyCode] = false
-  })
+  // document.body.addEventListener('keyup', (e) => {
+  //   keyState[Keys.KEY_SHIFT] = e.shiftKey
+  //   keyState[Keys.KEY_CTRL] = e.ctrlKey
+  //   keyState[e.keyCode] = false
+  // })
 
   return { keyState }
 }
@@ -106,7 +106,7 @@ export function initKeyboard(scene: BABYLON.Scene, characterController: Characte
  * Otherwise, handle the event via `interactWithScene`
  **/
 export function enableMouseLockBehaviorAndPointerEvents(scene: BABYLON.Scene) {
-  const hasPointerLock = () => !!document.pointerLockElement
+  const hasPointerLock = () => false
 
   const canvas = scene.getEngine().getRenderingCanvas()
 
@@ -117,11 +117,11 @@ export function enableMouseLockBehaviorAndPointerEvents(scene: BABYLON.Scene) {
   scene.onPointerObservable.add((e) => {
     if (e.type === BABYLON.PointerEventTypes.POINTERDOWN) {
       if (hasPointerLock()) {
-        canvas?.focus()
+        // canvas?.focus()
         interactWithScene(PointerEventType.PET_DOWN, InputAction.IA_POINTER)
       } else {
-        canvas?.requestPointerLock()
-        canvas?.focus()
+        // canvas?.requestPointerLock()
+        // canvas?.focus()
       }
     } else if (e.type === BABYLON.PointerEventTypes.POINTERUP) {
       if (hasPointerLock()) {

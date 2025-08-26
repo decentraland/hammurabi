@@ -2,7 +2,7 @@
 
 import { Observable } from "@babylonjs/core"
 import future, { IFuture } from "fp-future"
-import { useEffect, useState } from "react"
+// No React needed for headless server
 
 const EMPTY = Symbol('empty')
 type EMPTY = typeof EMPTY
@@ -68,16 +68,4 @@ export function Atom<T>(initialValue: T | EMPTY = EMPTY): Atom<T> {
   }
 }
 
-export function useAtom<T>(atom: Atom<T>): T | null {
-  const [value, setValue] = useState(atom.getOrNull())
-
-  useEffect(() => {
-    function obs() {
-      setValue(atom.getOrNull())
-    }
-    const observer = atom.observable.add(obs)
-    return (): void => { atom.observable.remove(observer) }
-  }, [atom])
-
-  return value
-}
+// useAtom hook removed - not needed for headless server

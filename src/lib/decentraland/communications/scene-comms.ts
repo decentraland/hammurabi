@@ -3,7 +3,7 @@ import { ExplorerIdentity } from "../identity/types"
 import { connectAdapter, connectLocalAdapter } from "./connect-adapter"
 import { connectTransport } from "./connect-transport"
 import { Scene } from "@babylonjs/core"
-import { CurrentRealm } from "../../../explorer/state"
+import { CurrentRealm } from "../state"
 
 /**
  * This system is in charge to handle realm connections and connect/disconnect transports accordingly.

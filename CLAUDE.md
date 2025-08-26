@@ -4,21 +4,53 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build Commands
 
-This project uses a Makefile for build commands:
+### NPM Package Usage (Recommended)
+The project is published as `@dcl/hammurabi-server` and runs the Decentraland protocol in headless mode using Babylon.js NullEngine:
 
-- `make build` - Builds the project into the `./static` folder with production optimizations
-- `make start` - Builds the testing realm and starts development server with watch mode  
-- `make watch` - Alias for `make start`, starts development web server on https://localhost:7081
+```bash
+# Run with default guest identity
+npx @dcl/hammurabi-server start --realm=localhost:8000
+
+# Run with custom wallet address
+npx @dcl/hammurabi-server start --realm=localhost:8000 --address=0x123...
+
+# Run as authenticated user
+npx @dcl/hammurabi-server start --address=0x123... --authenticated
+```
+
+The CLI reuses the same `main()` function from `engine-main.ts`:
+- **Headless mode**: `main({ identity: {...}, realm: {...} })` (no canvas = uses NullEngine)
+- **Scene Runtime**: Automatically detects environment and uses:
+  - **Browser**: WebWorker with isolated JavaScript execution
+  - **Node.js**: Same WebWorker runtime logic but with MemoryTransport (no actual worker threads)
+
+### Local Development CLI
+For local development, use the `./hammurabi` executable:
+
+- `./hammurabi start [realm=<url>]` - Start development server with optional realm
+- `./hammurabi build` - Build production bundle into `./static` folder  
+- `./hammurabi test [file=<path>] [--watch]` - Run tests with optional file filter and watch mode
+- `./hammurabi sdk-watch` - Launch SDK development mode with official Decentraland Explorer
+
+### Makefile Commands (used internally by CLI)
+- `make build` - Builds the project with production optimizations
+- `make dev` - Starts development server with watch mode on http://localhost:8099
 - `make test` - Runs all Jest tests with coverage
-- `make test-watch` - Runs tests in watch mode; use `make test-watch TESTARGS='test/file.spec.ts'` for specific files
+- `make test-watch TESTARGS='test/file.spec.ts'` - Runs specific tests in watch mode
 - `make build-testing-realm` - Builds the static testing realm for scenes
-- `make sdk-watch` - Builds scenes and launches web server for the official Decentraland Explorer
+- `make update-snapshots` - Updates integration test snapshots
 
 The project uses esbuild for compilation, TypeScript for type checking, and Jest for testing.
 
 ## Project Architecture
 
-This is the **hammurabi** project - a reference implementation of the Decentraland protocol using Babylon.js that runs entirely in web browsers. The project is educational/experimental and currently in proof-of-concept status.
+This is the **hammurabi** project - a reference implementation of the Decentraland protocol using Babylon.js that runs entirely in web browsers. The project serves as:
+- Documentation of current and future protocol standards
+- Experimental ground for protocol changes  
+- Educational guide for new Decentraland contributors
+- Prototyping platform for new features
+
+**Current Status**: Proof of Concept
 
 ### Core Architecture Components
 
@@ -30,10 +62,12 @@ This is the **hammurabi** project - a reference implementation of the Decentrala
 
 **Communications System (`src/lib/decentraland/communications/`)**:
 - Multi-protocol adapter system supporting LiveKit, WebSocket rooms, and offline modes
-- `CommsTransportWrapper` - Transport abstraction layer
+- `CommsTransportWrapper` - ADR-104 implementation for transport abstraction
+- `AvatarCommunicationSystem` - Per-scene avatar management with profile caching
+- `PlayerEntityManager` - Reserved entity allocation (entity 1 for local, 32-255 for remote players)
 - Position reporting and multiplayer avatar systems
 - Local server connection for previews via gatekeeper service at `localhost:3000`
-- ADR-204 compliant profile fetching from Catalyst network
+- ADR-204 compliant profile fetching from Catalyst network with version announcements
 
 **CRDT Wire Protocol (`src/lib/decentraland/crdt-wire-protocol/`)**:
 - Component-based entity system with conflict resolution
@@ -61,4 +95,9 @@ This is the **hammurabi** project - a reference implementation of the Decentrala
 
 ### Testing Realm
 
-The project includes a complete testing realm with scenes compiled using the Decentraland SDK. The realm can be run in both the custom Babylon implementation and the official Decentraland Explorer for compliance testing.
+The project includes a complete testing realm with scenes compiled using the Decentraland SDK:
+- Located in `testing-realm/` directory with pre-built scenes
+- Scenes are exported using `sdk-commands export-static` to generate static files
+- Can run in both the Babylon.js implementation and official Decentraland Explorer for compliance testing  
+- WebSocket room configuration: `ws-room-service.decentraland.org/rooms/hammurabi`
+- Static files served from `static/ipfs/` for scene content

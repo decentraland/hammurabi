@@ -2,8 +2,8 @@ import * as BABYLON from '@babylonjs/core'
 import { parseEntityUrn } from '../../decentraland/identifiers'
 import { LoadableScene } from '../../decentraland/scene/content-server-entity'
 import { SceneContext } from "./scene-context"
-import { connectSceneContextUsingWebWorkerQuickJs } from './webworker-runtime'
-import { loadedScenesByEntityId } from '../../../explorer/state'
+import { connectSceneContextUsingNodeJs } from './nodejs-runtime'
+import { loadedScenesByEntityId } from '../../decentraland/state'
 import { VirtualScene } from '../../decentraland/virtual-scene'
 import { json } from '../../misc/json'
 import { Entity } from '@dcl/schemas'
@@ -24,7 +24,11 @@ async function createSceneContext(engineScene: BABYLON.Scene, loadableScene: Loa
   }
 
   await ctx.initAsyncJobs()
-  connectSceneContextUsingWebWorkerQuickJs(ctx, loadableScene)
+  
+    // Node.js environment - use in-process WebWorker runtime with MemoryTransport
+  console.log(`[HEADLESS] Using in-process runtime for scene ${entityId}`)
+  connectSceneContextUsingNodeJs(ctx, loadableScene)
+  
   loadedScenesByEntityId.set(entityId, ctx)
 
   return ctx
@@ -86,7 +90,7 @@ export function unloadScene(entityId: string) {
 
 export async function getLoadableSceneFromUrl(entityId: string, baseUrl: string): Promise<LoadableScene> {
   const result = await fetch(`${baseUrl}${entityId}`)
-  const entity = await result.json()
+  const entity: any = await result.json()
 
   return {
     urn: entityId,
@@ -113,13 +117,11 @@ export async function fetchSceneJson(baseUrl: string) {
  */
 export async function getLoadableSceneFromLocalContext(baseUrl: string) {
   // First, fetch scene.json to get the pointers
-  const sceneConfig = await fetchSceneJson(baseUrl)
+  const sceneConfig: any = await fetchSceneJson(baseUrl)
   const pointers = sceneConfig.scene?.parcels || []
-  
   if (pointers.length === 0) {
     throw new Error('No pointers found in scene.json')
   }
-
   // Then post to /content/entities/active with the pointers
   const entitiesResponse = await fetch(`${baseUrl}/content/entities/active`, {
     method: 'POST',
@@ -127,8 +129,8 @@ export async function getLoadableSceneFromLocalContext(baseUrl: string) {
     body: JSON.stringify({ pointers })
   })
   
-  const entity = (await entitiesResponse.json())[0]
-  
+  const entity = (await entitiesResponse.json() as any)[0]
+
   return {
     baseUrl: baseUrl + '/content/contents/',
     entity,

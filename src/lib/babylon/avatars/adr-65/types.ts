@@ -1,4 +1,4 @@
-import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
+import { PBAvatarShape } from "@dcl/protocol/out-js/decentraland/sdk/components/avatar_shape.gen";
 import { AssetManager } from "../../scene/AssetManager";
 import { AssetContainer } from "@babylonjs/core";
 import { Wearable, Emote } from "@dcl/schemas";

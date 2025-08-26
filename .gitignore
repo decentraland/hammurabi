@@ -27,14 +27,4 @@ yarn-error.log*
 
 .env
 
-static/js
-
-static/ipfs
-
-testing-realm/*/bin
-testing-realm/*/node_modules
-testing-realm/*/package-lock.json
-testing-realm/**/*.js
-testing-realm/**/*.js.map
-
-src/explorer/avatar-scene.json
+dist/

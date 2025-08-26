@@ -1,4 +1,4 @@
-import { BillboardMode } from "@dcl/protocol/out-ts/decentraland/sdk/components/billboard.gen";
+import { BillboardMode } from "@dcl/protocol/out-js/decentraland/sdk/components/billboard.gen";
 
 export function isValidBillboardCombination(billboardMode: BillboardMode) {
   return (

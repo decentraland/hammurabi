@@ -1,4 +1,4 @@
-import { EasingFunction } from "@dcl/protocol/out-ts/decentraland/sdk/components/tween.gen";
+import { EasingFunction } from "@dcl/protocol/out-js/decentraland/sdk/components/tween.gen";
 
 type EasingFunctionImpl = (progress: number) => number;
 

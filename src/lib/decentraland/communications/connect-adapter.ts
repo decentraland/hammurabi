@@ -1,4 +1,4 @@
-import { userIdentity } from "../../../explorer/state"
+import { userIdentity } from "../state"
 import { getLoadableSceneFromLocalContext } from "../../babylon/scene/load"
 import { Atom } from "../../misc/atom"
 import { signedFetch } from "../identity/signed-fetch"
@@ -33,6 +33,7 @@ export async function connectLocalAdapter(baseUrl: string) {
     }
     throw 'Invalid livekit connection'
   } catch (e) {
+    console.log(e)
     throw e
   }
 }

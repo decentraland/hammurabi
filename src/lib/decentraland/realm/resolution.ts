@@ -1,7 +1,5 @@
 // This file implements https://adr.decentraland.org/adr/ADR-144
 
-const baseUrl = typeof window !== 'undefined' ? window.location.toString() : 'https://play.decentraland.org'
-
 function isDclEns(str: string | undefined): str is `${string}.dcl.eth` {
   return !!str?.match(/^[a-zA-Z0-9]+\.dcl\.eth$/)?.length
 }
@@ -15,14 +13,13 @@ function dclWorldUrl(dclName: string) {
 }
 
 function normalizeUrl(url: string) {
-  const defaultProtocol = typeof window !== 'undefined' ? window.location.protocol : 'https:'
-  return url.replace(/^:\/\//, defaultProtocol + '//')
+  return url.replace(/^:\/\//, 'http:' + '//')
 }
 
 // adds the currently used protocol to the given URL
 function urlWithProtocol(urlOrHostname: string) {
   if (urlOrHostname.startsWith('/')) {
-    return new URL(urlOrHostname, baseUrl).toString()
+    return new URL(urlOrHostname).toString()
   } 
 
   if (!urlOrHostname.startsWith('http://') && !urlOrHostname.startsWith('https://') && !urlOrHostname.startsWith('://'))

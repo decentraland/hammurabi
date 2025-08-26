@@ -85,8 +85,6 @@ export class PlayerEntityManager {
       this.allocatedEntities.add(newEntity)
       this.addressToEntityMap.set(normalizedAddress, newEntity)
       this.entityToAddressMap.set(newEntity, normalizedAddress)
-      
-      console.log(`Allocated new entity ${entityNumber} version ${entityVersion} (id: ${newEntity}) for ${normalizedAddress}`)
       return newEntity
     }
     
@@ -118,9 +116,7 @@ export class PlayerEntityManager {
       }
       
       this.addressToEntityMap.delete(normalizedAddress)
-      this.entityToAddressMap.delete(entityId)
-      
-      console.log(`Freed entity ${entityId} (number: ${entityNumber}) for player ${normalizedAddress}`)
+      this.entityToAddressMap.delete(entityId)      
     }
   }
   

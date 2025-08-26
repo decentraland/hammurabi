@@ -1,5 +1,5 @@
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
-import { ColliderLayer, PBMeshCollider } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
+import { ColliderLayer, PBMeshCollider } from "@dcl/protocol/out-js/decentraland/sdk/components/mesh_collider.gen";
 import { ComponentType } from "../crdt-internal/components";
 import { MeshBuilder } from '@babylonjs/core';
 import { setColliderMask } from "../../babylon/scene/logic/colliders";

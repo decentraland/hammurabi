@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+// Direct execution of the hammurabi server
+require('./dist/cli.js')

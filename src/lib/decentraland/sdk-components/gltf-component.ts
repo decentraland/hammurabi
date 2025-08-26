@@ -1,13 +1,13 @@
 import * as BABYLON from '@babylonjs/core'
-import { PBGltfContainer } from "@dcl/protocol/out-ts/decentraland/sdk/components/gltf_container.gen";
+import { PBGltfContainer } from "@dcl/protocol/out-js/decentraland/sdk/components/gltf_container.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { ComponentType } from '../crdt-internal/components';
 import { BabylonEntity } from '../../babylon/scene/BabylonEntity';
 import { applyAnimations } from '../../babylon/scene/logic/apply-animations';
 import { gltfContainerLoadingStateComponent } from './gltf-loading-state';
-import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen';
+import { LoadingState } from '@dcl/protocol/out-js/decentraland/sdk/components/common/loading_state.gen';
 import { setColliderMask } from '../../babylon/scene/logic/colliders';
-import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen';
+import { ColliderLayer } from '@dcl/protocol/out-js/decentraland/sdk/components/mesh_collider.gen';
 import { instantiateAssetContainer } from '../../babylon/scene/AssetManager';
 
 const DEFAULT_VISIBLE_COLLIDER_LAYERS = 0

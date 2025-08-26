@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core'
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
-import { PBPointerEvents } from "@dcl/protocol/out-ts/decentraland/sdk/components/pointer_events.gen";
+import { PBPointerEvents } from "@dcl/protocol/out-js/decentraland/sdk/components/pointer_events.gen";
 import { ComponentType } from "../crdt-internal/components";
 
 // TODO: this component is a stub that will be replaced by the real implementation later in a dedicated PR

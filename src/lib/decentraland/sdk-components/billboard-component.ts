@@ -1,5 +1,5 @@
 import { ComponentType } from "../crdt-internal/components";
-import { PBBillboard } from "@dcl/protocol/out-ts/decentraland/sdk/components/billboard.gen";
+import { PBBillboard } from "@dcl/protocol/out-js/decentraland/sdk/components/billboard.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 
 export const billboardComponent = declareComponentUsingProtobufJs(PBBillboard, 1090, (entity, component) => {

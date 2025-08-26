@@ -9,7 +9,7 @@ import { LoadableScene, WearableContentServerEntity, resolveFile, resolveFileAbs
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from '@babylonjs/loaders/glTF/glTFFileLoader'
 import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
 import { setColliderMask } from './logic/colliders'
-import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
+import { ColliderLayer } from '@dcl/protocol/out-js/decentraland/sdk/components/mesh_collider.gen'
 import { BabylonEntity } from './BabylonEntity'
 
 const sceneContextMap = new Map<string /*sceneId*/, WeakRef<LoadableScene>>()
@@ -204,7 +204,7 @@ function processAssetContainer(assetContainer: BABYLON.AssetContainer) {
       material.freeze();
 
       // then replace the reflection probe of the materials when needed
-      material.reflectionTexture = assetContainer.scene.reflectionProbes.find($ => $.name === 'skyReflection')?.cubeTexture || null
+      material.reflectionTexture = assetContainer.scene.reflectionProbes?.find($ => $.name === 'skyReflection')?.cubeTexture || null
 
       if (material.alphaMode === 2) {
         if (material.albedoTexture) {

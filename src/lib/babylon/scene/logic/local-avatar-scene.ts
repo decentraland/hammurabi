@@ -2,7 +2,7 @@ import { Scene } from "@babylonjs/core"
 import { SceneContext } from "../scene-context"
 import { StaticEntities } from "./static-entities"
 import { avatarShapeComponent, setAvatarRenderer } from "../../../decentraland/sdk-components/avatar-shape"
-import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen"
+import { PBAvatarShape } from "@dcl/protocol/out-js/decentraland/sdk/components/avatar_shape.gen"
 import { Atom } from "../../../misc/atom"
 import { Avatar } from "@dcl/schemas"
 
@@ -29,7 +29,7 @@ export async function createLocalAvatarSceneSystem(scene: Scene, currentAvatar: 
 
   function setAvatarShape(value: PBAvatarShape) {
     localAvatarScene.components[avatarShapeComponent.componentId].createOrReplace(StaticEntities.PlayerEntity, value)
-    setAvatarRenderer(playerEntity, value)
+    // Skip setAvatarRenderer in headless mode - requires canvas/GUI textures
   }
 
   function setAvatarShapeFromAvatar(av: Avatar) {

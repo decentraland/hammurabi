@@ -1,4 +1,4 @@
-import { CrdtGetStateResponse, CrdtMessageFromRendererRequest, CrdtMessageFromRendererResponse } from "@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen"
+import { CrdtGetStateResponse, CrdtMessageFromRendererRequest, CrdtMessageFromRendererResponse } from "@dcl/protocol/out-js/decentraland/kernel/apis/engine_api.gen"
 
 /**
  * The scenes in any renderer implementing the Decentraland Protocol are controlled

@@ -91,6 +91,11 @@ async function identityFromSigner(address: string, signer: (message: string) => 
   }
 }
 
+export async function createGuestIdentity(): Promise<ExplorerIdentity> {
+  const storeableIdentity = await loginAsGuest()
+  return explorerIdentityFromEphemeralIdentity(storeableIdentity)
+}
+
 export async function getEthereumUserAccount(requestManager: RequestManager, returnChecksum: boolean): Promise<string | undefined> {
   try {
     const accounts = await requestManager.eth_accounts()

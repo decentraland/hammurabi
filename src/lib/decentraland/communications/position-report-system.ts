@@ -1,4 +1,4 @@
-import { Position } from "@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen"
+import { Position } from "@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen"
 import { CommsTransportWrapper, RoomConnectionStatus } from "./CommsTransportWrapper"
 import { Quaternion, TransformNode, Vector3 } from "@babylonjs/core"
 import { DecentralandSystem } from "../system"

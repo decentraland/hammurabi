@@ -1,5 +1,5 @@
 import { ComponentType } from "../crdt-internal/components";
-import { MaterialTransparencyMode, PBMaterial } from "@dcl/protocol/out-ts/decentraland/sdk/components/material.gen";
+import { MaterialTransparencyMode, PBMaterial } from "@dcl/protocol/out-js/decentraland/sdk/components/material.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { PBRMaterial, StandardMaterial } from "@babylonjs/core";
 import { BabylonEntity, baseMaterial } from "../../babylon/scene/BabylonEntity";

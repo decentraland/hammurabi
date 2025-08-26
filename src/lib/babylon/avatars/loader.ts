@@ -1,7 +1,7 @@
 import { BodyShape, EmoteCategory, Locale, Rarity, Wearable, } from '@dcl/schemas'
 import { hasWearableRepresentation } from './adr-65/representation'
 import { AvatarShapeWithAssetManagers } from './adr-65/types'
-import { PBAvatarShape } from '@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen'
+import { PBAvatarShape } from '@dcl/protocol/out-js/decentraland/sdk/components/avatar_shape.gen'
 import { fetchAssetManagers, getAssetManager } from './avatar-asset-manager'
 import { Scene } from '@babylonjs/core'
 import { getDefaultCategories, getDefaultWearableUrn, getWearableByCategory } from './adr-65/wearable'
@@ -102,7 +102,7 @@ function createBaseEmoteAssetManager(emote: string, scene: Scene): AssetManager 
   const glb = `${emote}.glb`
   return getAssetManager({
     urn: emote,
-    baseUrl: `${location.origin}/emotes/`,
+    baseUrl: `TODO:casla/emotes/`,
     entity: {
       content: [{ file: glb, hash: glb }],
       type: 'emote',

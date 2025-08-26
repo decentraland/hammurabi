@@ -20,7 +20,7 @@ import { processRaycasts } from './logic/raycasts'
 import { meshColliderComponent } from '../../decentraland/sdk-components/mesh-collider-component'
 import { PARCEL_SIZE_METERS, gridToWorld, parseParcelPosition } from '../../decentraland/positions'
 import { createParcelOutline } from '../visual/parcelOutline'
-import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } from '@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen'
+import { CrdtGetStateResponse, CrdtSendToRendererRequest, CrdtSendToResponse } from '@dcl/protocol/out-js/decentraland/kernel/apis/engine_api.gen'
 import { gltfContainerComponent } from '../../decentraland/sdk-components/gltf-component'
 import { AssetManager } from './AssetManager'
 import { pointerEventsComponent } from '../../decentraland/sdk-components/pointer-events'
@@ -28,7 +28,7 @@ import { StaticEntities, entityIsInRange, updateStaticEntities } from './logic/s
 import { animatorComponent } from '../../decentraland/sdk-components/animator-component'
 import { engineInfoComponent } from '../../decentraland/sdk-components/engine-info'
 import { gltfContainerLoadingStateComponent } from '../../decentraland/sdk-components/gltf-loading-state'
-import { LoadingState } from '@dcl/protocol/out-ts/decentraland/sdk/components/common/loading_state.gen'
+import { LoadingState } from '@dcl/protocol/out-js/decentraland/sdk/components/common/loading_state.gen'
 import { pointerEventsResultComponent } from '../../decentraland/sdk-components/pointer-events-result'
 import { createValueSetComponentStore } from '../../decentraland/crdt-internal/grow-only-set'
 import { VirtualSceneSubscription } from '../../decentraland/virtual-scene'
@@ -354,6 +354,7 @@ export class SceneContext implements EngineApiInterface {
       if (has) {
         this.log(`✅ All GltfContainerLoadingState went out of LOADING state in tick#0`)
       }
+      this.log('\n\n\n\n======================= Starting Scene Logs: ======================= \n\n\n\n')
     }
 
 

@@ -23,7 +23,7 @@
  * moving C's frame of reference but NOT animating it.
  */
 import { BabylonEntity, TransformCommand } from '../BabylonEntity'
-import { PBDelayedInterpolation } from '@dcl/protocol/out-ts/decentraland/sdk/components/delayed_interpolation.gen'
+import { PBDelayedInterpolation } from '@dcl/protocol/out-js/decentraland/sdk/components/delayed_interpolation.gen'
 import { Vector3, Quaternion } from '@babylonjs/core'
 
 export function applyDelayedInterpolation(

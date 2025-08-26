@@ -1,4 +1,4 @@
-import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/realm/about.gen"
+import { AboutResponse } from "@dcl/protocol/out-js/decentraland/realm/about.gen"
 import { Atom } from "../../misc/atom"
 import { ExplorerIdentity } from "../identity/types"
 import { connectAdapter, connectLocalAdapter } from "./connect-adapter"
@@ -7,12 +7,12 @@ import { CommsAdapter, commsLogger } from "./types"
 import { CommsTransportWrapper } from "./CommsTransportWrapper"
 import { resolveRealmBaseUrl } from "../realm/resolution"
 import { Scene } from "@babylonjs/core"
-import { CurrentRealm } from "../../../explorer/state"
+import { CurrentRealm } from "../state"
 
 /**
  * This system is in charge to handle realm connections and connect/disconnect transports accordingly.
  */
-export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdentity>, currentRealm: Atom<CurrentRealm>, scene: Scene, microphone: Atom<string>, audioContext: AudioContext) {
+export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdentity>, currentRealm: Atom<CurrentRealm>, scene: Scene) {
   const currentAdapter = Atom<CommsAdapter>()
   const activeTransports = new Map<string, CommsTransportWrapper>()
 
@@ -60,7 +60,7 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
     // then connect all missing transports
     for (const connectionString of connectionStrings) {
       if (!activeTransports.has(connectionString.url)) {
-        const transport = connectTransport(connectionString.url, identity, scene, connectionString.sceneId, microphone, audioContext)
+        const transport = connectTransport(connectionString.url, identity, scene, connectionString.sceneId)
 
         // store the handle of the active transport
         activeTransports.set(connectionString.url, transport)
@@ -83,12 +83,7 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
   }
 
   let applicationRunning = true
-  if (typeof window !== 'undefined') {
-    window.addEventListener('beforeunload', () => {
-      applicationRunning = false
-    })
-  }
-
+  
   return {
     currentAdapter,
     currentRealm,

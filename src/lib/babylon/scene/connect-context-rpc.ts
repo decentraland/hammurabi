@@ -5,15 +5,15 @@
 
 import { RpcServerPort } from "@dcl/rpc";
 import * as codegen from "@dcl/rpc/dist/codegen"
-import { EngineApiServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/engine_api.gen";
-import { RuntimeServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/runtime.gen";
-import { UserIdentityServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/user_identity.gen";
-import { CommunicationsControllerServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/communications_controller.gen";
-import { UserActionModuleServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/user_action_module.gen";
-import { RestrictedActionsServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/restricted_actions.gen";
-import { SignedFetchServiceDefinition } from "@dcl/protocol/out-ts/decentraland/kernel/apis/signed_fetch.gen";
+import { EngineApiServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/engine_api.gen";
+import { RuntimeServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/runtime.gen";
+import { UserIdentityServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/user_identity.gen";
+import { CommunicationsControllerServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/communications_controller.gen";
+import { UserActionModuleServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/user_action_module.gen";
+import { RestrictedActionsServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/restricted_actions.gen";
+import { SignedFetchServiceDefinition } from "@dcl/protocol/out-js/decentraland/kernel/apis/signed_fetch.gen";
 import { encodeMessage, MsgType, SceneContext } from "./scene-context";
-import { userIdentity } from "../../../explorer/state";
+import { userIdentity } from "../../decentraland/state";
 import { signedFetch, getSignedHeaders } from "../../decentraland/identity/signed-fetch";
 import { Authenticator } from "@dcl/crypto";
 
@@ -92,7 +92,6 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
       if (context.transport) {
         for (const peerData of req.peerData) {
           for (const data of peerData.data) {
-            console.log('[SendBINARY]1', peerData)
             void context.transport.sendParcelSceneMessage({ sceneId: context.entityId, data: encodeMessage(data, MsgType.Uint8Array) }, peerData.address)
           }
         }
@@ -158,7 +157,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
             responseBodyType: 'text'
           },
           {
-            origin: location.origin,
+            origin: 'hammurabi-server//',
             sceneId: context.loadableScene.urn
           }
         )
@@ -189,7 +188,7 @@ export function connectContextToRpcServer(port: RpcServerPort<SceneContext>) {
           req.init?.method || 'GET',
           new URL(req.url).pathname,
           {
-            origin: location.origin,
+            origin: 'hammurabi-server://',
             ...req.init
           },
           (payload) => Authenticator.signPayload(identity.authChain, payload)

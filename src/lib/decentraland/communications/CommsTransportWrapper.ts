@@ -1,4 +1,4 @@
-import * as proto from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
+import * as proto from '@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen'
 import mitt from 'mitt'
 import { CommsTransportEvents, MinimumCommunicationsTransport, TransportMessageEvent, commsLogger } from './types'
 

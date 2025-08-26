@@ -1,5 +1,5 @@
 import { ComponentType } from "../crdt-internal/components";
-import { PBAvatarShape } from "@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen";
+import { PBAvatarShape } from "@dcl/protocol/out-js/decentraland/sdk/components/avatar_shape.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 import { AvatarRenderer } from "../../babylon/avatars/AvatarRenderer";
 import { BabylonEntity } from "../../babylon/scene/BabylonEntity";

@@ -1,14 +1,14 @@
 import * as BABYLON from "@babylonjs/core";
 import { Ray, Vector3 } from "@babylonjs/core";
-import { RaycastHit } from "@dcl/protocol/out-ts/decentraland/sdk/components/common/raycast_hit.gen";
-import { PBRaycast, RaycastQueryType } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen";
-import { PBRaycastResult } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast_result.gen";
+import { RaycastHit } from "@dcl/protocol/out-js/decentraland/sdk/components/common/raycast_hit.gen";
+import { PBRaycast, RaycastQueryType } from "@dcl/protocol/out-js/decentraland/sdk/components/raycast.gen";
+import { PBRaycastResult } from "@dcl/protocol/out-js/decentraland/sdk/components/raycast_result.gen";
 import { raycastComponent, raycastResultComponent } from "../../../decentraland/sdk-components/raycast-component";
 import { SceneContext } from "../scene-context";
 import { globalCoordinatesToSceneCoordinates, sceneCoordinatesToBabylonGlobalCoordinates } from "../coordinates";
 import { BabylonEntity } from "../BabylonEntity";
 import { pickMeshesForMask } from "./colliders";
-import { ColliderLayer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
+import { ColliderLayer } from "@dcl/protocol/out-js/decentraland/sdk/components/mesh_collider.gen";
 
 /**
  * The processRaycasts function iterates over a copy of the pendingRaycastOperations

@@ -5,7 +5,7 @@ import { LivekitAdapter } from "./transports/livekit"
 import { WebSocketAdapter } from "./transports/ws-room"
 import { Atom } from "../../misc/atom"
 
-export function connectTransport(connStr: string, identity: ExplorerIdentity, scene: Scene, sceneId: string, microphone?: Atom<string>, audioContext?: AudioContext): CommsTransportWrapper {
+export function connectTransport(connStr: string, identity: ExplorerIdentity, scene: Scene, sceneId: string): CommsTransportWrapper {
   const ix = connStr.indexOf(':')
   const protocol = connStr.substring(0, ix)
   const url = connStr.substring(ix + 1)
@@ -26,9 +26,7 @@ export function connectTransport(connStr: string, identity: ExplorerIdentity, sc
         new LivekitAdapter({
           url: theUrl.origin + theUrl.pathname,
           token,
-          scene,
-          microphone,
-          audioContext
+          scene
         }),
         sceneId
       )

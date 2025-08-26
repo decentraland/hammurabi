@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
-import { PBRaycast } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast.gen";
-import { PBRaycastResult } from "@dcl/protocol/out-ts/decentraland/sdk/components/raycast_result.gen";
+import { PBRaycast } from "@dcl/protocol/out-js/decentraland/sdk/components/raycast.gen";
+import { PBRaycastResult } from "@dcl/protocol/out-js/decentraland/sdk/components/raycast_result.gen";
 import { ComponentType } from "../crdt-internal/components";
 import { Vector3 } from '@babylonjs/core';
 

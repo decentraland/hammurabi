@@ -27,7 +27,7 @@ export async function createCharacterControllerSystem(scene: Scene) {
   characterControllerSystem.setSlopeLimit(30, 60)
 
   initKeyboard(scene, characterControllerSystem)
-  addCrosshair(scene, characterControllerSystem.camera)
+  // Skip crosshair in headless mode - requires canvas context
 
   return characterControllerSystem
 }
@@ -95,7 +95,7 @@ export class CharacterController implements DecentralandSystem {
     this.camera.upperRadiusLimit = 20
     this.camera.radius = 8
 
-    this.camera.attachControl()
+    // Skip attachControl() in headless mode - not needed
 
     this.camera.inertia = 0.6
     this.camera.speed = 0.7

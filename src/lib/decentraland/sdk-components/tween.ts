@@ -1,5 +1,5 @@
 import { ComponentType } from "../crdt-internal/components";
-import { PBTween } from "@dcl/protocol/out-ts/decentraland/sdk/components/tween.gen";
+import { PBTween } from "@dcl/protocol/out-js/decentraland/sdk/components/tween.gen";
 import { declareComponentUsingProtobufJs } from "./pb-based-component-helper";
 
 export const tweenComponent = declareComponentUsingProtobufJs(PBTween, 1102, (entity, component) => {

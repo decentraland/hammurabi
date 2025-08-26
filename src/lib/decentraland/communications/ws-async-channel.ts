@@ -1,4 +1,5 @@
 import { AsyncQueue } from '@dcl/rpc/dist/push-channel'
+import { WebSocket, MessageEvent } from 'ws'
 
 // this function converts a websocket into an AsyncQueue to send messages and await their responses
 export function wsAsAsyncChannel<T>(socket: WebSocket, decode: (data: Uint8Array) => T) {
@@ -11,7 +12,8 @@ export function wsAsAsyncChannel<T>(socket: WebSocket, decode: (data: Uint8Array
   })
   function processMessage(event: MessageEvent) {
     try {
-      const msg = new Uint8Array(event.data)
+      const data = event.data
+      const msg = data instanceof Buffer ? new Uint8Array(data) : new Uint8Array(data as ArrayBuffer)
       channel.enqueue(decode(msg))
     } catch (error: any) {
       socket.close(undefined, 'Error: ' + error)

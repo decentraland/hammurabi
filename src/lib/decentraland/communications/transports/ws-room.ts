@@ -1,13 +1,14 @@
 import { future, IFuture } from 'fp-future'
+import { WebSocket, MessageEvent } from 'ws'
 
-import * as rfc5 from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc5/ws_comms.gen'
+import * as rfc5 from '@dcl/protocol/out-js/decentraland/kernel/comms/rfc5/ws_comms.gen'
 import { Writer } from 'protobufjs/minimal'
 import { Authenticator } from '@dcl/crypto'
 import mitt from 'mitt'
 import { wsAsAsyncChannel } from '../ws-async-channel'
 import { ExplorerIdentity } from '../../identity/types'
 import { CommsTransportEvents, MinimumCommunicationsTransport, SendHints } from '../types'
-import { Position } from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
+import { Position } from '@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen'
 
 // shared writer to leverage pools
 const writer = new Writer()
@@ -178,7 +179,7 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
 
   private async onWsMessage(event: MessageEvent) {
     const data = event.data
-    const msg = new Uint8Array(data)
+    const msg = new Uint8Array(data as ArrayBuffer)
     const { message } = rfc5.WsPacket.decode(msg)
 
     if (!message) return

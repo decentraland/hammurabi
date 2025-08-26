@@ -1,6 +1,6 @@
 import { AbstractMesh, ArcRotateCamera, Mesh, Ray, Scene, Vector3, int } from "@babylonjs/core";
 import { getColliderLayers } from "./colliders";
-import { ColliderLayer } from "@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen";
+import { ColliderLayer } from "@dcl/protocol/out-js/decentraland/sdk/components/mesh_collider.gen";
 
 // This system hides the meshes between the camera and the player on the third person camera
 // it also "elastically" moves the camera to move it out from objects
