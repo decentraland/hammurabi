@@ -11,6 +11,7 @@ import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
 import { setColliderMask } from './logic/colliders'
 import { ColliderLayer } from '@dcl/protocol/out-ts/decentraland/sdk/components/mesh_collider.gen'
 import { BabylonEntity } from './BabylonEntity'
+import { ContentAndHash } from './ContentAndHash'
 
 const sceneContextMap = new Map<string /*sceneId*/, WeakRef<LoadableScene>>()
 
@@ -59,7 +60,7 @@ export class AssetManager {
     return this.models.get(fileHash)!
   }
 
-  async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
+  async readFile(file: string): Promise<ContentAndHash> {
     // this method resolves a file deployed with the entity. it returns the content of the file and its hash
     const hash = resolveFile(this.loadableScene.entity, file)
     if (!hash) throw new Error(`File not found: ${file}`)

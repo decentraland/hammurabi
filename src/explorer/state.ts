@@ -1,10 +1,10 @@
-// This file should hold the "state" of the application
+// This file holds the state of the front end application
 
-import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/bff/http_endpoints.gen";
-import { SceneContext } from "../lib/babylon/scene/scene-context";
-import { ExplorerIdentity } from "../lib/decentraland/identity/types";
-import { Atom } from "../lib/misc/atom";
-import { TransformNode } from "@babylonjs/core";
+import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/bff/http_endpoints.gen"
+import { SceneContext } from "../lib/babylon/scene/scene-context"
+import { ExplorerIdentity } from "../lib/decentraland/identity/types"
+import { Atom } from "../lib/misc/atom"
+import { TransformNode } from "@babylonjs/core"
 
 export type CurrentRealm = {
   baseUrl: string

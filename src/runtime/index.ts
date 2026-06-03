@@ -3,7 +3,10 @@
 // this file starts a scene runtime in a web worker
 import { createRpcClient } from '@dcl/rpc'
 import { WebWorkerTransport } from '@dcl/rpc/dist/transports/WebWorker'
-import { startQuickJsSceneRuntime } from '../lib/quick-js/rpc-scene-runtime'
+// QuickJS runtime is not used anymore, but it's still here for reference. It
+// provides an additional layer of security, but it's not worth the performance
+// hit.
+// import { startQuickJsSceneRuntime } from '../lib/quick-js/rpc-scene-runtime'
 import { defaultUpdateLoop } from '../lib/common-runtime/game-loop'
 import { startWebWorkerSceneRuntime } from '../lib/web-worker-runtime/web-worker-scene-runtime'
 

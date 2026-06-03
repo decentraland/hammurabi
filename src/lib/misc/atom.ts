@@ -1,5 +1,3 @@
-// atom value wrapper like in clojure
-
 import { Observable } from "@babylonjs/core"
 import future, { IFuture } from "fp-future"
 import { useEffect, useState } from "react"
@@ -7,11 +5,39 @@ import { useEffect, useState } from "react"
 const EMPTY = Symbol('empty')
 type EMPTY = typeof EMPTY
 
+/**
+ * An atom is a value that can be observed and changed. This implementation
+ * is inspired by the clojure implementation of Atom.
+ */
 export type Atom<T> = {
+  /**
+   * Returns a promise that resolves with the current value of the atom. The
+   * use of a promise implies this operation might be asynchronous.
+   */
   deref(): Promise<T>
+  /**
+   * Returns the current value of the atom, or null if there's no current value.
+   * This operation is synchronous, as indicated by the lack of a Promise return
+   * type.
+   */
   getOrNull(): T | null
+  /**
+   * An Atom has an Observable value that emits the current value of the atom
+   * whenever it changes. This is a common pattern in reactive programming, and
+   * it allows observers to react to changes in the atom's value.
+   */
   observable: Observable<T>
+  /**
+   * Updates the current value of the atom to the provided value, and returns
+   * the previous value or void (undefined) if there was no previous value.
+   */
   swap(value: T): T | void
+  /**
+   * Takes a function that will be called with the current value of the atom,
+   * and returns a promise that resolves when this operation is complete. This
+   * could be used to perform side effects or transformations based on the
+   * atom's value.
+   */
   pipe(fn: (value: T) => void | Promise<void>): Promise<void>
 }
 

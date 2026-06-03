@@ -1,7 +1,8 @@
-import { AssetManager } from "../scene/AssetManager";
-import { getLoadableSceneFromPointers } from "../scene/load";
-import { LoadableScene } from "../../decentraland/scene/content-server-entity";
-import { Scene } from "@babylonjs/core";
+import { Scene } from '@babylonjs/core'
+
+import { LoadableScene } from '../../decentraland/scene/content-server-entity'
+import { AssetManager } from '../scene/AssetManager'
+import { getLoadableSceneFromPointers } from '../scene/load'
 
 const assetManagers = new Map<string, AssetManager>()
 

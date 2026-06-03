@@ -1,18 +1,18 @@
 import * as BABYLON from '@babylonjs/core'
 import future, { IFuture } from 'fp-future'
-import { Entity } from '../../decentraland/types'
+import { Vector3 } from '@babylonjs/core'
+import { Scene } from '@dcl/schemas'
 
-import { EngineApiInterface } from '../../decentraland/scene/types'
+import type { Entity } from '../../decentraland/types'
+import type { EngineApiInterface } from '../../decentraland/scene/types'
 import { CrdtMessageType, readAllMessages } from '../../decentraland/crdt-wire-protocol'
 import { ByteBuffer, ReadWriteByteBuffer } from '../../decentraland/ByteBuffer'
-import { LoadableScene, resolveFile, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
+import { LoadableScene, resolveFileAbsolute } from '../../decentraland/scene/content-server-entity'
 import { BabylonEntity } from './BabylonEntity'
 import { transformComponent } from '../../decentraland/sdk-components/transform-component'
 import { createLwwStore } from '../../decentraland/crdt-internal/last-write-win-element-set'
 import { ComponentDefinition } from '../../decentraland/crdt-internal/components'
 import { resolveCyclicParening } from './logic/cyclic-transform'
-import { Vector3 } from '@babylonjs/core'
-import { Scene } from '@dcl/schemas'
 import { billboardComponent } from '../../decentraland/sdk-components/billboard-component'
 import { raycastComponent, raycastResultComponent } from '../../decentraland/sdk-components/raycast-component'
 import { meshRendererComponent } from '../../decentraland/sdk-components/mesh-renderer-component'
@@ -37,6 +37,7 @@ import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-s
 import { delayedInterpolationComponent } from '../../decentraland/sdk-components/delayed-interpolation'
 import { tweenComponent } from '../../decentraland/sdk-components/tween'
 import { materialComponent } from '../../decentraland/sdk-components/material-component'
+import { ContentAndHash } from './ContentAndHash'
 
 const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
 
@@ -412,11 +413,9 @@ export class SceneContext implements EngineApiInterface {
   }
 
   // impl RuntimeApi {
-  async readFile(file: string): Promise<{ content: Uint8Array, hash: string }> {
+  async readFile(file: string): Promise<ContentAndHash> {
     return this.assetManager.readFile(file)
   }
-  // }
-
 
   // returns a future that will be resolved when the next frame is processed
   async nextTick() {

@@ -11,6 +11,10 @@ type BodyType = 'json' | 'text'
 
 export type FlatFetchInit = RequestInit & { responseBodyType?: BodyType }
 
+/**
+ * Utility function that wraps the fetch API and returns a promise with the
+ * body of the promise resolved.
+ */
 export async function flatFetch(url: string, init?: FlatFetchInit): Promise<FlatFetchResponse> {
   const response = await fetch(url, init)
 

@@ -1,18 +1,19 @@
-import { Vector3, Quaternion } from "@babylonjs/core";
-import { transformComponent } from "../../../decentraland/sdk-components/transform-component";
-import type { SceneContext } from "../scene-context";
-import { globalCoordinatesToSceneCoordinates } from "../coordinates";
-import { Entity } from "../../../decentraland/types";
-import { engineInfoComponent } from "../../../decentraland/sdk-components/engine-info";
-import { EntityUtils } from "../../../decentraland/crdt-internal/generational-index-pool";
-import { playerEntityAtom } from "../../../../explorer/state";
+import { Vector3, Quaternion } from "@babylonjs/core"
+
+import { transformComponent } from "../../../decentraland/sdk-components/transform-component"
+import type { SceneContext } from "../scene-context"
+import { globalCoordinatesToSceneCoordinates } from "../coordinates"
+import { Entity } from "../../../decentraland/types"
+import { engineInfoComponent } from "../../../decentraland/sdk-components/engine-info"
+import { EntityUtils } from "../../../decentraland/crdt-internal/generational-index-pool"
+import { playerEntityAtom } from "../../../../explorer/state"
 
 export const StaticEntities = {
   RootEntity: 0 as Entity,
   PlayerEntity: 1 as Entity,
   CameraEntity: 2 as Entity,
   GlobalCenterOfCoordinates: 5 as Entity,
-} as const
+}
 
 export const PLAYER_HEIGHT = 1.7
 export const MAX_RESERVED_ENTITY = 512

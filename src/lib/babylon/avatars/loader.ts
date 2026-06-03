@@ -1,11 +1,13 @@
+import { Scene } from '@babylonjs/core'
+
+import { PBAvatarShape } from '@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen'
 import { BodyShape, EmoteCategory, Locale, Rarity, Wearable, } from '@dcl/schemas'
+
+import { AssetManager } from '../scene/AssetManager'
 import { hasWearableRepresentation } from './adr-65/representation'
 import { AvatarShapeWithAssetManagers } from './adr-65/types'
-import { PBAvatarShape } from '@dcl/protocol/out-ts/decentraland/sdk/components/avatar_shape.gen'
-import { fetchAssetManagers, getAssetManager } from './avatar-asset-manager'
-import { Scene } from '@babylonjs/core'
 import { getDefaultCategories, getDefaultWearableUrn, getWearableByCategory } from './adr-65/wearable'
-import { AssetManager } from '../scene/AssetManager'
+import { fetchAssetManagers, getAssetManager } from './avatar-asset-manager'
 
 export async function createLoadableAvatarConfig(
   avatar: PBAvatarShape,
