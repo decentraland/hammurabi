@@ -1,7 +1,7 @@
-import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/bff/http_endpoints.gen"
+import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/realm/about.gen"
 import { Atom } from "../../misc/atom"
 import { ExplorerIdentity } from "../identity/types"
-import { connectAdapter } from "./connect-adapter"
+import { connectAdapter, connectLocalAdapter } from "./connect-adapter"
 import { connectTransport } from "./connect-transport"
 import { CommsAdapter, commsLogger } from "./types"
 import { CommsTransportWrapper } from "./CommsTransportWrapper"
@@ -18,7 +18,9 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
 
   currentRealm.pipe(async function connectNewCommsAdapter(realm: CurrentRealm) {
     const identity = await userIdentity.deref()
-    const newAdapter = await connectAdapter(realm.aboutResponse.comms?.fixedAdapter ?? "offline:offline", identity)
+    
+    const isLocalPreview = realm.aboutResponse.configurations?.realmName === "LocalPreview"
+    const newAdapter = isLocalPreview ? await connectLocalAdapter(realm.baseUrl) : await connectAdapter(realm.aboutResponse.comms?.fixedAdapter ?? "offline:offline", identity, 'realm')
     const oldAdapter = currentAdapter.swap(newAdapter)
     if (oldAdapter) {
       oldAdapter.disconnect()
@@ -27,7 +29,7 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
 
   // this function returns the absolute list of transports that should be connected
   // for the moment it only takes the desired transports from the CommsAdapter only
-  function getDesiredTransports(): string[] {
+  function getDesiredTransports(): { url: string; sceneId: string }[] {
     const ret = []
     const adapter = currentAdapter.getOrNull()
     if (adapter) {
@@ -41,13 +43,13 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
 
   // updateAdapters connects the adapters that are not connected yet and disconnects the ones that are not desired anymore
   // TODO: debounce this function to prevent fast reconnections and DDoSing the servers
-  function updateAdapters(connectionStrings: string[]) {
+  function updateAdapters(connectionStrings: { url: string; sceneId: string }[]) {
     const identity = userIdentity.getOrNull()
     if (!identity) return
 
     // first remove all the extra adapters
     for (const [connectionString, connection] of activeTransports) {
-      if (!connectionStrings.includes(connectionString)) {
+      if (!connectionStrings.find($ => $.url === connectionString)) {
         connection.disconnect().finally(() => {
           commsLogger.log(`removinng not needed transport ${connectionString}`)
           activeTransports.delete(connectionString)
@@ -57,17 +59,16 @@ export function createRealmCommunicationSystem(userIdentity: Atom<ExplorerIdenti
 
     // then connect all missing transports
     for (const connectionString of connectionStrings) {
-      if (!activeTransports.has(connectionString)) {
-        const transport = connectTransport(connectionString, identity, scene, microphone, audioContext)
+      if (!activeTransports.has(connectionString.url)) {
+        const transport = connectTransport(connectionString.url, identity, scene, connectionString.sceneId, microphone, audioContext)
 
         // store the handle of the active transport
-        activeTransports.set(connectionString, transport)
-
+        activeTransports.set(connectionString.url, transport)
         // and then hook into its connection events
         transport.events.on('DISCONNECTION', (e) => {
-          commsLogger.error(`🔌❌ ${connectionString} disconnected`, e)
-          if (activeTransports.get(connectionString) === transport) {
-            activeTransports.delete(connectionString)
+          commsLogger.error(`🔌❌ ${connectionString.url} disconnected`, e)
+          if (activeTransports.get(connectionString.url) === transport) {
+            activeTransports.delete(connectionString.url)
             commsLogger.log(`Removing disconnected transport ${connectionString}`)
           }
         })

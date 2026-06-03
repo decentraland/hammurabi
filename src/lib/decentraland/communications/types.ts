@@ -4,13 +4,14 @@ import { createLogger } from "../../misc/logger"
 import { Position } from "@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen"
 
 export type CommsAdapter = {
-  desiredTransports: Atom<string[]>
+  desiredTransports: Atom<[{ url: string; sceneId: string }]>
   reportPosition: (position: { x: number, y: number, z: number }) => void
   disconnect(): void
 }
 
 export type CommsTransportEvents = {
   DISCONNECTION: TransportDisconnectedEvent
+  PEER_CONNECTED: PeerConnectedEvent
   PEER_DISCONNECTED: PeerDisconnectedEvent
   message: TransportMessageEvent
   error: Error
@@ -23,7 +24,7 @@ export interface MinimumCommunicationsTransport {
    * connected to this transport. The hints can be used to tweak the
    * default behavior of the transport.
    */
-  send(data: Uint8Array, hints: SendHints): void
+  send(data: Uint8Array, hints: SendHints, destination: string[]): void
   /**
    * The .connect() method resolves when the connection with the
    * transport was successful and it is ready to send and receive
@@ -31,7 +32,7 @@ export interface MinimumCommunicationsTransport {
    * 
    * This method returns a set of connected peerIdentities.
    */
-  connect(): Promise<Set<string>>
+  connect(): Promise<void>
   /**
    * The .disconnect() method can optionally receive an error that will
    * be bubbled up in the DISCONNECTED event. It should be used to
@@ -60,6 +61,12 @@ export type TransportDisconnectedEvent = {
   kicked: boolean
   // Optional error
   error?: Error
+}
+
+// PEER_CONNECTED
+export type PeerConnectedEvent = {
+  // The ethereum address of the connected peer
+  address: string
 }
 
 // PEER_DISCONNECTED

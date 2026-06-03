@@ -38,7 +38,17 @@ async function buildBundle(entryPoint, output) {
     minify: PRODUCTION,
     plugins: [
       nodeBuiltIns()
-    ]
+    ],
+    // Enable live reload in watch mode
+    ...(WATCH_MODE && {
+      banner: {
+        js: `(() => {
+          if (typeof window !== 'undefined') {
+            new EventSource('/esbuild').addEventListener('change', () => location.reload());
+          }
+        })()`
+      }
+    })
   })
 
   if (WATCH_MODE) {
@@ -53,8 +63,7 @@ async function buildBundle(entryPoint, output) {
 }
 
 async function main() {
-  const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
-
+  // const ctxWorker = await buildBundle('src/runtime/index.ts', 'static/js/scene-runtime.worker.js')
   const ctxMain = await buildBundle('src/explorer/index.ts', 'static/js/bundle.js')
 
   if (WATCH_MODE) {

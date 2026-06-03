@@ -124,6 +124,7 @@ export const NavBar: React.FC = () => {
       setRealm(url.get('realm')!)
     }
   }, [])
+  console.log()
 
   return <>
     <nav>

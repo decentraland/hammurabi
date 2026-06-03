@@ -28,8 +28,8 @@ export type LivekitConfig = {
   url: string
   token: string
   scene: Scene
-  microphone: Atom<string>
-  audioContext: AudioContext
+  microphone?: Atom<string>
+  audioContext?: AudioContext
 }
 
 export type VoiceSpatialParams = {
@@ -48,7 +48,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
   muteCheck?: Checkbox
 
   constructor(private config: LivekitConfig) {
-    this.room = new Room({ expWebAudioMix: { audioContext: this.config.audioContext } })
+    this.room = new Room({ webAudioMix: { audioContext: this.config.audioContext ?? null as any } })
 
     Object.assign(globalThis, { Engine, livekit: this })
 
@@ -56,11 +56,11 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
 
     if (typeof OffscreenCanvas !== 'undefined') {
       this.muteCheck = AddToggle('Mute microphone (Livekit)', guiPanel(config.scene))
-      this.muteCheck.isEnabled = !!config.microphone.getOrNull()
+      this.muteCheck.isEnabled = !!config.microphone?.getOrNull()
       this.muteCheck.isChecked = mutedMicrophone.getOrNull() ?? true
 
       // enable checkbox only when we have a microphone available
-      config.microphone.pipe((microphone) => {
+      config.microphone?.pipe((microphone) => {
         if (this.muteCheck) {
           this.muteCheck.isEnabled = true
         }
@@ -77,7 +77,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
       })
     }
 
-    config.microphone.pipe((microphone) => {
+    config.microphone?.pipe((microphone) => {
       voiceHandler.setInputStream(microphone)
     })
 
@@ -97,13 +97,21 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
         commsLogger.error('media device failure', failure);
       })
       .on(RoomEvent.ParticipantConnected, (_: RemoteParticipant) => {
-        commsLogger.log(this.room.name, 'remote participant joined', _.identity)
+        const address = _.identity
+        commsLogger.log(this.room.name, 'remote participant joined', address)
+        
+        this.events.emit('PEER_CONNECTED', {
+          address: address
+        })
       })
       .on(RoomEvent.ParticipantDisconnected, (_: RemoteParticipant) => {
+        const address = _.identity
+        
         this.events.emit('PEER_DISCONNECTED', {
-          address: _.identity
+          address: address
         })
-        commsLogger.log(this.room.name, 'remote participant left', _.identity)
+        
+        commsLogger.log(this.room.name, 'remote participant left', address)
       })
       .on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
         commsLogger.log(this.room.name, 'connection state changed', state)
@@ -115,7 +123,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
 
         commsLogger.log(this.room.name, 'disconnected from room', reason, {
           liveKitParticipantSid: this.room.localParticipant.sid,
-          liveKitRoomSid: this.room.sid
+          liveKitRoomSid: this.room.getSid()
         })
         const kicked = reason === DisconnectReason.DUPLICATE_IDENTITY
         this.doDisconnect(kicked).catch((err) => {
@@ -129,14 +137,13 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
       })
   }
 
-  async connect(): Promise<Set<string>> {
+  async connect(): Promise<void> {
     await this.room.connect(this.config.url, this.config.token, { autoSubscribe: true })
     await this.room.engine.waitForPCInitialConnection()
-    commsLogger.log(this.room.name, `Connected to livekit room ${this.room.name}`)
-    return new Set(this.room.participants.keys())
+    commsLogger.log(this.room.name, `Connected to livekit room ${this.room.name}`, { sid: this.room.getSid(), metadata: this.room.metadata} )
   }
 
-  async send(data: Uint8Array, { reliable }: SendHints): Promise<void> {
+  async send(data: Uint8Array, { reliable }: SendHints, destination?: string[]): Promise<void> {
     if (this.disposed) {
       return
     }
@@ -154,7 +161,7 @@ export class LivekitAdapter implements MinimumCommunicationsTransport {
     }
 
     try {
-      await this.room.localParticipant.publishData(data, reliable ? DataPacket_Kind.RELIABLE : DataPacket_Kind.LOSSY)
+      await this.room.localParticipant.publishData(data, { reliable, destinationIdentities: destination })
     } catch (err: any) {
       // NOTE: for tracking purposes only, this is not a "code" error, this is a failed connection or a problem with the livekit instance
       await this.disconnect()
@@ -238,7 +245,8 @@ export function createLiveKitVoiceHandler(room: Room, scene: Scene): VoiceHandle
       participantsInfo.set(participant.identity, $)
 
       participant.on(ParticipantEvent.IsSpeakingChanged, (talking: boolean) => {
-        const audioPublication = participant.getTrack(Track.Source.Microphone)
+        
+        const audioPublication = participant.getTrackPublicationByName(Track.Source.Microphone)
         if (audioPublication && audioPublication.track) {
           const audioTrack = audioPublication.track as RemoteAudioTrack
           onUserTalkingCallback(participant.identity, audioTrack.isMuted ? false : talking)

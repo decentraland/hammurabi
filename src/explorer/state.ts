@@ -1,6 +1,6 @@
 // This file should hold the "state" of the application
 
-import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/bff/http_endpoints.gen";
+import { AboutResponse } from "@dcl/protocol/out-ts/decentraland/realm/about.gen";
 import { SceneContext } from "../lib/babylon/scene/scene-context";
 import { ExplorerIdentity } from "../lib/decentraland/identity/types";
 import { Atom } from "../lib/misc/atom";

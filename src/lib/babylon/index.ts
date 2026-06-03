@@ -13,49 +13,60 @@ export function isChrome() {
   return window.navigator.userAgent.includes('Chrome')
 }
 
-export async function initEngine(canvas: HTMLCanvasElement) {
-  const parentElement = document.getElementById('voice-chat-audio') as HTMLAudioElement
+export async function initEngine(canvas?: HTMLCanvasElement) {
+  let babylon: BABYLON.Engine | BABYLON.WebGPUEngine | BABYLON.NullEngine
+  let audioContext: AudioContext | undefined
 
-  const audioContext = new AudioContext()
-  const audioDestination = audioContext.createMediaStreamDestination()
-  const destinationStream = isChrome() ? await startLoopback(audioDestination.stream) : audioDestination.stream
-  parentElement.srcObject = destinationStream
+  // Check if we're in a Node.js environment (NullEngine) or browser environment
+  if (!canvas) {
+    // Node.js environment - use the provided NullEngine
+    babylon = new BABYLON.NullEngine()
+    // Audio is not available in Node.js environment
+  } else {
+    // Browser environment - create engine with audio support
+    const parentElement = document.getElementById('voice-chat-audio') as HTMLAudioElement
 
-  await parentElement.play()
+    audioContext = new AudioContext()
+    const audioDestination = audioContext.createMediaStreamDestination()
+    const destinationStream = isChrome() ? await startLoopback(audioDestination.stream) : audioDestination.stream
+    parentElement.srcObject = destinationStream
 
-  const createWebGpu = document.location.search.includes('WEBGPU') && (await BABYLON.WebGPUEngine.IsSupportedAsync)
+    await parentElement.play()
 
-  const babylon = createWebGpu ?
-    new BABYLON.WebGPUEngine(canvas, {
-      audioEngine: true,
-      powerPreference: 'high-performance',
-      deterministicLockstep: true,
-      lockstepMaxSteps: 4,
-      antialias: false,
-      stencil: true,
-      audioEngineOptions: {
-        audioContext,
-        audioDestination
-      }
-    })
-    : new BABYLON.Engine(canvas, true, {
-      audioEngine: true,
-      autoEnableWebVR: true,
-      powerPreference: 'high-performance',
-      xrCompatible: true,
-      deterministicLockstep: true,
-      lockstepMaxSteps: 4,
-      antialias: false,
-      stencil: true,
-      audioEngineOptions: {
-        audioContext,
-        audioDestination
-      }
-    })
+    const createWebGpu = document.location.search.includes('WEBGPU') && (await BABYLON.WebGPUEngine.IsSupportedAsync)
 
-  if (createWebGpu){
-    console.info('CREATING WebGPU ENGINE!!!!!!!!!!')
-    await (babylon as BABYLON.WebGPUEngine).initAsync();
+    babylon = createWebGpu ?
+      new BABYLON.WebGPUEngine(canvas, {
+        audioEngine: true,
+        powerPreference: 'high-performance',
+        deterministicLockstep: true,
+        lockstepMaxSteps: 4,
+        antialias: false,
+        stencil: true,
+        audioEngineOptions: {
+          audioContext,
+          audioDestination
+        }
+      })
+      : new BABYLON.Engine(canvas, true, {
+        audioEngine: true,
+        autoEnableWebVR: true,
+        powerPreference: 'high-performance',
+        xrCompatible: true,
+        deterministicLockstep: true,
+        lockstepMaxSteps: 4,
+        antialias: false,
+        stencil: true,
+        audioEngineOptions: {
+          audioContext,
+          audioDestination
+        }
+      })
+
+    if (createWebGpu){
+      console.info('CREATING WebGPU ENGINE!!!!!!!!!!')
+      await (babylon as BABYLON.WebGPUEngine).initAsync();
+    }
   }
 
   babylon.disableManifestCheck = true
@@ -120,7 +131,7 @@ export async function initEngine(canvas: HTMLCanvasElement) {
   // this is for debugging purposes
   Object.assign(globalThis, { scene })
 
-  return { scene, audioContext: BABYLON.Engine.audioEngine!.audioContext! }
+  return { scene, audioContext: audioContext || BABYLON.Engine.audioEngine?.audioContext }
 }
 
 

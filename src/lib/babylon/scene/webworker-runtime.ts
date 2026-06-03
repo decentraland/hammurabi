@@ -15,7 +15,6 @@ declare var __DCL_TESTING_EXTENSION__: any
 rpcServer.setHandler(async function handler(port) {
   // setup required services
   connectContextToRpcServer(port)
-
   // and a testing service
   codegen.registerService(port, TestingServiceDefinition, async () => ({
     async logTestResult(result, ctx) {
@@ -32,6 +31,12 @@ rpcServer.setHandler(async function handler(port) {
       console.log(`🧪 setCameraTransform(${ctx.loadableScene.urn}) ${JSON.stringify(transform)}`)
       if (typeof __DCL_TESTING_EXTENSION__ !== 'undefined') return __DCL_TESTING_EXTENSION__.setCameraTransform(transform, ctx.loadableScene.urn)
       return {}
+    },
+    async takeAndCompareScreenshot() {
+      return {
+        storedSnapshotFound: false,
+        error: 'Not implemented'
+      }
     }
   }))
 })
@@ -46,7 +51,6 @@ export async function connectSceneContextUsingWebWorkerQuickJs(ctx: SceneContext
   })
 
   const transport = WebWorkerTransport(worker)
-
   rpcServer.attachTransport(transport, ctx)
 
   // when the scene stops, we will close the transport. that will release the resources

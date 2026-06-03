@@ -4,11 +4,11 @@ import { commsLogger } from "./types"
 import { CommsTransportWrapper, RoomConnectionStatus } from "./CommsTransportWrapper"
 
 // this function creates a controller for profile synchronization and announcement.
-export function createNetworkedProfileSystem(getTransports: () => Iterable<CommsTransportWrapper>) {
+export function createNetworkedProfileSystem(transport: CommsTransportWrapper) {
   const currentAvatar = Atom<Avatar>()
-  const wiredTransports = new WeakSet<CommsTransportWrapper>()
   let lastReport = performance.now()
-
+  
+  wireTransportEvents(transport)
   // force max of 2Hz
   const MAX_AVATARS_PER_SECOND = 2
 
@@ -22,25 +22,14 @@ export function createNetworkedProfileSystem(getTransports: () => Iterable<Comms
   }
 
   function lateUpdate() {
-    const transports = Array.from(getTransports())
-    // first ensure the transports are all wired
-    for (const it of transports) {
-      if (!wiredTransports.has(it)) {
-        wireTransportEvents(it)
-        wiredTransports.add(it)
-      }
-    }
-
     const avatar = currentAvatar.getOrNull()
 
     if (!avatar) return
     if (shouldDiscard()) return
 
     // then send the profile message to the transports
-    for (const it of transports) {
-      if (it.state === RoomConnectionStatus.CONNECTED) {
-        it.sendProfileMessage({ profileVersion: avatar.version })
-      }
+    if (transport.state === RoomConnectionStatus.CONNECTED) {
+      transport.sendProfileMessage({ profileVersion: avatar.version })
     }
   }
 

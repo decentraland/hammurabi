@@ -18,7 +18,7 @@ export function applyAnimations(entity: BabylonEntity) {
   if (currentAnimationComponentValue) {
     for (const animationAttributes of currentAnimationComponentValue.states) {
       // find the animation group
-      let clip: BABYLON.AnimationGroup | void = animationGroups.find($ => $.name === animationAttributes.name)
+      let clip: BABYLON.AnimationGroup | void = animationGroups.find($ => $.name === animationAttributes.clip)
 
       if (clip) {
         if (animationAttributes.speed !== undefined) {

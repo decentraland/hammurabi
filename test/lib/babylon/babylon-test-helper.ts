@@ -69,7 +69,7 @@ export function testWithEngine(
       camera = new BABYLON.FreeCamera('camera', BABYLON.Vector3.Zero(), scene)
       scene.activeCamera = camera
 
-      ctx = new SceneContext(scene, params, false)
+      ctx = new SceneContext(scene, params, false, '')
       ctx.log = message => messages.push(`  # SceneContext.log(${message})`)
 
       if (!params.enableStaticEntities) {

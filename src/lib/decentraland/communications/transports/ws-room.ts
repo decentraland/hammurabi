@@ -36,7 +36,7 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
   setVoicePosition(_address: string, _position: Position): void {
   }
 
-  async connect(): Promise<Set<string>> {
+  async connect(): Promise<void> {
     if (this.ws) throw new Error('Cannot call connect twice per IBrokerTransport')
 
     const ws = new WebSocket(this.url, ['rfc5', 'rfc4'])
@@ -84,7 +84,8 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
 
         switch (message.$case) {
           case 'welcomeMessage': {
-            return this.handleWelcomeMessage(message.welcomeMessage, ws)
+            this.handleWelcomeMessage(message.welcomeMessage, ws)
+            break
           }
           case 'challengeMessage': {
             const authChainJson = JSON.stringify(
@@ -118,7 +119,7 @@ export class WebSocketAdapter implements MinimumCommunicationsTransport {
         if (!message || message.$case !== 'welcomeMessage')
           throw new Error('Protocol error: server did not send a welcomeMessage')
 
-        return this.handleWelcomeMessage(message.welcomeMessage, ws)
+        this.handleWelcomeMessage(message.welcomeMessage, ws)
       }
     } catch (err: any) {
       this.connected.reject(err)

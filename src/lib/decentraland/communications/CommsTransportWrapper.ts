@@ -1,7 +1,6 @@
 import * as proto from '@dcl/protocol/out-ts/decentraland/kernel/comms/rfc4/comms.gen'
 import mitt from 'mitt'
 import { CommsTransportEvents, MinimumCommunicationsTransport, TransportMessageEvent, commsLogger } from './types'
-import { Vector3 } from '@babylonjs/core'
 
 export enum RoomConnectionStatus {
   NONE,
@@ -18,7 +17,7 @@ export type TransportPacket<T> = {
   data: T
 }
 
-export type CommsEvents = Pick<CommsTransportEvents, 'DISCONNECTION' | 'PEER_DISCONNECTED'> & {
+export type CommsEvents = Pick<CommsTransportEvents, 'DISCONNECTION' | 'PEER_CONNECTED' | 'PEER_DISCONNECTED'> & {
   // ADR-104 messages
   sceneMessageBus: TransportPacket<proto.Scene>
   chatMessage: TransportPacket<proto.Chat>
@@ -36,11 +35,14 @@ export type CommsEvents = Pick<CommsTransportEvents, 'DISCONNECTION' | 'PEER_DIS
  */
 export class CommsTransportWrapper {
   readonly events = mitt<CommsEvents>()
+  readonly sceneId: string
   public state: RoomConnectionStatus = RoomConnectionStatus.NONE
 
-  constructor(private transport: MinimumCommunicationsTransport) {
+  constructor(private transport: MinimumCommunicationsTransport, sceneId: string) {
+    this.sceneId = sceneId
     this.transport.events.on('message', this.handleMessage.bind(this))
     this.transport.events.on('DISCONNECTION', (event) => this.events.emit('DISCONNECTION', event))
+    this.transport.events.on('PEER_CONNECTED', (event) => this.events.emit('PEER_CONNECTED', event))
     this.transport.events.on('PEER_DISCONNECTED', (event) => this.events.emit('PEER_DISCONNECTED', event))
   }
 
@@ -48,10 +50,7 @@ export class CommsTransportWrapper {
     if (this.state !== RoomConnectionStatus.NONE) return
     try {
       this.state = RoomConnectionStatus.CONNECTING
-      const peers = await this.transport.connect()
-      for (const address in peers) {
-        this.sendProfileRequest({ address, profileVersion: 0 })
-      }
+      await this.transport.connect()
       this.state = RoomConnectionStatus.CONNECTED
     } catch (e: any) {
       this.state = RoomConnectionStatus.DISCONNECTED
@@ -65,26 +64,45 @@ export class CommsTransportWrapper {
       message: {
         $case: 'position',
         position
-      }
-    })
+      },
+      protocolVersion: 0
+    }, [])
   }
-  sendParcelSceneMessage(scene: proto.Scene): Promise<void> {
-    return this.sendMessage(false, { message: { $case: 'scene', scene } })
+  sendParcelSceneMessage(scene: proto.Scene, destination: string[]): Promise<void> {
+    return this.sendMessage(false, {
+      message: { $case: 'scene', scene },
+      protocolVersion: 100
+    }, destination)
   }
   sendProfileMessage(profileVersion: proto.AnnounceProfileVersion): Promise<void> {
-    return this.sendMessage(false, { message: { $case: 'profileVersion', profileVersion } })
+    return this.sendMessage(false, {
+      message: { $case: 'profileVersion', profileVersion },
+      protocolVersion: 0
+    }, [])
   }
   sendProfileRequest(profileRequest: proto.ProfileRequest): Promise<void> {
-    return this.sendMessage(false, { message: { $case: 'profileRequest', profileRequest } })
+    return this.sendMessage(false, {
+      message: { $case: 'profileRequest', profileRequest },
+      protocolVersion: 0
+    }, [])
   }
   sendProfileResponse(profileResponse: proto.ProfileResponse): Promise<void> {
-    return this.sendMessage(false, { message: { $case: 'profileResponse', profileResponse } })
+    return this.sendMessage(false, {
+      message: { $case: 'profileResponse', profileResponse },
+      protocolVersion: 0
+    }, [])
   }
   sendChatMessage(chat: proto.Chat): Promise<void> {
-    return this.sendMessage(true, { message: { $case: 'chat', chat } })
+    return this.sendMessage(true, {
+      message: { $case: 'chat', chat },
+      protocolVersion: 0
+    }, [])
   }
   sendVoiceMessage(voice: proto.Voice): Promise<void> {
-    return this.sendMessage(false, { message: { $case: 'voice', voice } })
+    return this.sendMessage(false, {
+      message: { $case: 'voice', voice },
+      protocolVersion: 0
+    }, [])
   }
 
   async disconnect() {
@@ -140,12 +158,12 @@ export class CommsTransportWrapper {
     }
   }
 
-  private async sendMessage(reliable: boolean, topicMessage: proto.Packet) {
+  private async sendMessage(reliable: boolean, topicMessage: proto.Packet, destination: string[]) {
     if (Object.keys(topicMessage).length === 0) {
       throw new Error('Invalid empty message')
     }
     const bytes = proto.Packet.encode(topicMessage as any).finish()
     if (!this.transport) debugger
-    this.transport.send(bytes, { reliable })
+    this.transport.send(bytes, { reliable }, destination)
   }
 }

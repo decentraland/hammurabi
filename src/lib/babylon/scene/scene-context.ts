@@ -34,9 +34,12 @@ import { createValueSetComponentStore } from '../../decentraland/crdt-internal/g
 import { VirtualSceneSubscription } from '../../decentraland/virtual-scene'
 import { MAX_ENTITY_NUMBER } from '../../decentraland/crdt-internal/generational-index-pool'
 import { avatarShapeComponent } from '../../decentraland/sdk-components/avatar-shape'
+import { avatarBaseComponent } from '../../decentraland/sdk-components/avatar-base'
 import { delayedInterpolationComponent } from '../../decentraland/sdk-components/delayed-interpolation'
 import { tweenComponent } from '../../decentraland/sdk-components/tween'
 import { materialComponent } from '../../decentraland/sdk-components/material-component'
+import { CommsTransportWrapper } from '../../decentraland/communications/CommsTransportWrapper'
+import { createAvatarCommunicationSystem, AvatarCommunicationSystem } from '../../decentraland/communications/avatar-communication-system'
 
 const SCENE_ENTITY_RANGE: [number, number] = [1, MAX_ENTITY_NUMBER]
 
@@ -47,8 +50,14 @@ export class SceneContext implements EngineApiInterface {
   #ref = new WeakRef(this)
   rootNode: BabylonEntity
 
+  readonly entityId: string
+
+  private _transport?: CommsTransportWrapper
+  private _avatarSystem?: AvatarCommunicationSystem
   // this future is resolved when the scene is disposed
   readonly stopped = future<void>()
+
+  readonly metadata: Scene
 
   // after the "tick" is completed, resolving the futures will send back the CRDT
   // updates to the scripting scene
@@ -103,6 +112,7 @@ export class SceneContext implements EngineApiInterface {
     [gltfContainerLoadingStateComponent.componentId]: createLwwStore(gltfContainerLoadingStateComponent),
     [engineInfoComponent.componentId]: createLwwStore(engineInfoComponent),
     [avatarShapeComponent.componentId]: createLwwStore(avatarShapeComponent),
+    [avatarBaseComponent.componentId]: createLwwStore(avatarBaseComponent),
     [tweenComponent.componentId]: createLwwStore(tweenComponent),
     [delayedInterpolationComponent.componentId]: createLwwStore(delayedInterpolationComponent),
     [materialComponent.componentId]: createLwwStore(materialComponent),
@@ -135,17 +145,17 @@ export class SceneContext implements EngineApiInterface {
   deletedEntities = new Set<Entity>()
   id: number = incrementalId++
 
-  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean) {
+  constructor(public babylonScene: BABYLON.Scene, public loadableScene: LoadableScene, public isGlobalScene: boolean, entityId: string) {
+    this.entityId = entityId
     this.rootNode = this.getOrCreateEntity(StaticEntities.RootEntity)
-
     // the rootNode must be positioned according to the value of the "scenes.base" of the scene metadata (scene.json)
-    const metadata = loadableScene.entity.metadata as Scene
-    if (metadata.scene?.base) {
-      const base = parseParcelPosition(metadata.scene.base)
-      this.rootNode.name = metadata.scene.base
+    this.metadata = loadableScene.entity.metadata as Scene
+    if (this.metadata.scene?.base) {
+      const base = parseParcelPosition(this.metadata.scene.base)
+      this.rootNode.name = this.metadata.scene.base
       gridToWorld(base.x, base.y, this.rootNode.position)
 
-      const r = createParcelOutline(babylonScene, metadata.scene.base, metadata.scene.parcels)
+      const r = createParcelOutline(babylonScene, this.metadata.scene.base, this.metadata.scene.parcels)
       r.result.parent = this.rootNode
 
       // position the GlobalCenterOfCoordinates entity
@@ -156,12 +166,12 @@ export class SceneContext implements EngineApiInterface {
 
     // calculate a naive bounding box for the scene to calculate the distance to the outer bounds
     // and use that distance to prioritize the message quota for ADR-148
-    if (metadata.scene?.parcels) {
+    if (this.metadata.scene?.parcels) {
       let minX: number | null = null
       let minZ: number | null = null
       let maxX: number | null = null
       let maxZ: number | null = null
-      for (const position of metadata.scene.parcels) {
+      for (const position of this.metadata.scene.parcels) {
         const vec = parseParcelPosition(position)
         if (minX == null || vec.x < minX) minX = vec.x
         if (minZ == null || vec.y < minZ) minZ = vec.y
@@ -170,7 +180,7 @@ export class SceneContext implements EngineApiInterface {
       }
 
       // as per https://docs.decentraland.org/creator/development-guide/scene-limitations/
-      const height = Math.log2(metadata.scene.parcels.length + 1) * 20
+      const height = Math.log2(this.metadata.scene.parcels.length + 1) * 20
 
       if (minX) {
         this.boundingBox = new BABYLON.BoundingBox(
@@ -301,6 +311,11 @@ export class SceneContext implements EngineApiInterface {
       resolveCyclicParening(this)
     }
 
+    // Update avatar system if it exists
+    if (this._avatarSystem) {
+      this._avatarSystem.update()
+    }
+
     // mark the frame as processed. this signals the lateUpdate to respond to the scene with updates
     this.finishedProcessingIncomingMessagesOfTick = true
     return true
@@ -399,6 +414,12 @@ export class SceneContext implements EngineApiInterface {
     }
     this.subscriptions.length = 0
 
+    // Dispose avatar system if it exists
+    if (this._avatarSystem) {
+      this._avatarSystem.dispose()
+      this._avatarSystem = undefined
+    }
+
     this.stopped.resolve()
 
     this.assetManager.dispose()
@@ -451,8 +472,66 @@ export class SceneContext implements EngineApiInterface {
 
     return { hasEntities, data: result.data }
   }
+
   async crdtSendToRenderer(payload: CrdtSendToRendererRequest): Promise<CrdtSendToResponse> {
     return this._crdtSendToRenderer(payload.data)
   }
-  // }
+
+  get transport(): CommsTransportWrapper | undefined {
+    return this._transport
+  }
+
+  private incomingNetworkMessages: Uint8Array[] = []
+  
+  getNetworkMessages(): Uint8Array[] {
+    const messages = [...this.incomingNetworkMessages]
+    this.incomingNetworkMessages.length = 0
+    return messages
+  }
+  
+  attachLivekitTransport(transport: CommsTransportWrapper) {
+    this._transport = transport
+    
+    // Create avatar communication system for this scene
+    this._avatarSystem = createAvatarCommunicationSystem(transport)
+    
+    // Add the avatar system subscription to this scene's subscriptions
+    this.subscriptions.push(this._avatarSystem.createSubscription())
+    
+    transport.events.on('sceneMessageBus', (event) => {
+      if (event.data.sceneId === this.entityId) {
+        if (event.data.data.byteLength) {
+          const [_, data] = decodeMessage(event.data.data)
+          const senderBytes = new TextEncoder().encode(event.address)
+          const messageLength = senderBytes.byteLength + data.byteLength + 1
+          const serializedMessage = new Uint8Array(messageLength)
+          serializedMessage.set(new Uint8Array([senderBytes.byteLength]), 0)
+          serializedMessage.set(senderBytes, 1)
+          serializedMessage.set(data, senderBytes.byteLength + 1)
+          this.incomingNetworkMessages.push(serializedMessage)
+        }
+      }
+    })
+  }
+}
+
+/**
+ * MsgType utils to diff between old string messages, and new uint8Array messages.
+ */
+export enum MsgType {
+  String = 1,
+  Uint8Array = 2
+}
+
+function decodeMessage(value: Uint8Array): [MsgType, Uint8Array] {
+  const msgType = value.at(0) as MsgType
+  const data = value.subarray(1)
+  return [msgType, data]
+}
+
+export function encodeMessage(data: Uint8Array, type: MsgType) {
+  const message = new Uint8Array(data.byteLength + 1)
+  message.set([type])
+  message.set(data, 1)
+  return message
 }

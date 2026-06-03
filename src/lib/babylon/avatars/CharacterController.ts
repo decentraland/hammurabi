@@ -468,7 +468,6 @@ export class CharacterController implements DecentralandSystem {
   capsule: AbstractMesh
 
   teleport(position: Vector3) {
-    console.log("TELEPORTING", position)
     this.moveVector.setAll(0)
     this.act.reset()
     this.capsule.position.copyFrom(position)
