@@ -16,7 +16,7 @@ import { customEvalSdk } from './sandbox'
 
 // this function starts the scene runtime as explained in ADR-133
 export async function startWebWorkerSceneRuntime(port: RpcClientPort, options: RpcSceneRuntimeOptions) {
-  const { mainFile } = await getStartupData(port)
+  const { mainFileContent } = await getStartupData(port)
  
   // first create an empty sandbox
   const context: any = Object.create(null)
@@ -25,7 +25,7 @@ export async function startWebWorkerSceneRuntime(port: RpcClientPort, options: R
 
   // then run the scene
   const decoder = new TextDecoder()
-  const sceneSource = decoder.decode(mainFile.content)
+  const sceneSource = decoder.decode(mainFileContent)
   const enableSceneSourceMaps = true
   await customEvalSdk(sceneSource, context, enableSceneSourceMaps)
 

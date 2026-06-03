@@ -21,6 +21,7 @@ import { createCharacterControllerSystem } from '../lib/babylon/avatars/Characte
 import { createCameraFollowsPlayerSystem } from '../lib/babylon/scene/logic/camera-follows-player'
 import { createCameraObstructionSystem } from '../lib/babylon/scene/logic/hide-camera-obstuction-system'
 import { createLocalAvatarSceneSystem } from '../lib/babylon/scene/logic/local-avatar-scene'
+import { gridToWorld } from '../lib/decentraland/positions'
 
 // we only spend ONE millisecond per frame procesing messages from scenes,
 // it is a conservative number but we want to prioritize CPU time for rendering
@@ -92,6 +93,12 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
     }
   })
 
+  gameConsole.onTeleportRequested.add((position) => {
+    let target: BABYLON.Vector3 = new BABYLON.Vector3()
+    gridToWorld(position.x, position.y, target)
+    characterControllerSystem.teleport(target)
+  })
+
   realmCommunicationSystem.currentRealm.pipe(realm => {
     gameConsole.addConsoleMessage({ message: `🌐 Connected to realm ${realm.aboutResponse.configurations?.realmName}`, isCommand: false })
   })
@@ -144,6 +151,15 @@ async function main(canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {
 
     // create an empty set of desired running scenes
     const desiredRunningScenes = new Map<string, { isGlobal: boolean }>()
+
+    // hack: loads genesis plaza
+    if (realm.baseUrl === 'https://peer.decentraland.org') {
+      // Genesis Plaza
+      //desiredRunningScenes.set('urn:decentraland:entity:bafkreihn2msxftdyd3nxqcbxmmzd252xcqongub3tladzsu557kcsomuui?baseUrl=https://peer.decentraland.org/content/contents/', { isGlobal: false })
+
+      // Asian Plaza
+      desiredRunningScenes.set('urn:decentraland:entity:QmUBjSNgs9MgDJneARJgpsnvEBJQQ1wMfvqmP7J24iQ23R?baseUrl=https://peer.decentraland.org/content/contents/', { isGlobal: false })
+    }
 
     // first load the desired scenes into the desiredRunningScenes set
     avatarSceneRealmSceneUrns.forEach(urn => desiredRunningScenes.set(urn, { isGlobal: true }))
